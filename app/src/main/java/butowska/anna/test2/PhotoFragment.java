@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import android.view.LayoutInflater;
@@ -17,14 +18,8 @@ import butowska.anna.test2.databinding.FragmentPhotoBinding;
 public class PhotoFragment extends Fragment {
 
     private FragmentPhotoBinding binding;
-    private Uri selectedImageUri;
 
-    public PhotoFragment() {}
-
-    public PhotoFragment(Uri selectedImageUri) {
-        PhotoFragment f = new PhotoFragment();
-        this.selectedImageUri = selectedImageUri;
-    }
+    private PhotoViewModel photoViewModel;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -36,6 +31,10 @@ public class PhotoFragment extends Fragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        Uri selectedImageUri;
+        photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
+        selectedImageUri = photoViewModel.getImageUri();
 
         binding.imageView3.setImageURI(selectedImageUri);
 

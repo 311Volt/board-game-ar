@@ -6,8 +6,10 @@ import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.provider.ContactsContract;
 import android.view.View;
 
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -23,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     //private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
-    //private View
+    private PhotoViewModel photoViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        photoViewModel = new ViewModelProvider(this).get(PhotoViewModel.class);
 
         //setSupportActionBar(binding.toolbar);
 

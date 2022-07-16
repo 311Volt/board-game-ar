@@ -20,6 +20,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import butowska.anna.test2.databinding.FragmentBoardGamesBinding;
@@ -29,6 +30,8 @@ public class BoardGamesFragment extends Fragment {
 
     private FragmentBoardGamesBinding binding;
     private FragmentPhotoBinding photoBinding;
+
+    private PhotoViewModel photoViewModel;
 
     @Override
     public View onCreateView(
@@ -87,6 +90,8 @@ public class BoardGamesFragment extends Fragment {
                 try {
                     if (result.getData() != null){
                         Uri selectedImageUri = result.getData().getData();
+                        photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
+                        photoViewModel.setImageUri(selectedImageUri);
                         //selectedImageUri.
                         //photoBinding.imageView3.setImageURI(selectedImageUri);
                         NavHostFragment.findNavController(BoardGamesFragment.this)

@@ -18,4 +18,6 @@
     <string name="take_photo">Take Photo</string>
     <string name="choose_photo">Choose Photo</string>
     <string name="go_back">Go Back</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

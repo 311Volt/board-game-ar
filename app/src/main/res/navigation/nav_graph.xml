@@ -27,6 +27,9 @@
         <action
             android:id="@+id/action_SecondFragment_to_FirstFragment"
             app:destination="@id/FirstFragment" />
+        <action
+            android:id="@+id/action_SecondFragment_to_photoFragment"
+            app:destination="@id/photoFragment" />
     </fragment>
     <fragment
         android:id="@+id/larpsFragment"
@@ -36,5 +39,14 @@
         <action
             android:id="@+id/action_larpsFragment_to_FirstFragment"
             app:destination="@id/FirstFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/photoFragment"
+        android:name="butowska.anna.test2.PhotoFragment"
+        android:label="fragment_photo"
+        tools:layout="@layout/fragment_photo" >
+        <action
+            android:id="@+id/action_photoFragment_to_SecondFragment"
+            app:destination="@id/SecondFragment" />
     </fragment>
 </navigation>

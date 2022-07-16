@@ -23,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
     //private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
+    //private View
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
 
 //    @Override
 //    public boolean onSupportNavigateUp() {

@@ -1,10 +1,7 @@
-package butowska.anna.test2;
+package pg.eti.arapp;
 
 import android.app.Activity;
-import android.app.Instrumentation;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -12,7 +9,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -23,8 +19,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
-import butowska.anna.test2.databinding.FragmentBoardGamesBinding;
-import butowska.anna.test2.databinding.FragmentPhotoBinding;
+import pg.eti.arapp.databinding.FragmentBoardGamesBinding;
+import pg.eti.arapp.databinding.FragmentPhotoBinding;
 
 public class BoardGamesFragment extends Fragment {
 

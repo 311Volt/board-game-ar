@@ -1,4 +1,4 @@
-package butowska.anna.test2;
+package pg.eti.arapp;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("butowska.anna.test2", appContext.getPackageName());
+        assertEquals("pg.eti.butowska.anna.test2", appContext.getPackageName());
     }
 }

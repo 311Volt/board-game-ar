@@ -1,21 +1,14 @@
-package butowska.anna.test2;
+package pg.eti.arapp;
 
 import android.os.Bundle;
 
-import com.google.android.material.snackbar.Snackbar;
-
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.provider.ContactsContract;
-import android.view.View;
 
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 
-import butowska.anna.test2.databinding.ActivityMainBinding;
+import pg.eti.arapp.databinding.ActivityMainBinding;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         photoViewModel = new ViewModelProvider(this).get(PhotoViewModel.class);
+
+
 
         //setSupportActionBar(binding.toolbar);
 

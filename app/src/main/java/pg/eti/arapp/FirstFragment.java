@@ -1,4 +1,4 @@
-package butowska.anna.test2;
+package pg.eti.arapp;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,9 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
-import butowska.anna.test2.databinding.FragmentFirstBinding;
+import pg.eti.arapp.databinding.FragmentFirstBinding;
 
 public class FirstFragment extends Fragment {
+
+    static {
+        System.loadLibrary("boardgamear");
+    }
 
     private FragmentFirstBinding binding;
 
@@ -45,6 +49,8 @@ public class FirstFragment extends Fragment {
             }
         });
     }
+
+    private native String stringFromJNI();
 
     @Override
     public void onDestroyView() {

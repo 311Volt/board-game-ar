@@ -1,4 +1,4 @@
-package butowska.anna.test2;
+package pg.eti.arapp;
 
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
@@ -7,10 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
-import butowska.anna.test2.databinding.FragmentLarpsBinding;
+import pg.eti.arapp.databinding.FragmentLarpsBinding;
 
 public class LarpsFragment extends Fragment {
 

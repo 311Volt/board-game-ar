@@ -1,4 +1,4 @@
-package butowska.anna.test2;
+package pg.eti.arapp;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,8 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import butowska.anna.test2.databinding.FragmentLarpsBinding;
-import butowska.anna.test2.databinding.FragmentPhotoBinding;
+import pg.eti.arapp.databinding.FragmentLarpsBinding;
+import pg.eti.arapp.databinding.FragmentPhotoBinding;
 
 public class PhotoFragment extends Fragment {
 

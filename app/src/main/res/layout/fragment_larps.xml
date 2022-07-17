@@ -12,7 +12,7 @@
         android:id="@+id/textView3"
         android:layout_width="377dp"
         android:layout_height="79dp"
-        android:rotationX="12"
+        android:rotationX="4"
         android:text="@string/larps"
         android:textAlignment="center"
         android:textColor="@color/text_grey"

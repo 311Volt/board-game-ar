@@ -1,4 +1,4 @@
-package butowska.anna.test2;
+package pg.eti.arapp;
 
 import org.junit.Test;
 

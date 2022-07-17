@@ -4,7 +4,7 @@
 #include <vector>
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_butowska_anna_test2_FirstFragment_stringFromJNI(
+Java_pg_eti_arapp_FirstFragment_stringFromJNI(
         JNIEnv* env,
         jobject /* this */
 )

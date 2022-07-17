@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="pg.eti.anna.butowskannaFirstFragment"
+        android:name="pg.eti.arapp.FirstFragment"
         android:label="@string/first_fragment_label"
         tools:layout="@layout/fragment_first">
 
@@ -33,7 +33,7 @@
     </fragment>
     <fragment
         android:id="@+id/larpsFragment"
-        android:name="pg.eti.anna.test2.LarpsFragment"
+        android:name="pg.eti.arapp.LarpsFragment"
         android:label="fragment_larps"
         tools:layout="@layout/fragment_larps" >
         <action
@@ -42,7 +42,7 @@
     </fragment>
     <fragment
         android:id="@+id/photoFragment"
-        android:name="pg.eti.test2annaPhotoFragment"
+        android:name="pg.eti.arapp.PhotoFragment"
         android:label="fragment_photo"
         tools:layout="@layout/fragment_photo" >
         <action

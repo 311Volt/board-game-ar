@@ -6,7 +6,7 @@ android {
     compileSdk 32
 
     defaultConfig {
-        applicationId "pg.eti.anna.test2"
+        applicationId "pg.eti.arapp"
         minSdk 24
         targetSdk 32
         versionCode 1

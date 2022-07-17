@@ -50,7 +50,7 @@ public class FirstFragment extends Fragment {
         });
     }
 
-    private native String stringFromJNI();
+    //private native String stringFromJNI();
 
     @Override
     public void onDestroyView() {

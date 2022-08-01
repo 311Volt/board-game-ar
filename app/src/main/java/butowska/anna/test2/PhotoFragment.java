@@ -1,5 +1,6 @@
 package butowska.anna.test2;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -33,10 +34,15 @@ public class PhotoFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         Uri selectedImageUri;
+        Bitmap bitmap;
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
         selectedImageUri = photoViewModel.getImageUri();
+        bitmap = photoViewModel.getImageBitmap();
 
-        binding.imageView3.setImageURI(selectedImageUri);
+        if(selectedImageUri != null)
+            binding.imageView3.setImageURI(selectedImageUri);
+        if(bitmap != null)
+            binding.imageView3.setImageBitmap(bitmap);
 
         binding.buttonBack.setOnClickListener(new View.OnClickListener() {
             @Override

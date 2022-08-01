@@ -6,4 +6,5 @@
     <files-path
         name="images"
         path="." />
+    <external-path name="external_files" path="Pictures" />
 </paths>

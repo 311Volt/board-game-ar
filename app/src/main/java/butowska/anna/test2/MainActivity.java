@@ -3,6 +3,8 @@ package butowska.anna.test2;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.google.ar.sceneform.rendering.ViewRenderable;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -22,6 +24,8 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
+    public ViewRenderable viewRenderable;
+    public ModelRenderable model;
     //private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 

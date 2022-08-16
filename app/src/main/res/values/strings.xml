@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">AR Planszowki - v1</string>
+    <string name="przycisk_wyswietl_zdj_tekst">Wyświetl zdjęcie</string>
+    <string name="przycisk_wykonaj_zdj_tekst">Wykonaj Zdjęcie</string>
+</resources>

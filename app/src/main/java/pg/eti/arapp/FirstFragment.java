@@ -1,5 +1,6 @@
 package pg.eti.arapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,6 +49,19 @@ public class FirstFragment extends Fragment {
                         .navigate(R.id.action_FirstFragment_to_larpsFragment);
             }
         });
+
+        binding.btnCamTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                launchCamera(view);
+            }
+        });
+    }
+
+
+    private void launchCamera(View view) {
+        var intent = new Intent(getActivity(), CameraActivity.class);
+        startActivity(intent);
     }
 
     //private native String stringFromJNI();

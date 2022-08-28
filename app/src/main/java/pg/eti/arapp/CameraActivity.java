@@ -215,23 +215,25 @@ public class CameraActivity extends AppCompatActivity {
                 Log.d(TAG_WYKONAJ_ZDJECIE, "Indeks pliku w ContentProvider: " + numer);
             }
         }
+//        Toast.makeText(getBaseContext(), photoFile.setWritable(true) ? "true":"false", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getBaseContext(), photoFile.getAbsolutePath(), Toast.LENGTH_SHORT).show();
 
         var outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
-        imageCapture.takePicture(outputOptions,
-                ContextCompat.getMainExecutor(this),
-                new OnImageSavedCallback() {
-                    @Override
-                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                        var savedUri = Uri.fromFile(photoFile);
-                        var message = "Photo capture succeeded" + savedUri.toString();
-                        Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onError(@NonNull ImageCaptureException exception) {
-                        Toast.makeText(getBaseContext(), exception.getImageCaptureError(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+//        imageCapture.takePicture(outputOptions,
+//                ContextCompat.getMainExecutor(this),
+//                new OnImageSavedCallback() {
+//                    @Override
+//                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+//                        var savedUri = Uri.fromFile(photoFile);
+//                        var message = "Photo capture succeeded" + savedUri.toString();
+//                        Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+//                    }
+//
+//                    @Override
+//                    public void onError(@NonNull ImageCaptureException exception) {
+//                        Toast.makeText(getBaseContext(), exception.getImageCaptureError(), Toast.LENGTH_SHORT).show();
+//                    }
+//                });
     }
 
     private void goBack(View view) {

@@ -23,6 +23,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
@@ -68,6 +69,7 @@ public class CameraActivity extends AppCompatActivity {
      */
     private static final int UI_ANIMATION_DELAY = 300;
     private static final String TAG_WYKONAJ_ZDJECIE = "Robie zdjecie";
+    private static final String TAG = "Create file";
     private final Handler mHideHandler = new Handler(Looper.myLooper());
     private View mContentView;
 
@@ -184,56 +186,56 @@ public class CameraActivity extends AppCompatActivity {
     ImageCapture imageCapture;
 
     private void takePhoto(View view) {
-        Uri sciezkaDoPlikowZdjec;
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            sciezkaDoPlikowZdjec = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-        else
-            sciezkaDoPlikowZdjec = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        ContentResolver resolver = getApplicationContext().getContentResolver();
-        ContentValues plikNaZdjecie = new ContentValues();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, getPictureName());
+        long currentTime = System.currentTimeMillis();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            plikNaZdjecie.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures"+"/"+getApplicationContext().getString(R.string.app_name));
+            contentValues.put(MediaStore.Images.Media.DATE_TAKEN, currentTime);
+            contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES+"/"+getApplicationContext().getString(R.string.app_name));
         }
         else
         {
-            //
-        }
-        plikNaZdjecie.put(MediaStore.Images.Media.DISPLAY_NAME, new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.US).format(System.currentTimeMillis()) + ".jpg");
-        Uri sciezkaDoPliku = resolver.insert(sciezkaDoPlikowZdjec, plikNaZdjecie);
-        var photoFile = new File(String.valueOf(sciezkaDoPliku));
+            createFolderIfNotExist();
 
-        Cursor daneOPlikuNaZdj;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if(sciezkaDoPliku != null) {
-                daneOPlikuNaZdj = resolver.query(sciezkaDoPliku, null, null, null);
-                daneOPlikuNaZdj.moveToNext();
-                int indeks = daneOPlikuNaZdj.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME);
-                String nazwa = daneOPlikuNaZdj.getString(indeks);
-                Log.d(TAG_WYKONAJ_ZDJECIE, "Nazwa pliku w ContentProvider: " + nazwa);
-                indeks = daneOPlikuNaZdj.getColumnIndex(MediaStore.Images.Media._ID);
-                int numer = daneOPlikuNaZdj.getInt(indeks);
-                Log.d(TAG_WYKONAJ_ZDJECIE, "Indeks pliku w ContentProvider: " + numer);
+            String path = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_PICTURES) + "/" + getApplicationContext().getString(R.string.app_name) + "/" + MediaStore.Images.Media.DISPLAY_NAME;
+
+            contentValues.put(MediaStore.Images.Media.DATA, path);
+        }
+        var outputOptions = new ImageCapture.OutputFileOptions.Builder(getContentResolver(), MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues).build();
+        imageCapture.takePicture(outputOptions,
+                ContextCompat.getMainExecutor(this),
+                new OnImageSavedCallback() {
+                    @Override
+                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+                        var message = "Photo capture succeeded";
+                        Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(@NonNull ImageCaptureException exception) {
+                        Toast.makeText(getBaseContext(), exception.getImageCaptureError(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void createFolderIfNotExist() {
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES) + "/" + getApplicationContext().getString(R.string.app_name));
+        if (!file.exists()) {
+            if (!file.mkdir()) {
+                Log.d(TAG, "Folder Create -> Failure");
+            } else {
+                Log.d(TAG, "Folder Create -> Success");
             }
         }
-//        Toast.makeText(getBaseContext(), photoFile.setWritable(true) ? "true":"false", Toast.LENGTH_SHORT).show();
-        Toast.makeText(getBaseContext(), photoFile.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+    }
 
-        var outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
-//        imageCapture.takePicture(outputOptions,
-//                ContextCompat.getMainExecutor(this),
-//                new OnImageSavedCallback() {
-//                    @Override
-//                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-//                        var savedUri = Uri.fromFile(photoFile);
-//                        var message = "Photo capture succeeded" + savedUri.toString();
-//                        Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
-//                    }
-//
-//                    @Override
-//                    public void onError(@NonNull ImageCaptureException exception) {
-//                        Toast.makeText(getBaseContext(), exception.getImageCaptureError(), Toast.LENGTH_SHORT).show();
-//                    }
-//                });
+    private String getPictureName() {
+        var date = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.US).format(System.currentTimeMillis());
+        String appName = getApplicationContext().getString(R.string.app_name) + " ";
+        return appName.replace(" ", "_") + date + ".jpg";
     }
 
     private void goBack(View view) {

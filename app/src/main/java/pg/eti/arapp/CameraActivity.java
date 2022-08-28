@@ -7,24 +7,38 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCapture.OnImageSavedCallback;
+import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowInsets;
 import android.widget.Toast;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -53,6 +67,7 @@ public class CameraActivity extends AppCompatActivity {
      * and a change of the status and navigation bar.
      */
     private static final int UI_ANIMATION_DELAY = 300;
+    private static final String TAG_WYKONAJ_ZDJECIE = "Robie zdjecie";
     private final Handler mHideHandler = new Handler(Looper.myLooper());
     private View mContentView;
 
@@ -148,10 +163,80 @@ public class CameraActivity extends AppCompatActivity {
             }
         });
 
+        binding.button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //goBack(view);
+                try{
+                    //Toast.makeText(getBaseContext(), "Trying...", Toast.LENGTH_SHORT).show();
+
+                    takePhoto(view);
+                } catch (Exception x){
+                }
+            }
+        });
+
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         binding.dummyButton.setOnTouchListener(mDelayHideTouchListener);
+    }
+    ImageCapture imageCapture;
+
+    private void takePhoto(View view) {
+        Uri sciezkaDoPlikowZdjec;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            sciezkaDoPlikowZdjec = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+        else
+            sciezkaDoPlikowZdjec = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        ContentResolver resolver = getApplicationContext().getContentResolver();
+        ContentValues plikNaZdjecie = new ContentValues();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            plikNaZdjecie.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures"+"/"+getApplicationContext().getString(R.string.app_name));
+        }
+        else
+        {
+            //
+        }
+        plikNaZdjecie.put(MediaStore.Images.Media.DISPLAY_NAME, new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.US).format(System.currentTimeMillis()) + ".jpg");
+        Uri sciezkaDoPliku = resolver.insert(sciezkaDoPlikowZdjec, plikNaZdjecie);
+        var photoFile = new File(String.valueOf(sciezkaDoPliku));
+
+        Cursor daneOPlikuNaZdj;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if(sciezkaDoPliku != null) {
+                daneOPlikuNaZdj = resolver.query(sciezkaDoPliku, null, null, null);
+                daneOPlikuNaZdj.moveToNext();
+                int indeks = daneOPlikuNaZdj.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME);
+                String nazwa = daneOPlikuNaZdj.getString(indeks);
+                Log.d(TAG_WYKONAJ_ZDJECIE, "Nazwa pliku w ContentProvider: " + nazwa);
+                indeks = daneOPlikuNaZdj.getColumnIndex(MediaStore.Images.Media._ID);
+                int numer = daneOPlikuNaZdj.getInt(indeks);
+                Log.d(TAG_WYKONAJ_ZDJECIE, "Indeks pliku w ContentProvider: " + numer);
+            }
+        }
+
+        var outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
+        imageCapture.takePicture(outputOptions,
+                ContextCompat.getMainExecutor(this),
+                new OnImageSavedCallback() {
+                    @Override
+                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+                        var savedUri = Uri.fromFile(photoFile);
+                        var message = "Photo capture succeeded" + savedUri.toString();
+                        Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(@NonNull ImageCaptureException exception) {
+                        Toast.makeText(getBaseContext(), exception.getImageCaptureError(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void goBack(View view) {
+        var intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
 
     @Override
@@ -172,8 +257,10 @@ public class CameraActivity extends AppCompatActivity {
                 var preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(binding.viewFinder.getSurfaceProvider());
 
+                imageCapture = new ImageCapture.Builder().build();
+
                 cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview);
+                cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture);
             } catch (Exception e) {
                 Toast.makeText(this, "Cannot start camera: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }

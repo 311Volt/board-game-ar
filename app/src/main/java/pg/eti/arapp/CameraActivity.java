@@ -199,7 +199,7 @@ public class CameraActivity extends AppCompatActivity {
             createFolderIfNotExist();
 
             String path = Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_PICTURES) + "/" + getApplicationContext().getString(R.string.app_name) + "/" + MediaStore.Images.Media.DISPLAY_NAME;
+                    Environment.DIRECTORY_PICTURES) + "/" + getApplicationContext().getString(R.string.app_name) + "/" + contentValues.get(MediaStore.Images.Media.DISPLAY_NAME);
 
             contentValues.put(MediaStore.Images.Media.DATA, path);
         }

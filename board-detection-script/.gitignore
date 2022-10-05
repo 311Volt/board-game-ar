@@ -1,0 +1,8 @@
+# zignoruj pliki bedace zasobami - zdjecia itd
+Zasoby/
+
+# zignoruj srodowisko wirtualne
+venv/
+
+# zignoruj pliki projektu PyCharm'a
+.idea

@@ -6,8 +6,8 @@ from przydatne_funkcje import przeskaluj
 from wykrywanie_elementow import wykryj_plansze
 
 
-sciezka_obrazki_wejsciowe = 'Osadnicy z Catanu\Zdjecia elementow gry\\'
-sciezka_obrazki_wynikowe = 'Wynikowe obrazki\\'
+sciezka_obrazki_wejsciowe = 'Zasoby\Osadnicy z Catanu\Zdjecia elementow gry\\'
+sciezka_obrazki_wynikowe = 'Wyniki\Wynikowe obrazki\\'
 
 # przygotowanie folderu na obrazki wynikowe
 os.makedirs(sciezka_obrazki_wynikowe, exist_ok=True)
@@ -22,7 +22,7 @@ przycieta_plansza = wykryj_plansze(plansza, skala_do_wykrywania=0.2, zapisuj_kro
 cv2.imwrite(sciezka_obrazki_wynikowe + '\\' + 'wykryta_plansza_jolXD.png', przycieta_plansza)  # jeśli chcemy przezroczystość, musi być .png
 
 # template matching przykład
-plytka_siano = cv2.imread('IMG_20220924_155728567~2.jpg')
+plytka_siano = cv2.imread('Zasoby\IMG_20220924_155728567~2.jpg')
 plytka_siano_mniejsza = przeskaluj(plytka_siano, 0.2)
 plytka_siano_mniejsza = cv2.cvtColor(plytka_siano_mniejsza, cv2.COLOR_BGR2BGRA)
 cv2.imshow('Plytka siano', plytka_siano_mniejsza)

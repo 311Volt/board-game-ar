@@ -1,8 +1,15 @@
 # zignoruj pliki bedace zasobami - zdjecia itd
 Zasoby/
 
+# zignoruj wyniki dzialania skryptu
+Wyniki/
+
 # zignoruj srodowisko wirtualne
 venv/
 
+# zignoruj cache Pythona
+__pycache__
+
 # zignoruj pliki projektu PyCharm'a
 .idea
+

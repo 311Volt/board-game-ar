@@ -1,8 +1,34 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id 'com.android.application' version '7.2.1' apply false
-    id 'com.android.library' version '7.2.1' apply false
+    id 'com.android.application' version '7.3.0' apply false
+    id 'com.android.library' version '7.3.0' apply false
+    id "org.jetbrains.kotlin.android" version "1.7.20" apply false
+    id "de.undercouch.download" version "5.2.1"
 }
+
+/*
+
+def externalDepsDir = "${rootDir}/external-deps"
+def opencvsdk = "${rootDir}/external-deps/OpenCV-android-sdk"
+
+task fetchOpenCV(type: Download) {
+    src 'https://kumisystems.dl.sourceforge.net/project/opencvlibrary/4.6.0/opencv-4.6.0-android-sdk.zip'
+    dest new File(externalDepsDir, "opencv-4.6.0-android-sdk.zip")
+    overwrite false
+}
+
+task fetchAndUnzipOpenCV(dependsOn: fetchOpenCV, type: Copy) {
+    onlyIf {
+        (!new File(opencvsdk).isDirectory())
+    }
+    new File(opencvsdk).mkdirs()
+
+    from zipTree(fetchOpenCV.dest)
+    into externalDepsDir
+}
+
+*/
+
 
 task clean(type: Delete) {
     delete rootProject.buildDir

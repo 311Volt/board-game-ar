@@ -17,9 +17,13 @@ import androidx.navigation.Navigation;
 
 import pg.eti.arapp.databinding.ActivityMainBinding;
 
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import org.opencv.android.OpenCVLoader;
+
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +44,11 @@ public class MainActivity extends AppCompatActivity {
         photoViewModel = new ViewModelProvider(this).get(PhotoViewModel.class);
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
 
+        if(OpenCVLoader.initDebug()) {
+            Log.d("OPENCV", "OpenCV initialized successfully");
+        } else {
+            Log.e("OPENCV ", "Could not initialize OpenCV");
+        }
     }
 
     @Override

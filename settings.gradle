@@ -12,5 +12,13 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
+def opencvsdk = "${rootDir}/external-deps/OpenCV-android-sdk"
+
 rootProject.name = "Test2"
+
+
 include ':app'
+
+include ':opencv'
+project(':opencv').projectDir = new File(opencvsdk + "/sdk")

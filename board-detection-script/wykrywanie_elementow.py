@@ -11,8 +11,8 @@ def wykryj_plansze(plansza, skala_do_wykrywania=1.0, wyswietlaj_kroki=False, zap
     # zmniejszanie obrazka na etap dobierania odpowiedniej maski - dla lepszego
     # wykrycia planszy i wydajniejszego przetwarzania
     plansza_mniejsza = przeskaluj(plansza, skala_do_wykrywania)
-    plansza_thresh = obrobka_obrazka_przed_wykrywaniem_konturow(plansza_mniejsza, wyswietlaj_kroki,
-                                                                zapisuj_kroki, sciezka_wyniki)
+    plansza_thresh = obrobka_obrazka_przed_wykrywaniem_konturow_PO_KOLORZE(plansza_mniejsza, wyswietlaj_kroki,
+                                                                           zapisuj_kroki, sciezka_wyniki)
 
     kontury, hierarchia = cv2.findContours(plansza_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     # sprawdzenie jak wykryły się kontury na obrazku
@@ -21,7 +21,10 @@ def wykryj_plansze(plansza, skala_do_wykrywania=1.0, wyswietlaj_kroki=False, zap
     wyswietl_lub_zapisz(plansza_kontury, 'Krok 5 - '+'Plansza kontury', wyswietlaj_kroki, zapisuj_kroki, sciezka_wyniki)
 
     skalowanie_konturow(kontury, 1.0/skala_do_wykrywania)
-    maska = dobieranie_maski_dla_obrazka(kontury, plansza, wyswietlaj_kroki, zapisuj_kroki, sciezka_wyniki)
+    # szukanie najwiekszego konturu na zdjeciu - bo prawdopodobnie bedzie nim plansza
+    najw_kontur = znajdz_najwiekszy_kontur(kontury, plansza.shape)
+    #maska = dobieranie_maski_dla_obrazka(kontury, plansza, wyswietlaj_kroki, zapisuj_kroki, sciezka_wyniki)
+    maska = dobieranie_maski_dla_obrazka([najw_kontur], plansza, wyswietlaj_kroki, zapisuj_kroki, sciezka_wyniki)
 
     glebia_obrazka = 1 if len(plansza.shape) <= 2 else plansza.shape[2]
     zmaskowana_plansza = plansza & np.stack(([maska]*glebia_obrazka), 2)  # maska 2d rozszerzona w osi z do takiej głębi jaką ma obrazek
@@ -94,3 +97,61 @@ def skalowanie_konturow(kontury, skala):
     for kontur in kontury:
         kontur[:, :, 0] = kontur[:, :, 0] * skala  # skalowanie x
         kontur[:, :, 1] = kontur[:, :, 1] * skala  # skalowanie y
+
+
+def znajdz_najwiekszy_kontur(kontury, wymiary_obrazka):
+    print('Wymiary obrazka: '+str(wymiary_obrazka))
+    powierzchnia_obrazka = wymiary_obrazka[0]*wymiary_obrazka[1]
+    print('Powierzchnia obrazka: '+str(powierzchnia_obrazka))
+
+    powierzchnia_najw_kont = 0
+    najwiekszy_kontur = kontury[0]
+    for kontur in kontury:
+        powierzchnia = cv2.contourArea(kontur)
+        print('Powierzchnia konturu: '+str(powierzchnia))
+        procent = (powierzchnia/powierzchnia_obrazka)*100
+        procent = round(procent, 2)
+        print('Procent powierzchni obrazka: '+str(procent)+'%')
+        if powierzchnia > powierzchnia_najw_kont:
+            najwiekszy_kontur = kontur
+            powierzchnia_najw_kont = powierzchnia
+
+    return najwiekszy_kontur
+
+
+def obrobka_obrazka_przed_wykrywaniem_konturow_PO_KOLORZE(plansza_mniejsza, wyswietlaj_kroki, zapisuj_kroki, sciezka_wyniki):
+    b, g, r = cv2.split(plansza_mniejsza)
+    b = cv2.equalizeHist(b)
+    g = cv2.equalizeHist(g)
+    r = cv2.equalizeHist(r)
+    plansza_mniejsza2 = cv2.merge([b, g, r])
+    wyswietl_lub_zapisz(plansza_mniejsza2, 'Wyrownana plansza test', wyswietlaj_kroki, zapisuj_kroki, sciezka_wyniki)
+
+    ograniczenie_dolne = np.array([160, 90, 0], dtype='uint8')  # najwezej 120, 80, 0  # szersze 90, 60, 0  # dla wyrown 160, 90, 0
+    ograniczenie_gorne = np.array([255, 200, 100], dtype='uint8')  # najwezej 175, 130, 50  # szersze 175, 150, 130  # dla wyrown 255, 200, 100
+    maska = cv2.inRange(plansza_mniejsza2, ograniczenie_dolne, ograniczenie_gorne)
+    wyswietl_lub_zapisz(maska, 'Krok testowy - '+'Maska po kolorze z przedzialu niebieskich', wyswietlaj_kroki,
+                        zapisuj_kroki, sciezka_wyniki)
+
+    b, g, r = cv2.split(plansza_mniejsza)
+    wyswietl_lub_zapisz(b, 'Krok 1 - ' + 'Plansza niebieski kanal', wyswietlaj_kroki, zapisuj_kroki, sciezka_wyniki)
+
+    plansza_zrown = cv2.equalizeHist(b)
+    wyswietl_lub_zapisz(plansza_zrown, 'Krok 2 - ' + 'Plansza zrown', wyswietlaj_kroki, zapisuj_kroki, sciezka_wyniki)
+
+    #plansza_rozmyta = cv2.medianBlur(plansza_zrown, 15)  # było 15 dla małej planszy
+    #wyswietl_lub_zapisz(plansza_rozmyta, 'Krok 3 - ' + 'Plansza rozmyta', wyswietlaj_kroki, zapisuj_kroki,
+    #                    sciezka_wyniki)
+
+    plansza_rozmyta = cv2.medianBlur(maska, 5)  # było 15 dla małej planszy
+    wyswietl_lub_zapisz(plansza_rozmyta, 'Krok 3 - ' + 'Plansza rozmyta', wyswietlaj_kroki, zapisuj_kroki,
+                        sciezka_wyniki)
+
+    # plansza_krawedzie = cv2.Canny(plansza_rozmyta, 125, 175)
+    # wyswietl_lub_zapisz(plansza_krawedzie, 'Krok 4 - '+'Plansza krawedzie', wyswietlaj_kroki, zapisuj_kroki, sciezka_wyniki)
+
+    ret, plansza_thresh = cv2.threshold(plansza_rozmyta, 200, 255, cv2.THRESH_BINARY)
+    wyswietl_lub_zapisz(plansza_thresh, 'Krok 4 - ' + 'Plansza thresh', wyswietlaj_kroki, zapisuj_kroki, sciezka_wyniki)
+
+    #return plansza_thresh
+    return plansza_thresh

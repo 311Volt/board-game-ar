@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 
-from przydatne_funkcje import przeskaluj
+from pomocnicze_funkcje_do_obrazkow import przeskaluj
 from wykrywanie_elementow import wykryj_plansze
 from przydatne_funkcje import wczytaj_sciezki_do_plikow
 
@@ -13,17 +13,12 @@ sciezka_obrazki_wynikowe = 'Wyniki\Wynikowe obrazki\\'
 # przygotowanie folderu na obrazki wynikowe
 os.makedirs(sciezka_obrazki_wynikowe, exist_ok=True)
 
-# wczytanie i wyświetlenie planszy
+# wczytanie sciezek do obrazkow do przetworzenia
 sciezki = []
 wczytaj_sciezki_do_plikow(sciezka_obrazki_wejsciowe+'\\'+'Plansza\\', sciezki)
 print(*sciezki, sep='\n')
 
 for sciezka in sciezki:
-    #plansza = cv2.imread(sciezka_obrazki_wejsciowe + '\\' + 'Plansza\Pusta plansza\IMG_20220924_160607794.jpg')
-    plansza = cv2.imread(sciezka)
-    plansza_mniejsza = przeskaluj(plansza, 0.2)
-    #cv2.imshow('Plansza', plansza_mniejsza)
-
     # przygotowanie folderu na wyniki
     sciezka_na_wynik = sciezka_obrazki_wynikowe + '\\' + sciezka[len(sciezka_obrazki_wejsciowe):]
     sciezka_na_wynik = sciezka_na_wynik[:-4]
@@ -31,6 +26,7 @@ for sciezka in sciezki:
     os.makedirs(sciezka_na_wynik, exist_ok=True)
 
     # wykrycie i zapisanie wyciętej planszy
+    plansza = cv2.imread(sciezka)
     przycieta_plansza = wykryj_plansze(plansza, skala_do_wykrywania=0.2, zapisuj_kroki=True, sciezka_wyniki=sciezka_na_wynik)
     cv2.imwrite(sciezka_na_wynik + '\\' + 'wykryta_plansza_jolXD.png', przycieta_plansza)  # jeśli chcemy przezroczystość, musi być .png
 

@@ -1,0 +1,8 @@
+# ignore java roject - temporary
+app/
+.gradle/
+.idea/
+
+
+# ignore local.properties
+local.properties

@@ -1,5 +1,6 @@
 # zignoruj pliki bedace zasobami - zdjecia itd
 Zasoby/
+resources/
 
 # zignoruj wyniki dzialania skryptu
 Wyniki/
@@ -12,4 +13,3 @@ __pycache__
 
 # zignoruj pliki projektu PyCharm'a
 .idea
-

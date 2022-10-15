@@ -42,7 +42,7 @@ os.makedirs(sciezka_obrazki_wynikowe, exist_ok=True)
 # wczytanie sciezek do obrazkow do przetworzenia
 sciezki = []
 #wczytaj_sciezki_do_plikow(sciezka_obrazki_wejsciowe+'\\'+'Elementy\\', sciezki)
-wczytaj_sciezki_do_plikow(sciezka_obrazki_wejsciowe+'\\'+'Wyciete karty\\', sciezki)
+wczytaj_sciezki_do_plikow(sciezka_obrazki_wejsciowe+'\\'+'Plansza\\', sciezki)
 print(*sciezki, sep='\n')
 
 for sciezka in sciezki:

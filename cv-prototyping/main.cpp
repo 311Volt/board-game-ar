@@ -34,9 +34,46 @@ cv::Mat squareDist(cv::Mat source, cv::Vec3f vec)
 	return out;
 }
 
+cv::Mat getPerspectiveCorrectionMatrix(const std::vector<cv::Point>& points)
+{
+	std::vector<cv::Point> dstPoints = {
+		{0, 433},
+		{250, 866},
+		{750, 866},
+		{1000, 433},
+		{750, 0},
+		{250, 0}
+	};
+	return cv::findHomography(points, dstPoints);
+}
+
+void showScaled(std::string name, cv::Mat mat)
+{
+	cv::namedWindow(name, cv::WINDOW_NORMAL);
+	cv::imshow(name, mat);
+	cv::resizeWindow(name, 640, 480);
+}
+
+std::vector<cv::Point> findBoardVertices(cv::Mat thres)
+{
+	std::vector<std::vector<cv::Point>> contours;
+	std::vector<cv::Point> hex;
+	cv::findContours(thres, contours, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
+
+	auto it = std::max_element(contours.begin(), contours.end(), [](auto&& a, auto&& b) {
+		return cv::contourArea(a) < cv::contourArea(b);
+	});
+
+	int index = it - contours.begin();
+
+	auto factor = 0.03;
+	cv::approxPolyDP(contours[index], hex, cv::arcLength(contours[index], true) * factor, true);
+	return hex;
+}
+
 int main()
 {
-	auto src = cv::imread("resources/sampleGlare2.jpg");
+	auto src = cv::imread("resources/thicc.jpg");
 	cv::Mat crcb = convertToCrCb(src);
 	cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_6500K);
 	//cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_3400K);
@@ -44,11 +81,18 @@ int main()
 	cv::Mat thres;
 	cv::threshold(sq, thres, 20, 255, cv::THRESH_BINARY_INV);
 
-	cv::imshow("Source", src);
-	cv::imshow("CrCb", crcb);
-	cv::imshow("sqDiff(CrCb, sea color)", sq);
-	cv::imshow("Threshold", thres);
+	std::vector<std::vector<cv::Point>> hex = {findBoardVertices(thres)};
+	cv::drawContours(src, hex, 0, {255,0,255}, 7);
 	
+	cv::Mat corr = getPerspectiveCorrectionMatrix(hex[0]);
+	cv::Mat final;
+	cv::warpPerspective(src, final, corr, {1000, 866});
+
+	showScaled("Source", src);
+	showScaled("CrCb", crcb);
+	showScaled("sqDiff(CrCb, sea color)", sq);
+	showScaled("Threshold", thres);
+	cv::imshow("Warped", final);
 
 	cv::waitKey();
 }

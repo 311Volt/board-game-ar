@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include <opencv2/core.hpp>
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_pg_eti_arapp_FirstFragment_stringFromJNI(
         JNIEnv* env,

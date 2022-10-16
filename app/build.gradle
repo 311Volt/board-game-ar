@@ -2,6 +2,8 @@ plugins {
     id 'com.android.application'
 }
 
+def opencvsdk = "${rootDir}/external-deps/OpenCV-android-sdk".toString()
+
 android {
     compileSdk 32
 
@@ -13,6 +15,13 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                cppFlags "-frtti -fexceptions"
+                arguments "-DANDROID_ARM_NEON=TRUE", "-DOpenCV_DIR=" + opencvsdk + "/sdk/native/jni"
+            }
+        }
     }
 
     buildTypes {

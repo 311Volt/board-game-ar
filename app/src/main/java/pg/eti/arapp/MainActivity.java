@@ -1,16 +1,9 @@
 package pg.eti.arapp;
 
-import android.Manifest;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -20,14 +13,9 @@ import pg.eti.arapp.databinding.ActivityMainBinding;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
 
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -47,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         if(OpenCVLoader.initDebug()) {
             Log.d("OPENCV", "OpenCV initialized successfully");
         } else {
-            Log.e("OPENCV ", "Could not initialize OpenCV");
+            Log.e("OPENCV", "Could not initialize OpenCV");
         }
     }
 

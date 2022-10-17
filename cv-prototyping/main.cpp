@@ -47,20 +47,33 @@ cv::Mat getPerspectiveCorrectionMatrix(const std::vector<cv::Point>& points)
 	return cv::findHomography(points, dstPoints);
 }
 
+void showScaled(std::string name, cv::Mat mat)
+{
+	cv::namedWindow(name, cv::WINDOW_NORMAL);
+	cv::imshow(name, mat);
+	cv::resizeWindow(name, 640, 480);
+}
+
 std::vector<cv::Point> findBoardVertices(cv::Mat thres)
 {
 	std::vector<std::vector<cv::Point>> contours;
 	std::vector<cv::Point> hex;
-	cv::Mat thresCont;
 	cv::findContours(thres, contours, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
-	cv::approxPolyDP(contours[0], hex, cv::arcLength(contours[0], true)*0.02, true);
 
+	auto it = std::max_element(contours.begin(), contours.end(), [](auto&& a, auto&& b) {
+		return cv::contourArea(a) < cv::contourArea(b);
+	});
+
+	int index = it - contours.begin();
+
+	auto factor = 0.03;
+	cv::approxPolyDP(contours[index], hex, cv::arcLength(contours[index], true) * factor, true);
 	return hex;
 }
 
 int main()
 {
-	auto src = cv::imread("resources/sampleGrayBG.jpg");
+	auto src = cv::imread("resources/thicc.jpg");
 	cv::Mat crcb = convertToCrCb(src);
 	cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_6500K);
 	//cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_3400K);
@@ -75,12 +88,11 @@ int main()
 	cv::Mat final;
 	cv::warpPerspective(src, final, corr, {1000, 866});
 
-	cv::imshow("Source", src);
-	cv::imshow("CrCb", crcb);
-	cv::imshow("sqDiff(CrCb, sea color)", sq);
-	cv::imshow("Threshold", thres);
+	showScaled("Source", src);
+	showScaled("CrCb", crcb);
+	showScaled("sqDiff(CrCb, sea color)", sq);
+	showScaled("Threshold", thres);
 	cv::imshow("Warped", final);
-	
 
 	cv::waitKey();
 }

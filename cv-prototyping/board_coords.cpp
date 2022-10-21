@@ -1,17 +1,11 @@
-#include <opencv2/opencv.hpp>
+#include "headers/board_coords.hpp"
+
 #include <numbers>
 
-
-cv::Point2d hexToCoord(cv::Point3i hex)
+cv::Point2d cis(double theta)
 {
-	static constexpr double M[] = { 1, 0.5, 0, -std::numbers::sqrt3 / 2.0 };
-	return {
-		hex.x * M[0] + hex.y * M[1],
-		hex.x * M[2] + hex.y * M[3]
-	};
+	return { std::cos(theta), -std::sin(theta) };
 }
-
-
 long double operator""_deg(long double x)
 {
 	return x * std::numbers::pi / 180.0;
@@ -21,14 +15,30 @@ long double operator""_deg(unsigned long long x)
 	return x * std::numbers::pi / 180.0;
 }
 
-cv::Point2d cis(double theta)
+ScreenCoordMapper::ScreenCoordMapper(const HexGridView& view)
+	: view {view}
 {
-	return { std::cos(theta), -std::sin(theta) };
+
 }
 
-std::vector<cv::Point3i> generateFieldCoords(int maxDepth)
+cv::Point2d ScreenCoordMapper::operator()(const CellCoord& cell)
 {
-	std::vector<cv::Point3i> result;
+	static constexpr double M[] = { 1, 0.5, 0, -std::numbers::sqrt3 / 2.0 };
+	return view.center + view.size * cv::Point2d{
+		cell.x * M[0] + cell.y * M[1],
+		cell.x * M[2] + cell.y * M[3]
+	};
+}
+cv::Point2d ScreenCoordMapper::operator()(const VertexCoord& vtx)
+{
+	static constexpr double r = 1.0 / std::numbers::sqrt3;
+	return (*this)(vtx.origin) + view.size * r * cis(vtx.high ? 30_deg : -30_deg);
+}
+
+
+std::vector<CellCoord> GenerateFieldCoords(int maxDepth)
+{
+	std::vector<CellCoord> result;
 	for (int i = -maxDepth; i <= maxDepth; i++) {
 		int lo = std::max(-maxDepth, -maxDepth - i);
 		int hi = std::min(maxDepth, maxDepth - i);
@@ -39,47 +49,17 @@ std::vector<cv::Point3i> generateFieldCoords(int maxDepth)
 	return result;
 }
 
-std::vector<cv::Point3i> generateCrossingCoords()
+std::vector<VertexCoord> GenerateVertexCoords()
 {
-	auto fc = generateFieldCoords(3);
-	std::vector<cv::Point3i> result;
-	for (const auto& p : fc) {
-		//if(p.z > 2 || p.y > 2 || p.x > 2)
-			//continue;
-		result.push_back(p);
-	}
-	return result;
-}
-
-std::vector<cv::Point2d> generateFieldPositions(cv::Point2d center, double size)
-{
-	auto coords = generateFieldCoords(2);
-
-	std::vector<cv::Point2d> result;
-	result.reserve(coords.size());
-	for (auto& k : coords) {
-		result.push_back(center + size * hexToCoord(k));
-	}
-	printf("result size = %d\n", (int)result.size());
-	return result;
-}
-
-std::vector<cv::Point2d> generateCrossingPositions(cv::Point2d center, double size)
-{
-	auto coords = generateCrossingCoords();
-
-	std::vector<cv::Point2d> result;
-	result.reserve(coords.size());
-	static constexpr double r = 1.0 / std::numbers::sqrt3;
-	for (auto& k : coords) {
-		if (k.x < 3 && k.y < 3 && k.z > -3) {
-			result.push_back(center + size * (hexToCoord(k) + r * cis(30_deg)));
+	auto fc = GenerateFieldCoords(3);
+	std::vector<VertexCoord> result;
+	for (const auto& origin : fc) {
+		if(origin.x < 3 && origin.y < 3 && origin.z > -3) {
+			result.push_back(VertexCoord{.origin = origin, .high = true});
 		}
-
-		if (k.x > -3 && k.y < 3 && k.z > -3) {
-			result.push_back(center + size * (hexToCoord(k) + r * cis(90_deg)));
+		if(origin.x < 3 && origin.y > -3 && origin.z > -3) {
+			result.push_back(VertexCoord{.origin = origin, .high = false});
 		}
 	}
-	printf("result size = %d\n", (int)result.size());
 	return result;
 }

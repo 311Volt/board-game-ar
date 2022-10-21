@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(ar-proto VERSION 0.1.0)
 
-find_package(OpenCV)
+find_package(OpenCV REQUIRED)
+find_package(fmt REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -19,7 +20,7 @@ set(SOURCES board_coords.cpp
 add_executable(ar-proto main.cpp ${HEADER_FILES} ${SOURCES})
 # target_include_directories(ar-proto PRIVATE headers/)
 
-target_link_libraries(ar-proto ${OpenCV_LIBRARIES})
+target_link_libraries(ar-proto ${OpenCV_LIBRARIES} fmt::fmt)
 
 # dodaje resources tez do Debug/, zeby moc uruchamiac bez wlaczania VS plik .exe stamtad
 add_custom_command(TARGET ar-proto POST_BUILD

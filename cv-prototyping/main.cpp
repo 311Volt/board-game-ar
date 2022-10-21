@@ -10,7 +10,10 @@
 #include "headers/image_correction.hpp"
 #include "headers/utility_opencv.hpp"
 
+#include <fmt/format.h>
 
+#include <ranges>
+#include <algorithm>
 
 int main()
 {
@@ -26,28 +29,18 @@ int main()
 	cv::drawContours(src, hex, 0, {255,0,255}, 7);
 	
 	cv::Mat corr = getPerspectiveCorrectionMatrix(hex[0]);
-	cv::Mat warped; //, warpedMasked;
+	cv::Mat warped;
 	cv::warpPerspective(src, warped, corr, {1000, 866});
 
-	// zakomentowane, bo nie mam pliku catan-mask.png
-	/*cv::Mat mask = cv::imread("resources/catan-mask.png", CV_8U);
-	cv::resize(mask, mask, warped.size());
+	ScreenCoordMapper mapper ({.center = {500,433}, .size = 150});
 
-	cv::copyTo(warped, warpedMasked, {});*/
-
-	auto coords = generateFieldCoords(2);
-	char buf[10];
-	for(auto& c: coords) {
-		//char buf[4096];
-		sprintf(buf, "(%d,%d,%d)", c.x, c.y, c.z);
-		auto pnt = cv::Point2d{500,433} + 150*hexToCoord(c);
-		cv::putText(warped, buf, pnt, cv::FONT_HERSHEY_PLAIN, 1, {255,255,255});
+	for(auto& c: GenerateFieldCoords(3)) {
+		cv::putText(warped, fmt::format("({},{},{})", c.x, c.y, c.z), mapper(c), cv::FONT_HERSHEY_PLAIN, 1, {255,255,255});
 	}
 
-	drawPoints(generateFieldPositions({500,433}, 150), warped, {255,255,180});
-	drawPoints(generateCrossingPositions({500,433}, 150), warped, {255,0,0});
+	drawPoints(mapper(GenerateFieldCoords(2)), warped, {255,255,180});
+	drawPoints(mapper(GenerateVertexCoords()), warped, {255,0,0});
 	
-
 	showScaled("Source", src);
 	showScaled("CrCb", crcb);
 	showScaled("sqDiff(CrCb, sea color)", sq);

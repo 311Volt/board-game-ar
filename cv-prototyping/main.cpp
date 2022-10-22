@@ -5,10 +5,10 @@
 //#include <concepts>
 //#include <span>
 
-#include "headers/board_coords.hpp"
-#include "headers/board_detection.hpp"
-#include "headers/image_correction.hpp"
-#include "headers/utility_opencv.hpp"
+#include <board_coords.hpp>
+#include <board_detection.hpp>
+#include <image_correction.hpp>
+#include <utility_opencv.hpp>
 
 #include <fmt/format.h>
 

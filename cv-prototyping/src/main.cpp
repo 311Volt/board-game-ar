@@ -12,19 +12,14 @@
 int main()
 {
 	auto src = cv::imread("resources/sampleGrayBG.jpg");
-	cv::Mat crcb = convertToCrCb(src);
-	cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_6500K);
-	//cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_3400K);
-	
-	cv::Mat thres;
-	cv::threshold(sq, thres, 20, 255, cv::THRESH_BINARY_INV);
-
-	std::vector<std::vector<cv::Point>> hex = {findBoardVertices(thres)};
-	cv::drawContours(src, hex, 0, {255,0,255}, 7);
-	
-	cv::Mat corr = getPerspectiveCorrectionMatrix(hex[0]);
+	CatanBoardDetector detector {SEA_COLOR_YCBCR_6500K};
 	cv::Mat warped;
-	cv::warpPerspective(src, warped, corr, {1000, 866});
+	try {
+		warped = detector.findBoard(src).value();
+	} catch(std::bad_optional_access& ex) {
+		std::cerr << "error: board not found";
+		return 1;
+	}
 
 	ScreenCoordMapper mapper ({.center = {500,433}, .size = 150});
 

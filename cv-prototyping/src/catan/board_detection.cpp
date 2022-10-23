@@ -1,4 +1,5 @@
 #include <catan/board_detection.hpp>
+#include <catan/image_correction.hpp>
 
 cv::Mat convertToCrCb(cv::Mat image)
 {
@@ -27,19 +28,76 @@ cv::Mat squareDist(cv::Mat source, cv::Vec3f vec)
 	return out;
 }
 
-std::vector<cv::Point> findBoardVertices(cv::Mat thres)
+std::vector<cv::Point> approxPoly(const std::vector<cv::Point>& contour, float epsilon)
+{
+	std::vector<cv::Point> dpOutput;
+	double len = epsilon * cv::arcLength(contour, true);
+	cv::approxPolyDP(contour, dpOutput, len, true);
+	return dpOutput;
+}
+
+std::optional<std::vector<cv::Point>> tryApproxHexagonBin(
+	const std::vector<cv::Point>& contour, 
+	float epsilonLow = 0.006, 
+	float epsilonHigh = 0.02, 
+	int maxIters = 7
+)
+{
+	for(int i=0; i<maxIters; i++)
+	{
+		float mid = (epsilonLow + epsilonHigh) / 2.0;
+		auto poly = approxPoly(contour, mid);
+
+		if(poly.size() == 6) {
+			return poly;
+		} else if(poly.size() > 6) {
+			epsilonLow = mid;
+		} else if(poly.size() < 6) {
+			epsilonHigh = mid;
+		}
+	}
+	return std::nullopt;
+}
+
+
+std::optional<std::vector<cv::Point>> findBoardVertices(cv::Mat thres)
 {
 	std::vector<std::vector<cv::Point>> contours;
-	std::vector<cv::Point> hex;
+
 	cv::findContours(thres, contours, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
 
 	auto it = std::max_element(contours.begin(), contours.end(), [](auto&& a, auto&& b) {
 		return cv::contourArea(a) < cv::contourArea(b);
-		});
+	});
 
-	int index = it - contours.begin();
+	return tryApproxHexagonBin(*it);
+}
 
-	auto factor = 0.03;
-	cv::approxPolyDP(contours[index], hex, cv::arcLength(contours[index], true) * factor, true);
-	return hex;
+
+CatanBoardDetector::CatanBoardDetector(cv::Vec3f seaColor)
+	: seaColor(seaColor)
+{
+
+}
+
+std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
+{
+
+	cv::Mat crcb = convertToCrCb(photo);
+	cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_6500K);
+	//cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_3400K);
+	
+	cv::Mat thres;
+	cv::threshold(sq, thres, 20, 255, cv::THRESH_BINARY_INV);
+	
+	auto boardVtxs = findBoardVertices(thres);
+	if(!boardVtxs) {
+		return std::nullopt;
+	}
+
+	cv::Mat corr = getPerspectiveCorrectionMatrix(boardVtxs.value());
+	cv::Mat warped;
+	cv::warpPerspective(photo, warped, corr, {1000, 866});
+
+	return warped;
 }

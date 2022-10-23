@@ -1,19 +1,13 @@
 #include <iostream>
 
 #include <opencv2/opencv.hpp>
-//#include <compare>
-//#include <concepts>
-//#include <span>
 
-#include <board_coords.hpp>
-#include <board_detection.hpp>
-#include <image_correction.hpp>
-#include <utility_opencv.hpp>
+#include <catan/board_coords.hpp>
+#include <catan/board_detection.hpp>
+#include <catan/image_correction.hpp>
+#include <catan/utility_opencv.hpp>
 
 #include <fmt/format.h>
-
-#include <ranges>
-#include <algorithm>
 
 int main()
 {
@@ -47,7 +41,7 @@ int main()
 		cv::Point* p = new cv::Point(0, 0);
 		//auto col = warped.colRange(m.x - 10, m.x + 10).rowRange(m.y - 10, m.y + 10);
 
-		int rectSize = 40;
+		int rectSize = 48;
 
 		cv::Rect roi(cv::Point(m.x - rectSize/2, m.y - rectSize/2), cv::Size(rectSize, rectSize));
 		cv::Mat destinationROI = warped(roi);
@@ -97,6 +91,6 @@ int main()
 	showScaled("sqDiff(CrCb, sea color)", sq);
 	showScaled("Threshold", thres);*/
 
-		cv::imshow("Warped", warped);
+	cv::imshow("Warped", warped);
 	cv::waitKey();
 }

@@ -1,5 +1,4 @@
-#include <opencv2/opencv.hpp>
-
+#include <catan/image_correction.hpp>
 
 void showScaled(std::string name, cv::Mat mat)
 {

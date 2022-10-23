@@ -5,16 +5,16 @@ find_package(OpenCV CONFIG REQUIRED)
 find_package(fmt REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(SOURCES board_coords.cpp
-            board_detection.cpp
-            image_correction.cpp
-            utility_opencv.cpp)
+file(GLOB_RECURSE AR_PROTO_SOURCES "src/*.cpp")
 
-add_executable(ar-proto main.cpp ${HEADER_FILES} ${SOURCES})
-target_include_directories(ar-proto PRIVATE headers/)
+add_executable(ar-proto ${AR_PROTO_SOURCES})
+target_include_directories(ar-proto PRIVATE include/)
 
 target_link_libraries(ar-proto ${OpenCV_LIBRARIES} fmt::fmt)
+target_precompile_headers(ar-proto PRIVATE "<opencv2/opencv.hpp>")
 
 add_custom_command(TARGET ar-proto POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory

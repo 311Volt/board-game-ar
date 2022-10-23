@@ -1,5 +1,4 @@
-#include <opencv2/opencv.hpp>
-
+#include <catan/image_correction.hpp>
 
 cv::Mat getPerspectiveCorrectionMatrix(const std::vector<cv::Point>& points)
 {

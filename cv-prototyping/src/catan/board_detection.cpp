@@ -1,5 +1,4 @@
-#include <opencv2/opencv.hpp>
-
+#include <catan/board_detection.hpp>
 
 cv::Mat convertToCrCb(cv::Mat image)
 {

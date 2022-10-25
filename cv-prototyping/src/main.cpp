@@ -1,6 +1,5 @@
-#include <iostream>
 
-#include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
 
 #include <catan/board_coords.hpp>
 #include <catan/board_detection.hpp>
@@ -8,6 +7,24 @@
 #include <catan/utility_opencv.hpp>
 
 #include <fmt/format.h>
+
+cv::Mat loadYCross()
+{
+	cv::Mat ycross = cv::imread("resources/y-cross.png");
+	fmt::print("sum {}\n\n", cv::sum(ycross)[0]);
+	ycross /= cv::sum(ycross) / 25.0;
+	return ycross;
+}
+
+cv::Mat convolutionWithCross(cv::Mat input)
+{
+	static cv::Mat ycross = loadYCross();
+	cv::Mat inputGray;
+	cv::cvtColor(input, inputGray, cv::COLOR_BGR2GRAY);
+	cv::Mat out;
+	cv::filter2D(inputGray, out, -1, ycross, {-1,-1}, -255, cv::BORDER_CONSTANT);
+	return out;
+}
 
 int main()
 {
@@ -33,50 +50,14 @@ int main()
 	for (auto& c : vertexCoords) {
 		//cv::putText(warped, fmt::format("({},{},{})", c.origin.x, c.origin.y, c.origin.z), mapper(c), cv::FONT_HERSHEY_PLAIN, 1, { 255,255,255 });
 		auto m = mapper(c);
-		cv::Point* p = new cv::Point(0, 0);
-		//auto col = warped.colRange(m.x - 10, m.x + 10).rowRange(m.y - 10, m.y + 10);
 
-		int rectSize = 48;
+		float rectSize = 48;
 
-		cv::Rect roi(cv::Point(m.x - rectSize/2, m.y - rectSize/2), cv::Size(rectSize, rectSize));
+		cv::Rect roi(m - cv::Point2d{0.5,0.5}*rectSize, cv::Size(rectSize, rectSize));
 		cv::Mat destinationROI = warped(roi);
 
-
-		cv::Mat hsvFull;
-		cv::cvtColor(destinationROI, hsvFull, cv::COLOR_BGR2HSV_FULL);
-		std::vector<uchar> colorsCount(256, 0);
-		cv::Scalar pixel;
-		uchar color;
-		int maxColor = 0, minColor = 255;
-		for (int r = 0; r < hsvFull.rows; r++)
-		{
-			for (int c = 0; c < hsvFull.cols; c++)
-			{
-				pixel = hsvFull.at<cv::Vec3b>(cv::Point(c, r));
-				color = pixel(0);
-				colorsCount[color] += 1;
-				if (colorsCount[color] < colorsCount[minColor]) minColor = color;
-				if (colorsCount[color] > colorsCount[maxColor]) maxColor = color;
-			}
-		}
-		int colorRange = maxColor - minColor;
-		int minCount, maxCount;
-		minCount = colorsCount[minColor];
-		maxCount = colorsCount[maxColor];
-
-		cv::Mat smallImage(rectSize, rectSize, CV_8UC3, cv::Scalar(255, 255, 255));
-		
-		cv::imshow("Dest", destinationROI);
-		//cv::waitKey();
-
-		if(maxColor - minColor < 100)
-			(smallImage).copyTo(destinationROI);
-		
-
-		//auto rect = n;
-
-		//(*rect).copyTo(col);
-		int i = 0;
+		cv::imshow("bruh", convolutionWithCross(destinationROI));
+		cv::waitKey();
 	}
 
 	//drawPoints(mapper(GenerateVertexCoords()), warped, {255,0,0});

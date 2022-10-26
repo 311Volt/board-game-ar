@@ -37,6 +37,7 @@ namespace cvutil {
 		std::string name;
 
 		Window(const std::string& name, cfg::WindowConfig cfg = {});
+		~Window();
 
 		void show(cv::Mat img, cfg::ShowOptions options = {});
 	};

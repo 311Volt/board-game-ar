@@ -61,7 +61,8 @@ cv::Mat spookyShit(cv::Mat warped)
 		for(int x=0; x<warped.cols; x++) {
 			//float k1 = rating(sqDistUC3(shore, inRow[x]) * 64.0f);
 
-			float k2 = rating(sqDistUC3(gap, inRow[x]) * 128.0f) * 0.7f;
+			//float k2 = rating(sqDistUC3(gap, inRow[x]) * 128.0f) * 0.7f;
+			float k2 = 0;
 			inRow[x][0] *= LUMINANCE_WEIGHT;
 			float k1 = rating(sqDistUC3(sand, inRow[x]) * 128.0f);
 			
@@ -69,6 +70,21 @@ cv::Mat spookyShit(cv::Mat warped)
 		}
 	}
 	return output;
+}
+
+float rateChunk(cv::Mat chunk)
+{
+	cv::Vec2i center {24,24};
+	float ret = 0;
+	for(int y=0; y<chunk.rows; y++) {
+		uint8_t* inRow = chunk.ptr<uint8_t>(y);
+		for(int x=0; x<chunk.cols; x++) {
+			if(cv::norm(cv::Vec2i{x,y} - center) < 10) {
+				ret += inRow[x];
+			}
+		}
+	}
+	return ret;
 }
 
 int main()
@@ -92,11 +108,12 @@ int main()
 
 	//drawPoints(mapper(GenerateFieldCoords(2)), warped, {255,255,180});
 
-	cvutil::Window win1("warped board"), win2("chunk", {.waitKeyOnExit=true}), win3("proc");
-	win1.show(warped);
-	win3.show(spookyShit(warped));
+	cvutil::Window win1("warped board"), win2("chunk"), win3("proc", {.waitKeyOnExit=true});
 
 	std::vector<VertexCoord> vertexCoords = GenerateVertexCoords();
+	std::vector<VertexCoord> townVtxs, emptyVtxs;
+	auto ratings = spookyShit(warped);
+
 	for (auto& c : vertexCoords) {
 		//cv::putText(warped, fmt::format("({},{},{})", c.origin.x, c.origin.y, c.origin.z), mapper(c), cv::FONT_HERSHEY_PLAIN, 1, { 255,255,255 });
 		auto m = mapper(c);
@@ -104,12 +121,22 @@ int main()
 		float rectSize = 48;
 
 		cv::Rect roi(m - cv::Point2d{0.5,0.5}*rectSize, cv::Size(rectSize, rectSize));
-		cv::Mat destinationROI = warped(roi);
-		cv::Mat flipped;
-		cv::flip(destinationROI, flipped, 0);
-		
-		win2.show(destinationROI, {.waitKey=true});
+		cv::Mat destinationROI = ratings(roi);
+
+		if(rateChunk(destinationROI) < 20000) {
+			townVtxs.push_back(c);
+		} else {
+			emptyVtxs.push_back(c);
+		}
 	}
+
+	cvutil::drawPoints(mapper(townVtxs), warped, {.color={0,255,0}});
+	cvutil::drawPoints(mapper(emptyVtxs), warped, {.color={0,0,255}});
+	
+
+	win1.show(warped);
+	win3.show(ratings);
+
 
 	//drawPoints(mapper(GenerateVertexCoords()), warped, {255,0,0});
 	

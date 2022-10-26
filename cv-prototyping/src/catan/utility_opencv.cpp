@@ -14,6 +14,13 @@ cvutil::Window::Window(const std::string& name, cvutil::cfg::WindowConfig cfg)
 
 }
 
+cvutil::Window::~Window()
+{
+	if(config.waitKeyOnExit) {
+		cv::waitKey();
+	}
+}
+
 void cvutil::Window::show(cv::Mat img, cvutil::cfg::ShowOptions options)
 {
 	if(options.scale.has_value()) {

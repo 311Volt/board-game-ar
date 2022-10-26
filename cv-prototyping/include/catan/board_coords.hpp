@@ -1,7 +1,9 @@
+#ifndef INCLUDE_CATAN_BOARD_COORDS
+#define INCLUDE_CATAN_BOARD_COORDS
+
 #include <opencv2/opencv.hpp>
 
 #include <concepts>
-
 
 /* 
  * Maps a hexagonal cell to coordinates (x,y,z), where x+y+z=0
@@ -70,3 +72,6 @@ public:
 
 std::vector<CellCoord> GenerateFieldCoords(int maxDepth);
 std::vector<VertexCoord> GenerateVertexCoords();
+
+
+#endif /* INCLUDE_CATAN_BOARD_COORDS */

@@ -1,15 +1,37 @@
-#include <catan/image_correction.hpp>
+#include <catan/utility_opencv.hpp>
 
-void showScaled(std::string name, cv::Mat mat)
-{
-	cv::namedWindow(name, cv::WINDOW_NORMAL);
-	cv::imshow(name, mat);
-	cv::resizeWindow(name, 640, 480);
-}
 
-void drawPoints(const std::vector<cv::Point2d>& points, cv::Mat outImg, cv::Scalar color)
+void cvutil::drawPoints(const std::vector<cv::Point2d>& points, cv::Mat outImg, cvutil::cfg::DrawPointsOptions options)
 {
 	for (const auto& p : points) {
-		cv::circle(outImg, p, 10, color, -1);
+		cv::circle(outImg, p, options.radius, options.color, -1);
 	}
+}
+
+cvutil::Window::Window(const std::string& name, cvutil::cfg::WindowConfig cfg)
+	: name(name), config(cfg)
+{
+
+}
+
+void cvutil::Window::show(cv::Mat img, cvutil::cfg::ShowOptions options)
+{
+	if(options.scale.has_value()) {
+		cv::resizeWindow(name, (*options.scale)[0], (*options.scale)[1]);
+	}
+	cv::imshow(name, img);
+	if(options.waitKey) {
+		cv::waitKey();
+	}
+}
+
+cv::Mat cvutil::convertToCrCb(cv::Mat image)
+{
+	cv::Mat ycrcb;
+	cv::cvtColor(image, ycrcb, cv::COLOR_BGR2YCrCb);
+	cv::Mat ch[3];
+	cv::split(ycrcb, ch);
+	ch[0] = cv::Mat::zeros(ch[0].rows, ch[0].cols, CV_8UC1);
+	cv::merge(ch, 3, ycrcb);
+	return ycrcb;
 }

@@ -38,9 +38,9 @@ std::vector<cv::Point> approxPoly(const std::vector<cv::Point>& contour, float e
 
 std::optional<std::vector<cv::Point>> tryApproxHexagonBin(
 	const std::vector<cv::Point>& contour, 
-	float epsilonLow = 0.006, 
-	float epsilonHigh = 0.02, 
-	int maxIters = 7
+	float epsilonLow, 
+	float epsilonHigh, 
+	int maxIters
 )
 {
 	for(int i=0; i<maxIters; i++)
@@ -80,7 +80,7 @@ CatanBoardDetector::CatanBoardDetector(cv::Vec3f seaColor)
 
 }
 
-std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
+/*std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 {
 
 	cv::Mat crcb = convertToCrCb(photo);
@@ -100,4 +100,51 @@ std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 	cv::warpPerspective(photo, warped, corr, {1000, 866});
 
 	return warped;
+}*/
+
+
+cv::Mat findBlueBoardFrame(cv::Mat image)
+{
+	cv::Mat crcb = convertToCrCb(image);
+	cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_6500K);
+	//cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_3400K);
+
+	cv::Mat thres;
+	cv::threshold(sq, thres, 20, 255, cv::THRESH_BINARY_INV);
+
+	return thres;
 }
+
+cv::Mat findAMaskForBoard(cv::Mat image, std::vector<cv::Point> boardVerticies)
+{
+	cv::Mat mask = cv::Mat::zeros(image.size(), image.type());
+	std::vector<std::vector<cv::Point>> contours = { boardVerticies };
+	cv::drawContours(mask, contours, -1, cv::Scalar(255, 255, 255), -1);
+	//cv::imshow("Mask", mask);
+	return mask;
+}
+
+cv::Mat prepareBoard(cv::Mat image, std::vector<cv::Point> boardVerticies)
+{
+
+	auto mask = findAMaskForBoard(image, boardVerticies);
+	cv::Mat cuttedEmptyBoard;
+	cv::bitwise_and(image, mask, cuttedEmptyBoard);
+	cv::Mat corr = getPerspectiveCorrectionMatrix(boardVerticies);
+	cv::Mat warped;
+	cv::warpPerspective(cuttedEmptyBoard, warped, corr, { 1000, 866 });
+	return warped;
+}
+
+std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
+{
+	auto thres = findBlueBoardFrame(photo);
+	auto boardVtxs = findBoardVertices(thres);
+	if (!boardVtxs) {
+		return std::nullopt;
+	}
+	return prepareBoard(photo, boardVtxs.value());
+}
+
+
+

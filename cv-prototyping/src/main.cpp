@@ -6,8 +6,12 @@
 #include <catan/board_detection.hpp>
 #include <catan/image_correction.hpp>
 #include <catan/utility_opencv.hpp>
+#include <catan/pawns_detection.hpp>
 
 #include <fmt/format.h>
+
+
+
 
 int main()
 {
@@ -23,69 +27,60 @@ int main()
 
 	ScreenCoordMapper mapper ({.center = {500,433}, .size = 150});
 
-	/*for(auto& c: GenerateFieldCoords(3)) {
+	/*for (auto& c : GenerateFieldCoords(3)) {
 		cv::putText(warped, fmt::format("({},{},{})", c.x, c.y, c.z), mapper(c), cv::FONT_HERSHEY_PLAIN, 1, {255,255,255});
-	}*/
+	}
 
-	//drawPoints(mapper(GenerateFieldCoords(2)), warped, {255,255,180});
+	drawPoints(mapper(GenerateFieldCoords(2)), warped, {255,255,180});
+	drawPoints(mapper(GenerateVertexCoords()), warped, {255,0,0});*/
+	cv::imshow("Warped", warped);
 
 	std::vector<VertexCoord> vertexCoords = GenerateVertexCoords();
 	for (auto& c : vertexCoords) {
-		//cv::putText(warped, fmt::format("({},{},{})", c.origin.x, c.origin.y, c.origin.z), mapper(c), cv::FONT_HERSHEY_PLAIN, 1, { 255,255,255 });
 		auto m = mapper(c);
-		cv::Point* p = new cv::Point(0, 0);
-		//auto col = warped.colRange(m.x - 10, m.x + 10).rowRange(m.y - 10, m.y + 10);
 
-		int rectSize = 48;
-
-		cv::Rect roi(cv::Point(m.x - rectSize/2, m.y - rectSize/2), cv::Size(rectSize, rectSize));
-		cv::Mat destinationROI = warped(roi);
-
-
-		cv::Mat hsvFull;
-		cv::cvtColor(destinationROI, hsvFull, cv::COLOR_BGR2HSV_FULL);
-		std::vector<uchar> colorsCount(256, 0);
-		cv::Scalar pixel;
-		uchar color;
-		int maxColor = 0, minColor = 255;
-		for (int r = 0; r < hsvFull.rows; r++)
-		{
-			for (int c = 0; c < hsvFull.cols; c++)
-			{
-				pixel = hsvFull.at<cv::Vec3b>(cv::Point(c, r));
-				color = pixel(0);
-				colorsCount[color] += 1;
-				if (colorsCount[color] < colorsCount[minColor]) minColor = color;
-				if (colorsCount[color] > colorsCount[maxColor]) maxColor = color;
-			}
-		}
-		int colorRange = maxColor - minColor;
-		int minCount, maxCount;
-		minCount = colorsCount[minColor];
-		maxCount = colorsCount[maxColor];
-
-		cv::Mat smallImage(rectSize, rectSize, CV_8UC3, cv::Scalar(255, 255, 255));
-		
-		cv::imshow("Dest", destinationROI);
-		//cv::waitKey();
-
-		if(maxColor - minColor < 100)
-			(smallImage).copyTo(destinationROI);
-		
-
-		//auto rect = n;
-
-		//(*rect).copyTo(col);
-		int i = 0;
+		cv::Mat destinationROI = copyImageAreaContainingVertex(warped, m);
 	}
 
-	//drawPoints(mapper(GenerateVertexCoords()), warped, {255,0,0});
-	
-	/*showScaled("Source", src);
-	showScaled("CrCb", crcb);
-	showScaled("sqDiff(CrCb, sea color)", sq);
-	showScaled("Threshold", thres);*/
+    //cv:imshow("Warped after cutting of verticies", warped);
 
-	cv::imshow("Warped", warped);
+
+	//---- testing removing board to extract elements lying on it ----//
+
+	cv::Mat emptyBoard = cv::imread("resources/empty_board1.jpg");
+	cv::Mat boardWithPawns = cv::imread("resources/board_with_pawns1.jpg");
+	emptyBoard = scaleImage(emptyBoard, 0.2);
+	boardWithPawns = scaleImage(boardWithPawns, 0.2);
+	cv::imshow("Empty board", emptyBoard);
+	cv::imshow("With pawns", boardWithPawns);
+
+
+	cv::Mat warpedEmptyBoard;
+	try {
+		warpedEmptyBoard = detector.findBoard(emptyBoard).value();
+	}
+	catch (std::bad_optional_access& ex) {
+		std::cerr << "error: board not found";
+		return 1;
+	}
+	cv::Mat warpedBoardWithPawns;
+	try {
+		warpedBoardWithPawns = detector.findBoard(boardWithPawns).value();
+	}
+	catch (std::bad_optional_access& ex) {
+		std::cerr << "error: board not found";
+		return 1;
+	}
+
+	warpedEmptyBoard = rotateImage(warpedEmptyBoard, -60);
+	cv::imshow("Prepared empty", warpedEmptyBoard);
+
+	warpedBoardWithPawns = rotateImage(warpedBoardWithPawns, -120);
+	cv::imshow("Prepared with pawns", warpedBoardWithPawns);
+
+	cv::Mat mask = findAMaskForElementsOnBoard(warpedEmptyBoard, warpedBoardWithPawns);
+	cv::imshow("Mask", mask);
+	
 	cv::waitKey();
+	
 }

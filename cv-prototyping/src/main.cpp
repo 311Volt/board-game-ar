@@ -49,8 +49,8 @@ int main()
 
 	cv::Mat emptyBoard = cv::imread("resources/empty_board1.jpg");
 	cv::Mat boardWithPawns = cv::imread("resources/board_with_pawns1.jpg");
-	emptyBoard = scaleImage(emptyBoard, 0.2);
-	boardWithPawns = scaleImage(boardWithPawns, 0.2);
+	emptyBoard = scaleImage(emptyBoard, 0.3);
+	boardWithPawns = scaleImage(boardWithPawns, 0.3);
 	cv::imshow("Empty board", emptyBoard);
 	cv::imshow("With pawns", boardWithPawns);
 
@@ -78,8 +78,34 @@ int main()
 	warpedBoardWithPawns = rotateImage(warpedBoardWithPawns, -120);
 	cv::imshow("Prepared with pawns", warpedBoardWithPawns);
 
-	cv::Mat mask = findAMaskForElementsOnBoard(warpedEmptyBoard, warpedBoardWithPawns);
-	cv::imshow("Mask", mask);
+	//cv::GaussianBlur(warpedEmptyBoard, warpedEmptyBoard, cv::Size(5, 5), cv::BORDER_DEFAULT);
+	//cv::GaussianBlur(warpedBoardWithPawns, warpedBoardWithPawns, cv::Size(5, 5), cv::BORDER_DEFAULT);
+
+	cv::Mat mask = findAMaskForWhitePawns(warpedBoardWithPawns);
+	cv::imshow("Mask for white", mask);
+
+	mask = findAMaskForElementsOnBoardHSV(warpedEmptyBoard, warpedBoardWithPawns);
+	cv::imshow("Mask for everything on board", mask);
+
+	mask = findAMaskForElementsOnBoard(warpedEmptyBoard, warpedBoardWithPawns);
+	cv::imshow("Mask for everything on board (BGR)", mask);
+
+	mask = findAMaskForElementsOnBoardKernel(warpedEmptyBoard, warpedBoardWithPawns, 13);
+	//mask = findAMaskForElementsOnBoardKernelHSV(warpedEmptyBoard, warpedBoardWithPawns, 13);
+	cv::imshow("Mask with kernel", mask);
+
+	cv::cvtColor(mask, mask, cv::COLOR_BGR2GRAY);
+	std::vector<std::vector<cv::Point>> contours;
+	cv::findContours(mask, contours, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
+	std::vector<std::vector<cv::Point>> filteredContours;
+	for (auto& cnt : contours)
+	{
+		if (cv::contourArea(cnt) >= 100)
+			filteredContours.push_back(cnt);
+	}
+	cv::Mat filteredMask = cv::Mat::zeros(warpedBoardWithPawns.size(), warpedBoardWithPawns.type());
+	cv::drawContours(filteredMask, filteredContours, -1, cv::Scalar(255, 255, 255), -1);
+	cv::imshow("Filtered mask", filteredMask);
 	
 	cv::waitKey();
 	

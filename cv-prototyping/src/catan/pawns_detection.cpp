@@ -111,32 +111,153 @@ cv::Mat findAMaskForElementsOnBoard(cv::Mat emptyBoard, cv::Mat boardWithPawns)
 			cv::Vec3i colorsDiff = pixel2 - pixel1;
 			//colorsDiff = cv::Vec3b(std::abs(colorsDiff.val[0]), std::abs(colorsDiff.val[1]), std::abs(colorsDiff.val[2]));
 			//////cv::absdiff(pixel1, pixel2, colorsDiff);
-			float colorsDistance = cv::norm(colorsDiff / 3);
-			if (colorsDistance >= 30)
+			float colorsDistance = cv::norm(colorsDiff/3);
+			if (colorsDistance >= 20)
 				mask.at<cv::Vec3b>(r, c) = cv::Vec3b(255, 255, 255);
-			/*for (int channel = 0; channel < 3; channel++)
+
+		}
+	}
+	//cv::subtract(boardWithPawns, emptyBoard, mask);
+	return mask;
+}
+
+cv::Mat convertToHS(cv::Mat image)
+{
+	cv::Mat hsv;
+	cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV_FULL);
+	std::vector<cv::Mat> channels;
+	cv::split(hsv, channels);
+	channels[2] = cv::Mat::zeros(hsv.size(), CV_8UC1);
+
+	//channels[2] = cv::Mat::zeros(hsv.size(), CV_8UC1);
+	//hsvEmpty[2] = cv::Mat::zeros(hsvEmpty.size(), CV_8UC1);
+	cv::merge(channels, hsv);
+	return hsv;
+}
+
+cv::Mat convertToSV(cv::Mat image)
+{
+	cv::Mat hsv;
+	cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV_FULL);
+	std::vector<cv::Mat> channels;
+	cv::split(hsv, channels);
+	channels[0] = cv::Mat::zeros(hsv.size(), CV_8UC1);
+	cv::merge(channels, hsv);
+	return hsv;
+}
+
+cv::Mat findAMaskForElementsOnBoardHSV(cv::Mat emptyBoard, cv::Mat boardWithPawns)
+{
+	cv::Mat hsvEmpty = convertToHS(emptyBoard);
+	cv::imshow("Hsv empty", hsvEmpty);
+	cv::Mat hsvWithPawns = convertToHS(boardWithPawns);
+	cv::imshow("Hsv with pawns", hsvWithPawns);
+	cv::Mat mask = cv::Mat::zeros(boardWithPawns.size(), boardWithPawns.type());
+	for (int r = 0; r < hsvEmpty.size().height; r++)
+	{
+		for (int c = 0; c < hsvEmpty.size().width; c++)
+		{
+			cv::Vec3i pixel1 = hsvEmpty.at<cv::Vec3b>(r, c);
+			cv::Vec3i pixel2 = hsvWithPawns.at<cv::Vec3b>(r, c);
+			cv::Vec3i colorsDiff = pixel2 - pixel1;
+			float colorsDistance = cv::norm(colorsDiff / 3);
+			if (colorsDistance >= 20)
+				mask.at<cv::Vec3b>(r, c) = cv::Vec3b(255, 255, 255);
+		}
+	}
+	//cv::subtract(boardWithPawns, emptyBoard, mask);
+	return mask;
+}
+
+cv::Mat findAMaskForWhitePawns(cv::Mat boardWithPawns)//(cv::Mat emptyBoard, cv::Mat boardWithPawns)
+{
+	//cv::Mat hsvEmpty = convertToHS(emptyBoard);
+	//cv::imshow("Hsv empty", hsvEmpty);
+	cv::Mat hsvWithPawns = convertToSV(boardWithPawns);
+	cv::imshow("Hsv with pawns", hsvWithPawns);
+	cv::Mat mask = cv::Mat::zeros(boardWithPawns.size(), CV_8UC1);
+	cv::Mat Smask = cv::Mat::zeros(boardWithPawns.size(), CV_8UC1);
+	cv::Mat Vmask = cv::Mat::zeros(boardWithPawns.size(), CV_8UC1);
+
+	//std::vector<cv::Mat> channels1;
+	std::vector<cv::Mat> channels2;
+	//cv::split(hsvEmpty, channels1);
+	cv::split(hsvWithPawns, channels2);
+	cv::threshold(channels2[1], Smask, 30, 255, cv::THRESH_BINARY_INV);
+	cv::threshold(channels2[2], Vmask, 150, 255, cv::THRESH_BINARY);
+	cv::bitwise_and(Smask, Vmask, mask);
+	cv::imshow("Smask", Smask);
+	cv::imshow("Vmask", Vmask);
+
+	return mask;
+
+}
+
+cv::Mat findAMaskForElementsOnBoardKernel(cv::Mat emptyBoard, cv::Mat boardWithPawns, int kernel)
+{
+	//cv::Mat hsvEmpty = convertToHS(emptyBoard);
+	//cv::imshow("Hsv empty", hsvEmpty);
+	//cv::Mat hsvWithPawns = convertToHS(boardWithPawns);
+	//cv::imshow("Hsv with pawns", hsvWithPawns);
+	cv::Mat mask = cv::Mat::zeros(boardWithPawns.size(), boardWithPawns.type());
+	bool similarColor = false;
+	for (int r = 0; r < emptyBoard.size().height; r++)
+	{
+		for (int c = 0; c < emptyBoard.size().width; c++)
+		{
+			similarColor = false;
+			for (int x = 0; x < kernel; x++)
 			{
-				float canalColorDistance = std::abs(colorsDiff.val[channel]);
-				if (canalColorDistance>=70)
-					mask.at<cv::Vec3b>(r, c) = cv::Vec3b(255, 255, 255);
-			}*/
+				for (int y = 0; y < kernel; y++)
+				{
+					if (r + x - (kernel / 2) >= 0 && r + x - (kernel / 2) < emptyBoard.size().height && c + y - (kernel / 2) >= 0 && c + y - (kernel / 2) < emptyBoard.size().width)
+					{
+						cv::Vec3i pixel1 = emptyBoard.at<cv::Vec3b>(r + x - (kernel / 2), c + y - (kernel / 2));
+						cv::Vec3i pixel2 = boardWithPawns.at<cv::Vec3b>(r, c);
+						cv::Vec3i colorsDiff = pixel2 - pixel1;
+						float colorsDistance = cv::norm(colorsDiff / 3);
+						if (colorsDistance <= 15)
+							similarColor = true;
+					}
+				}
+			}
+			if (!similarColor)
+				mask.at<cv::Vec3b>(r, c) = cv::Vec3b(255, 255, 255);
+		}
+	}
+	return mask;
+}
 
-
-
-			/*int dist1 = std::abs(colorsDiff.val[0] - colorsDiff.val[1]);
-			int dist2 = std::abs(colorsDiff.val[0] - colorsDiff.val[2]);
-			int dist3 = std::abs(colorsDiff.val[1] - colorsDiff.val[2]);
-			int averageDist = (dist1 + dist2 + dist3) / 3;
-			//if(dist1>=10 && dist2>=10 && dist3 >=10)  //means its not just different shade of the same color, but completely different color
-			if(averageDist >=10)
-				mask.at<cv::Vec3b>(r, c) = cv::Vec3b(255, 255, 255);*/
-
-			//przekonwertowaæ na hsv i braæ barwê niezale¿nie od jasnoœci
-
-			/*float colorsDistance = cv::norm(colorsDiff / 3);
-			if (colorsDistance <= 50)
-				mask.at<cv::Vec3b>(r, c) = cv::Vec3b(255, 255, 255);*/
-
+cv::Mat findAMaskForElementsOnBoardKernelHSV(cv::Mat emptyBoard, cv::Mat boardWithPawns, int kernel)
+{
+	cv::Mat hsvEmpty = convertToHS(emptyBoard);
+	cv::imshow("Hsv empty", hsvEmpty);
+	cv::Mat hsvWithPawns = convertToHS(boardWithPawns);
+	cv::imshow("Hsv with pawns", hsvWithPawns);
+	cv::Mat mask = cv::Mat::zeros(boardWithPawns.size(), boardWithPawns.type());
+	bool similarColor = false;
+	for (int r = 0; r < hsvEmpty.size().height; r++)
+	{
+		for (int c = 0; c < hsvEmpty.size().width; c++)
+		{
+			similarColor = false;
+			for (int x = 0; x < kernel; x++)
+			{
+				for (int y = 0; y < kernel; y++)
+				{
+					if (r + x - (kernel / 2) >= 0 && r + x - (kernel / 2) < emptyBoard.size().height && c + y - (kernel / 2) >= 0 && c + y - (kernel / 2) < emptyBoard.size().width)
+					{
+						cv::Vec3i pixel1 = hsvEmpty.at<cv::Vec3b>(r + x - (kernel / 2), c + y - (kernel / 2));
+						cv::Vec3i pixel2 = hsvWithPawns.at<cv::Vec3b>(r, c);
+						cv::Vec3i colorsDiff = pixel2 - pixel1;
+						float colorsDistance = cv::norm(colorsDiff / 3);
+						if (colorsDistance <= 10)
+							similarColor = true;
+					}
+				}
+			}
+			if (!similarColor)
+				mask.at<cv::Vec3b>(r, c) = cv::Vec3b(255, 255, 255);
 		}
 	}
 	return mask;

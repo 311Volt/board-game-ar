@@ -20,6 +20,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -44,7 +45,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import pg.eti.arapp.catan.CatanBoardDetector;
 import pg.eti.arapp.databinding.ActivityCameraBinding;
+import pg.eti.arapp.detectortl.BufferBitmap;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -68,7 +71,6 @@ public class CameraActivity extends AppCompatActivity {
      * and a change of the status and navigation bar.
      */
     private static final int UI_ANIMATION_DELAY = 300;
-    private static final String TAG_WYKONAJ_ZDJECIE = "Robie zdjecie";
     private static final String TAG = "Create file";
     private final Handler mHideHandler = new Handler(Looper.myLooper());
     private View mContentView;
@@ -174,6 +176,22 @@ public class CameraActivity extends AppCompatActivity {
 
                     takePhoto(view);
                 } catch (Exception x){
+                }
+            }
+        });
+
+        binding.analyzeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CatanBoardDetector detector = new CatanBoardDetector();
+                Bitmap bmp = binding.viewFinder.getBitmap();
+                if(bmp != null) {
+                    Bitmap xd = detector.detectBoard(new BufferBitmap(binding.viewFinder.getBitmap())).toAndroidBitmap();
+                    if(xd == null) {
+                        Log.e("cv", "conversion to android bitmap not successful");
+                    } else {
+                        binding.analyzerOutputView.setImageBitmap(xd);
+                    }
                 }
             }
         });
@@ -304,6 +322,7 @@ public class CameraActivity extends AppCompatActivity {
                 .stream(requiredPermissions)
                 .allMatch((p) -> ContextCompat.checkSelfPermission(getBaseContext(), p) == PackageManager.PERMISSION_GRANTED);
     }
+
 
 
     private void toggle() {

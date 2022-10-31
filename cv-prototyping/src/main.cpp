@@ -5,144 +5,122 @@
 #include <catan/board_detection.hpp>
 #include <catan/image_correction.hpp>
 #include <catan/utility_opencv.hpp>
+#include <catan/board_ir.hpp>
+#include <catan/common_math.hpp>
+#include <catan/analysis_cells.hpp>
 
 #include <fmt/format.h>
 
-static constexpr float INV_255 = 1.0f / 255.0f;
-
-inline float sqDistUC3(cv::Vec3b a, cv::Vec3b b)
+double GetTime()
 {
-	cv::Vec3f af(a), bf(b);
-	af *= INV_255;
-	bf *= INV_255;
-
-	return (af[0]-bf[0])*(af[0]-bf[0]) + (af[1]-bf[1])*(af[1]-bf[1]) + (af[2]-bf[2])*(af[2]-bf[2]);
+	static auto t0 = std::chrono::high_resolution_clock::now();
+	auto dif = std::chrono::high_resolution_clock::now() - t0;
+	return 0.000000001 * std::chrono::duration_cast<std::chrono::nanoseconds>(dif).count();
 }
 
-cv::Vec3b ycrcbOf(cv::Vec3b bgr)
+
+template<>
+struct fmt::formatter<ctn::CellCoord>
 {
-	cv::Mat xd = cv::Mat::zeros(1,1,CV_8UC3);
-	xd.at<cv::Vec3b>(0,0) = bgr;
-	cv::cvtColor(xd, xd, cv::COLOR_BGR2YCrCb);
-	cv::Vec3b ret = xd.at<cv::Vec3b>(0,0);
-	return ret;
-}
-
-cv::Vec3b crcbOf(cv::Vec3b bgr)
-{
-	cv::Vec3b ret = ycrcbOf(bgr);
-	ret[0] = 0;
-	return ret;
-}
-
-float rating(float x)
-{
-    return 0.5f - std::atan(4.0f*x - 5) / 3.141591f;
-}
-
-cv::Mat spookyShit(cv::Mat warped)
-{
-	static constexpr float LUMINANCE_WEIGHT = 0.3f;
-
-	//cv::Vec3b shore = ycrcbOf({192, 170, 109});
-	cv::Vec3b sand = ycrcbOf({139, 179, 178});
-	cv::Vec3b gap = ycrcbOf({27, 59, 64});
-
-	//shore[0] *= LUMINANCE_WEIGHT;
-	sand[0] *= LUMINANCE_WEIGHT;
-
-	cv::Mat output = cv::Mat::zeros(warped.rows, warped.cols, warped.depth());
-
-	cv::Mat warpedCrCb = NEW_MAT(tmp) {cv::cvtColor(warped, tmp, cv::COLOR_BGR2YCrCb);};
-
-	for(int y=0; y<warped.rows; y++) {
-		cv::Vec3b* inRow = warpedCrCb.ptr<cv::Vec3b>(y);
-		uint8_t* outRow = output.ptr<uint8_t>(y);
-		for(int x=0; x<warped.cols; x++) {
-			//float k1 = rating(sqDistUC3(shore, inRow[x]) * 64.0f);
-
-			//float k2 = rating(sqDistUC3(gap, inRow[x]) * 128.0f) * 0.7f;
-			float k2 = 0;
-			inRow[x][0] *= LUMINANCE_WEIGHT;
-			float k1 = rating(sqDistUC3(sand, inRow[x]) * 128.0f);
-			
-			outRow[x] = std::max(k1, k2) * 255.0f;
-		}
+	template<typename ParseContext>
+	constexpr auto parse(ParseContext& ctx)
+	{
+		return ctx.begin();
 	}
-	return output;
-}
 
-float rateChunk(cv::Mat chunk)
-{
-	cv::Vec2i center {24,24};
-	float ret = 0;
-	for(int y=0; y<chunk.rows; y++) {
-		uint8_t* inRow = chunk.ptr<uint8_t>(y);
-		for(int x=0; x<chunk.cols; x++) {
-			if(cv::norm(cv::Vec2i{x,y} - center) < 10) {
-				ret += inRow[x];
-			}
-		}
+	template<typename FormatContext>
+	auto format(const ctn::CellCoord& x, FormatContext& ctx)
+	{
+		return fmt::format_to(ctx.out(), "({},{},{})", x.x,x.y,x.z);
 	}
-	return ret;
-}
+};
+
 
 int main()
 {
-	auto src = cv::imread("resources/sampleGlare.jpg");
+	auto src = cv::imread("resources/sample.jpg");
 	CatanBoardDetector detector {SEA_COLOR_YCBCR_6500K};
 
-	cv::Mat warped;
-	try {
-		warped = detector.findBoard(src).value();
-	} catch(std::bad_optional_access& ex) {
+	double t0,t1;
+	t0=GetTime();
+	auto warpedOpt = detector.findBoard(src);
+	if(!warpedOpt.has_value()) {
 		std::cerr << "error: board not found\n";
 		return 1;
 	}
+	cv::Mat warped = warpedOpt.value();
+	t1=GetTime();
 
-	ScreenCoordMapper mapper ({.center = {500,433}, .size = 150});
+	fmt::print("finding board: {:.6f} secs\n", t1-t0);
 
-	/*for(auto& c: GenerateFieldCoords(3)) {
-		cv::putText(warped, fmt::format("({},{},{})", c.x, c.y, c.z), mapper(c), cv::FONT_HERSHEY_PLAIN, 1, {255,255,255});
-	}*/
+	ctn::BoardIR boardIR = ctn::CreateBoardIR(warped);
+	cv::Mat cellMask = ctn::GenerateCellMask(50, 1000);
+	std::vector<std::pair<ctn::CellCoord, cv::Mat>> cells {boardIR.cells.begin(), boardIR.cells.end()};
 
-	//drawPoints(mapper(GenerateFieldCoords(2)), warped, {255,255,180});
+	cv::Mat maskU8 = NEW_MAT(tmp) {cv::cvtColor(cvutil::ToByte(cellMask), tmp, cv::COLOR_GRAY2BGR);};
 
-	cvutil::Window win1("warped board"), win2("chunk"), win3("proc", {.waitKeyOnExit=true});
+	std::array<std::string, 6> cellTypeNames = {
+		"desert", "fields", "forest", "hills", "mountains", "pasture"
+	};
 
-	std::vector<VertexCoord> vertexCoords = GenerateVertexCoords();
-	std::vector<VertexCoord> townVtxs, emptyVtxs;
-	auto ratings = spookyShit(warped);
+	std::array<cv::Mat, 6> refCells, refCells32;
+	
+	for(int i=0; i<refCells.size(); i++) {
+		refCells[i] = cv::imread(fmt::format("resources/cells/{}.jpg", cellTypeNames[i]));
+		cvmath::ApplyBin<cv::Vec3b>(refCells[i], maskU8, cvmath::Mask8UC3);
+		refCells32[i] = cvutil::ToFloat(refCells[i]);
+	}
+	ctn::ScreenCoordMapper mapper ({.center = {500,433}, .size = 150});
+	
+	t0=GetTime();
 
-	for (auto& c : vertexCoords) {
-		//cv::putText(warped, fmt::format("({},{},{})", c.origin.x, c.origin.y, c.origin.z), mapper(c), cv::FONT_HERSHEY_PLAIN, 1, { 255,255,255 });
-		auto m = mapper(c);
-
-		float rectSize = 48;
-
-		cv::Rect roi(m - cv::Point2d{0.5,0.5}*rectSize, cv::Size(rectSize, rectSize));
-		cv::Mat destinationROI = ratings(roi);
-
-		if(rateChunk(destinationROI) < 20000) {
-			townVtxs.push_back(c);
-		} else {
-			emptyVtxs.push_back(c);
+	for(auto& [coord, img]: boardIR.cells) {
+		cv::Mat maskedImg = cvmath::TransformBin<cv::Vec3b, cv::Vec3b>(img, maskU8, cvmath::Mask8UC3);
+		cv::Mat maskedImg32 = cvutil::ToFloat(maskedImg);
+		
+		std::array<float, 6> results;
+		results[0] = 10e40;
+		for(int i=1; i<refCells.size(); i++) {
+			cv::Mat sqDiff = cvmath::TransformBin<cv::Vec3f, float>(cvutil::convertToCrCb(maskedImg32), cvutil::convertToCrCb(refCells32[i]), cvmath::SquareDist);
+			results[i] = cv::sum(sqDiff)[0];
 		}
+
+		auto min = std::min_element(results.begin(), results.end());
+		int idx = min - results.begin();
+		if(coord == ctn::CellCoord{0,0,0}) {
+			idx = 0;
+			continue;
+		}
+
+
+
+		cv::Mat& ximg = img;
+		cv::Mat imgGray = NEW_MAT(tmp) {cv::cvtColor(ximg, tmp, cv::COLOR_BGR2GRAY);};
+		std::vector<cv::Vec3f> circles;
+		cv::HoughCircles(imgGray, circles, cv::HOUGH_GRADIENT, 1, 90, 100, 15, 21, 27);
+		
+		if(circles.size() == 1) {
+			double radius = circles[0][2];
+			cv::Point2d center {circles[0][0], circles[0][1]};
+			auto origin = mapper(coord) - cv::Point2d{65, 75};
+			cv::Point2d offset {radius, radius};
+
+			cv::Mat numberROI = img(cv::Rect(center - offset, center + offset)).clone();
+			cv::circle(warped, center+origin, radius, {255,0,255}, 1);
+
+			cv::imshow(fmt::format("numROI_{}", coord), numberROI);
+		}
+
+
+		cv::putText(warped, cellTypeNames[idx], mapper(coord), cv::FONT_HERSHEY_COMPLEX, 0.6, {0,255,0}, 2);
+
 	}
 
-	cvutil::drawPoints(mapper(townVtxs), warped, {.color={0,255,0}});
-	cvutil::drawPoints(mapper(emptyVtxs), warped, {.color={0,0,255}});
+	t1=GetTime();
+	fmt::print("classifying: {:.6f} secs\n", t1-t0);
+
+
+	cv::imshow("Warped board", warped);
 	
-
-	win1.show(warped);
-	win3.show(ratings);
-
-
-	//drawPoints(mapper(GenerateVertexCoords()), warped, {255,0,0});
-	
-	/*showScaled("Source", src);
-	showScaled("CrCb", crcb);
-	showScaled("sqDiff(CrCb, sea color)", sq);
-	showScaled("Threshold", thres);*/
-
+	cv::waitKey();
 }

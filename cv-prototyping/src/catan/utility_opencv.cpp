@@ -38,7 +38,32 @@ cv::Mat cvutil::convertToCrCb(cv::Mat image)
 	cv::cvtColor(image, ycrcb, cv::COLOR_BGR2YCrCb);
 	cv::Mat ch[3];
 	cv::split(ycrcb, ch);
-	ch[0] = cv::Mat::zeros(ch[0].rows, ch[0].cols, CV_8UC1);
+	ch[0] *= 0.0f;
 	cv::merge(ch, 3, ycrcb);
 	return ycrcb;
+}
+
+cv::Mat cvutil::ToFloat(const cv::Mat &input)
+{
+	return NEW_MAT(tmp) {input.convertTo(tmp, CV_32F, 1.0f / 255.0f);};
+}
+
+
+cv::Mat cvutil::ToByte(const cv::Mat &input)
+{
+	return NEW_MAT(tmp) {input.convertTo(tmp, CV_8U, 255);};
+}
+
+
+std::array<cv::Mat, 3> cvutil::SplitBGR(const cv::Mat& input)
+{
+	std::array<cv::Mat, 3> result;
+	cv::split(input, result.data());
+	return result;
+}
+cv::Mat cvutil::MergeBGR(const std::array<cv::Mat, 3>& bgr)
+{
+	cv::Mat output;
+	cv::merge(bgr.data(), 3, output);
+	return output;
 }

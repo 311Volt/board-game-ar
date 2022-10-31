@@ -44,6 +44,11 @@ namespace cvutil {
 
 	void drawPoints(const std::vector<cv::Point2d>& points, cv::Mat outImg, cfg::DrawPointsOptions options = {});
 	cv::Mat convertToCrCb(cv::Mat image);
+	cv::Mat ToFloat(const cv::Mat& input);
+	cv::Mat ToByte(const cv::Mat& input);
+
+	std::array<cv::Mat, 3> SplitBGR(const cv::Mat& input);
+	cv::Mat MergeBGR(const std::array<cv::Mat, 3>& bgr);
 }
 
 #define NEW_MAT(tmpName__) ::cvutil::dummy() + [&](cv::Mat& tmpName__)

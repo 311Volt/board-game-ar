@@ -71,9 +71,9 @@ namespace cvmath {
 		* 
 		* @tparam FragT Pixel type (uchar, float, Vec3b, etc...)
 		* @tparam FuncT Function type. Will be inferred.
-		* @param mat The matrix to be modified. Pixel format must match T.
+		* @param mat The matrix to be modified. Pixel format must match FragT.
 		* @param fn The function to be applied.
-		* @throws std::invalid_argument when mat.type() does not match T.
+		* @throws std::invalid_argument when mat.type() does not match FragT.
 		*/
 	template<MatFragment FragT, UnaryImageOp<FragT> FuncT>
 	void Apply(cv::Mat& mat, FuncT fn)
@@ -99,9 +99,9 @@ namespace cvmath {
 		* @tparam InFragT Input pixel type (uchar, float, Vec3b, etc...)
 		* @tparam OutFragT Output pixel type
 		* @tparam FuncT Function type. Will be inferred.
-		* @param mat The matrix to be processed. Pixel format must match T.
+		* @param mat The matrix to be processed. Pixel format must match InFragT.
 		* @param fn The function to be applied.
-		* @throws std::invalid_argument when mat.type() does not match T.
+		* @throws std::invalid_argument when mat.type() does not match InFragT.
 		*/
 	template<MatFragment InFragT, MatFragment OutFragT, UnaryImageFn<InFragT, OutFragT> FuncT>
 	inline CTN_FORCE_INLINE cv::Mat Transform(const cv::Mat& mat, FuncT fn)
@@ -125,12 +125,12 @@ namespace cvmath {
 	}
 
 	/**
-		* @brief Applies a binary operation to exery pixel mat1 and mat2. Stores the result in mat1.
+		* @brief Applies a binary operation to exery pixel of mat1 and mat2. Stores the result in mat1.
 		* 
 		* @tparam FragT Pixel type (uchar, float, Vec3b, etc...)
-		* @param mat The matrix to be modified. Pixel format must match T.
+		* @param mat The matrix to be modified. Pixel format must match InFragT.
 		* @param fn The function to be applied.
-		* @throws std::invalid_argument when mat.type() does not match T.
+		* @throws std::invalid_argument when matX.type() does not match InFragT.
 		* @throws std::invalid_argument when mat1 and mat2 differ in size.
 		*/
 	template<MatFragment FragT, BinaryImageOp<FragT> FnT>
@@ -157,7 +157,7 @@ namespace cvmath {
 	}
 
 	/**
-		* @brief Returns the result of applying a binary function to 
+		* @brief Returns the result of applying a binary function to each pixel of mat1 and mat2.
 		* 
 		* @tparam T Input pixel type (uchar, float, Vec3b, etc...)
 		* @param mat The matrix to be modified. Pixel format must match T.

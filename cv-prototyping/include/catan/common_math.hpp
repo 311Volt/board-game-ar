@@ -198,7 +198,7 @@ namespace cvmath {
 	}
 
 	template<int PercentX, int PercentY, int PercentZ>
-	inline float WeightedSquareDist(const cv::Vec3b a, const cv::Vec3f b)
+	inline float WeightedSquareDist(const cv::Vec3f a, const cv::Vec3f b)
 	{
 		static constexpr float wx = PercentX / 100.0f;
 		static constexpr float wy = PercentY / 100.0f;

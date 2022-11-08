@@ -43,11 +43,38 @@ cv::Mat cvutil::convertToCrCb(cv::Mat image)
 	return ycrcb;
 }
 
+cv::Mat cvutil::Convert(cv::Mat image, int code)
+{
+	return NEW_MAT(tmp) {
+		cv::cvtColor(image, tmp, code);
+	};
+}
+
 cv::Mat cvutil::ToFloat(const cv::Mat &input)
 {
 	return NEW_MAT(tmp) {input.convertTo(tmp, CV_32F, 1.0f / 255.0f);};
 }
 
+cvutil::MeanStdDev cvutil::MeanStdDevF32(cv::Mat a)
+{
+	if(a.type() != CV_32FC1) {
+		throw std::runtime_error("MeanStdDevF32 called with invalid Mat type");
+	}
+
+	cv::Scalar m, d;
+	cv::meanStdDev(a, m, d);
+	return {.mean = m[0], .stddev = d[0]};
+}
+
+std::array<cvutil::MeanStdDev, 3> cvutil::MeanStdDevBGR(cv::Mat bgr)
+{
+	std::array<cvutil::MeanStdDev, 3> ret;
+	auto split = SplitBGR(bgr);
+	for(int i=0; i<3; i++) {
+		ret[i] = MeanStdDevF32(split[i]);
+	}
+	return ret;
+}
 
 cv::Mat cvutil::ToByte(const cv::Mat &input)
 {

@@ -1,46 +1,23 @@
 #include <opencv2/opencv.hpp>
 
+#include <catan/analysis_settlements.hpp>
 #include <catan/utility_opencv.hpp>
+#include <catan/common_math.hpp>
 
 static constexpr float INV_255 = 1.0f / 255.0f;
-
-inline float sqDistUC3(cv::Vec3b a, cv::Vec3b b)
-{
-	cv::Vec3f af(a), bf(b);
-	af *= INV_255;
-	bf *= INV_255;
-
-	return (af[0]-bf[0])*(af[0]-bf[0]) + (af[1]-bf[1])*(af[1]-bf[1]) + (af[2]-bf[2])*(af[2]-bf[2]);
-}
-
-cv::Vec3b ycrcbOf(cv::Vec3b bgr)
-{
-	cv::Mat xd = cv::Mat::zeros(1,1,CV_8UC3);
-	xd.at<cv::Vec3b>(0,0) = bgr;
-	cv::cvtColor(xd, xd, cv::COLOR_BGR2YCrCb);
-	cv::Vec3b ret = xd.at<cv::Vec3b>(0,0);
-	return ret;
-}
-
-cv::Vec3b crcbOf(cv::Vec3b bgr)
-{
-	cv::Vec3b ret = ycrcbOf(bgr);
-	ret[0] = 0;
-	return ret;
-}
 
 float rating(float x)
 {
     return 0.5f - std::atan(4.0f*x - 5) / 3.141591f;
 }
 
-cv::Mat spookyShit(cv::Mat warped)
+cv::Mat FilterLikelyBuildings(cv::Mat warped)
 {
 	static constexpr float LUMINANCE_WEIGHT = 0.3f;
 
 	//cv::Vec3b shore = ycrcbOf({192, 170, 109});
-	cv::Vec3b sand = ycrcbOf({139, 179, 178});
-	cv::Vec3b gap = ycrcbOf({27, 59, 64});
+	cv::Vec3b sand = cvutil::YCrCbOf({139, 179, 178});
+	cv::Vec3b gap = cvutil::YCrCbOf({27, 59, 64});
 
 	//shore[0] *= LUMINANCE_WEIGHT;
 	sand[0] *= LUMINANCE_WEIGHT;
@@ -58,7 +35,8 @@ cv::Mat spookyShit(cv::Mat warped)
 			//float k2 = rating(sqDistUC3(gap, inRow[x]) * 128.0f) * 0.7f;
 			float k2 = 0;
 			inRow[x][0] *= LUMINANCE_WEIGHT;
-			float k1 = rating(sqDistUC3(sand, inRow[x]) * 128.0f);
+			
+			float k1 = rating(cvmath::SquareDist(cv::Vec3f(sand) * INV_255, cv::Vec3f(inRow[x]) * INV_255) * 128.0f);
 			
 			outRow[x] = std::max(k1, k2) * 255.0f;
 		}
@@ -79,4 +57,10 @@ float rateChunk(cv::Mat chunk)
 		}
 	}
 	return ret;
+}
+
+
+std::map<ctn::VertexCoord, ctn::Settlement> ctn::FindSettlements(const BoardIR& boardIR)
+{
+	return {};
 }

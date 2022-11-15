@@ -32,7 +32,7 @@ void cvutil::Window::show(cv::Mat img, cvutil::cfg::ShowOptions options)
 	}
 }
 
-cv::Mat cvutil::convertToCrCb(cv::Mat image)
+cv::Mat cvutil::ConvertToCrCb(cv::Mat image)
 {
 	cv::Mat ycrcb;
 	cv::cvtColor(image, ycrcb, cv::COLOR_BGR2YCrCb);
@@ -42,6 +42,23 @@ cv::Mat cvutil::convertToCrCb(cv::Mat image)
 	cv::merge(ch, 3, ycrcb);
 	return ycrcb;
 }
+
+cv::Vec3b cvutil::YCrCbOf(cv::Vec3b bgr)
+{
+	cv::Mat tmp = cv::Mat::zeros(1,1,CV_8UC3);
+	tmp.at<cv::Vec3b>(0,0) = bgr;
+	cv::cvtColor(tmp, tmp, cv::COLOR_BGR2YCrCb);
+	cv::Vec3b ret = tmp.at<cv::Vec3b>(0,0);
+	return ret;
+}
+
+cv::Vec3b cvutil::CrCbOf(cv::Vec3b bgr)
+{
+	cv::Vec3b ret = YCrCbOf(bgr);
+	ret[0] = 0;
+	return ret;
+}
+
 
 cv::Mat cvutil::Convert(cv::Mat image, int code)
 {

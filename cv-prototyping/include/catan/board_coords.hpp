@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <concepts>
+#include <fmt/format.h>
 
 namespace ctn {
 
@@ -76,6 +77,40 @@ namespace ctn {
 	std::vector<VertexCoord> GenerateVertexCoords();
 
 }
+
+
+template<>
+struct fmt::formatter<ctn::CellCoord>
+{
+	template<typename ParseContext>
+	constexpr auto parse(ParseContext& ctx)
+	{
+		return ctx.begin();
+	}
+
+	template<typename FormatContext>
+	auto format(const ctn::CellCoord& x, FormatContext& ctx)
+	{
+		return fmt::format_to(ctx.out(), "({},{},{})", x.x,x.y,x.z);
+	}
+};
+
+
+template<>
+struct fmt::formatter<ctn::VertexCoord>
+{
+	template<typename ParseContext>
+	constexpr auto parse(ParseContext& ctx)
+	{
+		return ctx.begin();
+	}
+
+	template<typename FormatContext>
+	auto format(const ctn::VertexCoord& x, FormatContext& ctx)
+	{
+		return fmt::format_to(ctx.out(), "({},{},{} / {})", x.origin.x,x.origin.y,x.origin.z,x.high ? "high" : "low");
+	}
+};
 
 
 #endif /* INCLUDE_CATAN_BOARD_COORDS */

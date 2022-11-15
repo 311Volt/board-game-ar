@@ -11,7 +11,7 @@ float rating(float x)
     return 0.5f - std::atan(4.0f*x - 5) / 3.141591f;
 }
 
-cv::Mat FilterLikelyBuildings(cv::Mat warped)
+cv::Mat FilterLikelyBuildings(const cv::Mat& warped)
 {
 	static constexpr float LUMINANCE_WEIGHT = 0.3f;
 
@@ -62,5 +62,36 @@ float rateChunk(cv::Mat chunk)
 
 std::map<ctn::VertexCoord, ctn::Settlement> ctn::FindSettlements(const BoardIR& boardIR)
 {
-	return {};
+	static cv::Vec3b sand = cvutil::YCrCbOf({127, 180, 181});
+
+	static cv::Vec3b cityRed = cvutil::YCrCbOf({75, 0, 146});
+	static cv::Vec3b cityBlue = cvutil::YCrCbOf({100, 52, 15});
+	static cv::Vec3b cityOrange = cvutil::YCrCbOf({25, 136, 208});
+
+	std::map<ctn::VertexCoord, ctn::Settlement> result;
+
+	for(const auto& [coord, corner]: boardIR.corners) {
+		auto cornerYCrCb = cvutil::Convert(corner, cv::COLOR_BGR2YCrCb);
+		auto rating = rateChunk(FilterLikelyBuildings(corner));
+		//fmt::print("rating: {}\n", rating);
+		if(rating < 3000) {
+
+			cv::Point center = {corner.cols/2, corner.rows/2};
+			float distRed = cvmath::WeightedSquareDist<30, 100, 100>(cornerYCrCb.at<cv::Vec3b>(center), cityRed);
+			float distBlue = cvmath::WeightedSquareDist<30, 100, 100>(cornerYCrCb.at<cv::Vec3b>(center), cityBlue);
+			float distOrange = cvmath::WeightedSquareDist<30, 100, 100>(cornerYCrCb.at<cv::Vec3b>(center), cityOrange);
+
+			float distances[3] = {distRed, distBlue, distOrange};
+			PlayerColor colors[3] = {PlayerColor::Red, PlayerColor::Blue, PlayerColor::Orange};
+
+			int idx = std::min_element(distances, distances+3) - distances;
+
+			result[coord] = {
+				.type=SettlementType::Settlement, 
+				.color=colors[idx]
+			};
+		}
+	}
+
+	return result;
 }

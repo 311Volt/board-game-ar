@@ -10,6 +10,17 @@ namespace ctn {
 		Orange = 2,
 		White = 3
 	};
+
+	inline cv::Scalar PlayerColorBGR(PlayerColor color)
+	{
+		switch (color) {
+			case PlayerColor::Red: return {0,0,255};
+			case PlayerColor::Blue: return {255,0,0};
+			case PlayerColor::Orange: return {0,127,255};
+			default: return {0,0,0};
+		}
+	}
+
 	enum class SettlementType: uint8_t {
 		Settlement = 0,
 		City = 1

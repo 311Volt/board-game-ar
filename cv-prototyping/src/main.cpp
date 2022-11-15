@@ -22,6 +22,10 @@ void DrawCellTypes(cv::Mat board, const ctn::BoardInfo& boardInfo)
 void DrawSettlements(cv::Mat board, const ctn::BoardInfo& boardInfo)
 {
 	ctn::ScreenCoordMapper mapper ({.center = {500,433}, .size = 150});
+
+	for(const auto& [coord, settlement]: boardInfo.settlements) {
+		cv::circle(board, mapper(coord), 9, ctn::PlayerColorBGR(settlement.color), -1);
+	}
 }
 
 

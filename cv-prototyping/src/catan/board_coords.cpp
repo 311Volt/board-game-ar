@@ -34,6 +34,11 @@ cv::Point2d ctn::ScreenCoordMapper::operator()(const VertexCoord& vtx)
 	static constexpr double r = 1.0 / std::numbers::sqrt3;
 	return (*this)(vtx.origin) + view.size * r * cis(vtx.high ? 30_deg : -30_deg);
 }
+cv::Point2d ctn::ScreenCoordMapper::operator()(const EdgeCoord& edge)
+{
+	static constexpr double r = 1.0 / std::numbers::sqrt3;
+	return (*this)(edge.origin) + view.size * r * cis(edge.side == 0 ? 0_deg : edge.side == -1 ? -60_deg : 60_deg);
+}
 
 
 std::vector<ctn::CellCoord> ctn::GenerateCellCoords(int maxDepth)
@@ -59,6 +64,24 @@ std::vector<ctn::VertexCoord> ctn::GenerateVertexCoords()
 		}
 		if(origin.x < 3 && origin.y > -3 && origin.z > -3) {
 			result.push_back(ctn::VertexCoord{.origin = origin, .high = false});
+		}
+	}
+	return result;
+}
+
+std::vector<ctn::EdgeCoord> ctn::GenerateEdgeCoords()
+{
+	auto fc = GenerateCellCoords(3);
+	std::vector<ctn::EdgeCoord> result;
+	for (const auto& origin : fc) {
+		if ((origin.x < 3 && origin.y < 3 && origin.z > -3 && origin.x > -3)) {
+			result.push_back(ctn::EdgeCoord{ .origin = origin, .side = 1 });
+		}
+		if (origin.x < 3 && origin.y > -3 && origin.z > -3 && origin.y < 3) {
+			result.push_back(ctn::EdgeCoord{ .origin = origin, .side = 0 });
+		}
+		if (origin.x < 3 && origin.y > -3 && origin.z > -3 && origin.z < 3) {
+			result.push_back(ctn::EdgeCoord{ .origin = origin, .side = -1 });
 		}
 	}
 	return result;

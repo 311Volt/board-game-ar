@@ -29,14 +29,21 @@ std::map<ctn::VertexCoord, cv::Mat> createCornerImages(cv::Mat warpedBoard, std:
 	return CreateImages(warpedBoard, cornerCoords, {72, 72});
 }
 
+std::map<ctn::EdgeCoord, cv::Mat> createEdgeImages(cv::Mat warpedBoard, std::span<ctn::EdgeCoord> edgeCoords)
+{
+	return CreateImages(warpedBoard, edgeCoords, {72, 144});
+}
+
 
 ctn::BoardIR ctn::CreateBoardIR(cv::Mat warpedBoard)
 {
 	std::vector<CellCoord> cellCoords = GenerateCellCoords(2);
 	std::vector<VertexCoord> cornerCoords = GenerateVertexCoords();
+	std::vector<EdgeCoord> edgeCoords = GenerateEdgeCoords();
 
 	return BoardIR {
 		.corners = createCornerImages(warpedBoard, cornerCoords),
-		.cells = createCellImages(warpedBoard, cellCoords)
+		.cells = createCellImages(warpedBoard, cellCoords),
+		.edges = createEdgeImages(warpedBoard, edgeCoords)
 	};
 }

@@ -38,8 +38,26 @@ namespace ctn {
 		}
 	};
 
+
+	/* 
+	* Uniquely describes each edge on a hexagonal grid and relates it
+	* to an "origin" cell, whose right side the edge belongs to.
+	*/
+	struct EdgeCoord {
+		CellCoord origin;
+		short side; // -1 - top, 1 - bottom, 0 - straight
+
+		inline auto operator<=>(const EdgeCoord& b) const
+		{
+			if (origin != b.origin) {
+				return origin <=> b.origin;
+			}
+			return side <=> b.side;
+		}
+	};
+
 	template<typename T>
-	concept CoordType = std::same_as<T, CellCoord> || std::same_as<T, VertexCoord>;
+	concept CoordType = std::same_as<T, CellCoord> || std::same_as<T, VertexCoord> || std::same_as<T, EdgeCoord>;
 
 
 	struct HexGridView {
@@ -59,6 +77,7 @@ namespace ctn {
 
 		cv::Point2d operator()(const CellCoord& cell);
 		cv::Point2d operator()(const VertexCoord& vtx);
+		cv::Point2d operator()(const EdgeCoord& vtx);
 
 		template<CoordType T>
 		std::vector<cv::Point2d> operator()(const std::vector<T>& v)
@@ -75,6 +94,7 @@ namespace ctn {
 
 	std::vector<CellCoord> GenerateCellCoords(int maxDepth);
 	std::vector<VertexCoord> GenerateVertexCoords();
+	std::vector<EdgeCoord> GenerateEdgeCoords();
 
 }
 

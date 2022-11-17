@@ -45,12 +45,12 @@ int main()
 	ctn::BoardIR boardIR = ctn::CreateBoardIR(warped);
 	
 	ctn::BoardInfo boardInfo = ctn::AnalyzeBoard(boardIR);
-
+	
 	cv::imshow("Warped board, YUV", cvutil::Convert(warped, cv::COLOR_BGR2YCrCb));
-
+	
 	DrawCellTypes(warped, boardInfo);
 	DrawSettlements(warped, boardInfo);
-
+	
 	cv::imshow("Warped board", warped);
 	cv::waitKey();
 }

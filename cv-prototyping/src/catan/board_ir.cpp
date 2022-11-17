@@ -26,7 +26,7 @@ std::map<ctn::CellCoord, cv::Mat> createCellImages(cv::Mat warpedBoard, std::spa
 
 std::map<ctn::VertexCoord, cv::Mat> createCornerImages(cv::Mat warpedBoard, std::span<ctn::VertexCoord> cornerCoords)
 {
-	return CreateImages(warpedBoard, cornerCoords, {48, 48});
+	return CreateImages(warpedBoard, cornerCoords, {72, 72});
 }
 
 

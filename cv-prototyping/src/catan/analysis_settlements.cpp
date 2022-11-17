@@ -11,7 +11,11 @@ float rating(float x)
     return 0.5f - std::atan(4.0f*x - 5) / 3.141591f;
 }
 
-cv::Mat FilterLikelyBuildings(const cv::Mat& warped)
+/*
+ * transforms the input image so that darker pixels on the output
+ * represent where a building is likely to be
+ */
+cv::Mat BuildingInverseLikelihood(const cv::Mat& warped)
 {
 	static constexpr float LUMINANCE_WEIGHT = 0.3f;
 
@@ -46,7 +50,7 @@ cv::Mat FilterLikelyBuildings(const cv::Mat& warped)
 
 float rateChunk(cv::Mat chunk)
 {
-	cv::Vec2i center {24,24};
+	cv::Vec2i center {chunk.cols/2, chunk.rows/2};
 	float ret = 0;
 	for(int y=0; y<chunk.rows; y++) {
 		uint8_t* inRow = chunk.ptr<uint8_t>(y);
@@ -59,6 +63,20 @@ float rateChunk(cv::Mat chunk)
 	return ret;
 }
 
+cv::Mat IsolateBuilding(const cv::Mat& corner, cv::Vec3b targetColor)
+{
+	auto cornerYCrCb = cvutil::Convert(corner, cv::COLOR_BGR2YCrCb);
+	return cvmath::TransformBin<cv::Vec3b, cv::Vec3b>(
+		corner, cornerYCrCb, 
+		[&targetColor](cv::Vec3b pixel, cv::Vec3b pixelYCrCb) {
+			float val = cvmath::WeightedSquareDist<0,100,100>(pixelYCrCb, targetColor);
+			if(val < 1600) {
+				return pixel;
+			}
+			return cv::Vec3b{0, 0, 0};
+		}
+	);
+}
 
 std::map<ctn::VertexCoord, ctn::Settlement> ctn::FindSettlements(const BoardIR& boardIR)
 {
@@ -72,19 +90,26 @@ std::map<ctn::VertexCoord, ctn::Settlement> ctn::FindSettlements(const BoardIR& 
 
 	for(const auto& [coord, corner]: boardIR.corners) {
 		auto cornerYCrCb = cvutil::Convert(corner, cv::COLOR_BGR2YCrCb);
-		auto rating = rateChunk(FilterLikelyBuildings(corner));
+		auto rating = rateChunk(BuildingInverseLikelihood(corner));
 		//fmt::print("rating: {}\n", rating);
+
+		//cv::imshow(fmt::format("bruh{}",coord), corner);
+
 		if(rating < 3000) {
 
 			cv::Point center = {corner.cols/2, corner.rows/2};
-			float distRed = cvmath::WeightedSquareDist<30, 100, 100>(cornerYCrCb.at<cv::Vec3b>(center), cityRed);
-			float distBlue = cvmath::WeightedSquareDist<30, 100, 100>(cornerYCrCb.at<cv::Vec3b>(center), cityBlue);
-			float distOrange = cvmath::WeightedSquareDist<30, 100, 100>(cornerYCrCb.at<cv::Vec3b>(center), cityOrange);
+			float distRed = cvmath::WeightedSquareDist<0, 100, 100>(cornerYCrCb.at<cv::Vec3b>(center), cityRed);
+			float distBlue = cvmath::WeightedSquareDist<0, 100, 100>(cornerYCrCb.at<cv::Vec3b>(center), cityBlue);
+			float distOrange = cvmath::WeightedSquareDist<0, 100, 100>(cornerYCrCb.at<cv::Vec3b>(center), cityOrange);
 
 			float distances[3] = {distRed, distBlue, distOrange};
 			PlayerColor colors[3] = {PlayerColor::Red, PlayerColor::Blue, PlayerColor::Orange};
+			cv::Vec3b crcbColors[3] = {cityRed, cityBlue, cityOrange};
 
 			int idx = std::min_element(distances, distances+3) - distances;
+
+			//auto isolated = IsolateBuilding(corner, crcbColors[idx]);
+			//cv::imshow(fmt::format("bruh1{}", coord), isolated);
 
 			result[coord] = {
 				.type=SettlementType::Settlement, 

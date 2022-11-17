@@ -1,0 +1,19 @@
+"C:\Program Files\JetBrains\CLion 2022.1.3\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - MinGW Makefiles" -S D:\Studia\PracaInzynierska\board-game-ar\cv-prototyping -B D:\Studia\PracaInzynierska\board-game-ar\cv-prototyping\cmake-build-debug
+CMake Error at CMakeLists.txt:5 (find_package):
+  By not providing "Findfmt.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "fmt", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "fmt" with any of
+  the following names:
+
+    fmtConfig.cmake
+    fmt-config.cmake
+
+  Add the installation prefix of "fmt" to CMAKE_PREFIX_PATH or set "fmt_DIR"
+  to a directory containing one of the above files.  If "fmt" provides a
+  separate development package or SDK, be sure it has been installed.
+
+
+-- Configuring incomplete, errors occurred!
+See also "D:/Studia/PracaInzynierska/board-game-ar/cv-prototyping/cmake-build-debug/CMakeFiles/CMakeOutput.log".

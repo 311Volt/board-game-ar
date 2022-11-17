@@ -1,9 +1,11 @@
 package butowska.anna.test2;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -15,6 +17,7 @@ import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
+import com.google.ar.sceneform.ux.TransformableNode;
 
 import butowska.anna.test2.databinding.FragmentLiveCameraBinding;
 
@@ -35,15 +38,10 @@ public class LiveCameraFragment extends Fragment {// implements FragmentOnAttach
 
         binding = FragmentLiveCameraBinding.inflate(inflater, container, false);
 
-        return binding.getRoot();
-    }
+        arFragment = (ArFragment) getChildFragmentManager().findFragmentById(R.id.ar_fragment);
+        arFragment.setOnTapPlaneGlbModel("info_board.glb");
 
-    private void setUpPlane() {
-        arFragment.setOnTapArPlaneListener((((hitResult, plane, motionEvent) -> {
-            Anchor anchor = hitResult.createAnchor();
-            AnchorNode anchorNode = new AnchorNode(anchor);
-            anchorNode.setParent(arFragment.getArSceneView().getScene());
-        })));
+        return binding.getRoot();
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {

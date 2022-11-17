@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="Gradle: androidx.camera:camera-video:1.1.0@aar">
+    <ANNOTATIONS>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/80c26b82e339ddb8b775d9e2c5642080/transformed/camera-video-1.1.0/annotations.zip!/" />
+    </ANNOTATIONS>
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/80c26b82e339ddb8b775d9e2c5642080/transformed/camera-video-1.1.0/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/80c26b82e339ddb8b775d9e2c5642080/transformed/camera-video-1.1.0/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/80c26b82e339ddb8b775d9e2c5642080/transformed/camera-video-1.1.0/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/androidx.camera/camera-video/1.1.0/eb9874579b379ce185eb923291c4830bc1320a77/camera-video-1.1.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

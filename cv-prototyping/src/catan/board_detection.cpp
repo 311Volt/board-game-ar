@@ -73,10 +73,8 @@ CatanBoardDetector::CatanBoardDetector(cv::Vec3f seaColor)
 
 std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 {
-
 	cv::Mat crcb = cvutil::ConvertToCrCb(photo);
-	cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_6500K);
-	//cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_3400K);
+	cv::Mat sq = squareDist(crcb, seaColor);
 	
 	cv::Mat thres = NEW_MAT(tmp) {cv::threshold(sq, tmp, 20, 255, cv::THRESH_BINARY_INV);};
 	

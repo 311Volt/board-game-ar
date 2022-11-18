@@ -29,6 +29,12 @@ void DrawSettlements(cv::Mat board, const ctn::BoardInfo& boardInfo)
 	}
 }
 
+double GetTime()
+{
+	static auto t0 = std::chrono::high_resolution_clock::now();
+	auto t1 = std::chrono::high_resolution_clock::now();
+	return 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t1-t0).count();
+}
 
 int main()
 {
@@ -41,6 +47,11 @@ int main()
 		return 1;
 	}
 	cv::Mat warped = warpedOpt.value();
+
+	double t0 = GetTime();
+	cv::imshow("mask2", MaskBuildingsAlternative(warped));
+	double t1 = GetTime();
+	fmt::print("masking took {:.6f} secs\n", t1-t0);
 
 	ctn::BoardIR boardIR = ctn::CreateBoardIR(warped);
 	

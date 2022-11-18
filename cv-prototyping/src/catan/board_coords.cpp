@@ -36,7 +36,7 @@ cv::Point2d ctn::ScreenCoordMapper::operator()(const VertexCoord& vtx)
 }
 cv::Point2d ctn::ScreenCoordMapper::operator()(const EdgeCoord& edge)
 {
-	static constexpr double r = 0.9 / std::numbers::sqrt3;
+	static constexpr double r = 0.5;
 	return (*this)(edge.origin) + view.size * r * cis(edge.side * 60_deg);
 }
 

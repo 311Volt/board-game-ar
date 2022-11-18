@@ -124,6 +124,7 @@ namespace cvmath {
 		return output;
 	}
 
+
 	/**
 		* @brief Applies a binary operation to exery pixel of mat1 and mat2. Stores the result in mat1.
 		* 

@@ -72,6 +72,11 @@ cv::Mat cvutil::ToFloat(const cv::Mat &input)
 	return NEW_MAT(tmp) {input.convertTo(tmp, CV_32F, 1.0f / 255.0f);};
 }
 
+cv::Mat cvutil::ToByte(const cv::Mat &input)
+{
+	return NEW_MAT(tmp) {input.convertTo(tmp, CV_8U, 255);};
+}
+
 cvutil::MeanStdDev cvutil::MeanStdDevF32(cv::Mat a)
 {
 	if(a.type() != CV_32FC1) {
@@ -93,11 +98,6 @@ std::array<cvutil::MeanStdDev, 3> cvutil::MeanStdDevBGR(cv::Mat bgr)
 	return ret;
 }
 
-cv::Mat cvutil::ToByte(const cv::Mat &input)
-{
-	return NEW_MAT(tmp) {input.convertTo(tmp, CV_8U, 255);};
-}
-
 
 std::array<cv::Mat, 3> cvutil::SplitBGR(const cv::Mat& input)
 {
@@ -110,4 +110,30 @@ cv::Mat cvutil::MergeBGR(const std::array<cv::Mat, 3>& bgr)
 	cv::Mat output;
 	cv::merge(bgr.data(), 3, output);
 	return output;
+}
+
+cv::Rect cvutil::SquaredRect(cv::Rect rect)
+{
+	cv::Point2f center = {rect.x + rect.width/2.f, rect.y + rect.height/2.f};
+	float len = std::max(rect.width, rect.height);
+	cv::Point2f dsize = {len, len};
+	return {center - dsize/2, center + dsize/2};
+}
+
+
+cv::Mat cvutil::CropRotatedRect(cv::Mat img, cv::RotatedRect roi)
+{
+	cv::Mat croppedBR = img(SquaredRect(roi.boundingRect()));
+
+	int crbLength = std::max(croppedBR.cols, croppedBR.rows);
+
+	cv::Size2f center = {croppedBR.cols/2.0f, croppedBR.rows/2.0f};
+	auto rot = cv::getRotationMatrix2D(center, roi.angle, 1.0);
+
+	cv::Mat croppedRotatedBR;
+	cv::warpAffine(croppedBR, croppedRotatedBR, rot, {crbLength, crbLength});
+	return croppedRotatedBR(cv::Rect{
+		cv::Point2i{center - roi.size/2.f}, 
+		cv::Point2i{center + roi.size/2.f}
+	});
 }

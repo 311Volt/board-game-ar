@@ -58,6 +58,8 @@ namespace cvutil {
 	MeanStdDev MeanStdDevF32(cv::Mat a);
 	std::array<cvutil::MeanStdDev, 3> MeanStdDevBGR(cv::Mat bgr);
 
+	cv::Rect SquaredRect(cv::Rect rect);
+	cv::Mat CropRotatedRect(cv::Mat img, cv::RotatedRect roi);
 
 	std::array<cv::Mat, 3> SplitBGR(const cv::Mat& input);
 	cv::Mat MergeBGR(const std::array<cv::Mat, 3>& bgr);

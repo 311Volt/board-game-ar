@@ -128,7 +128,24 @@ struct fmt::formatter<ctn::VertexCoord>
 	template<typename FormatContext>
 	auto format(const ctn::VertexCoord& x, FormatContext& ctx)
 	{
-		return fmt::format_to(ctx.out(), "({},{},{} / {})", x.origin.x,x.origin.y,x.origin.z,x.high ? "high" : "low");
+		return fmt::format_to(ctx.out(), "({},{},{} {})", x.origin.x,x.origin.y,x.origin.z,x.high ? "high" : "low");
+	}
+};
+
+
+template<>
+struct fmt::formatter<ctn::EdgeCoord>
+{
+	template<typename ParseContext>
+	constexpr auto parse(ParseContext& ctx)
+	{
+		return ctx.begin();
+	}
+
+	template<typename FormatContext>
+	auto format(const ctn::EdgeCoord& x, FormatContext& ctx)
+	{
+		return fmt::format_to(ctx.out(), "({},{},{} side={})", x.origin.x,x.origin.y,x.origin.z,x.side);
 	}
 };
 

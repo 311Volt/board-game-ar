@@ -1,4 +1,5 @@
 #include <catan/board_ir.hpp>
+#include <catan/utility_opencv.hpp>
 
 #include <span>
 
@@ -31,7 +32,16 @@ std::map<ctn::VertexCoord, cv::Mat> createCornerImages(cv::Mat warpedBoard, std:
 
 std::map<ctn::EdgeCoord, cv::Mat> createEdgeImages(cv::Mat warpedBoard, std::span<ctn::EdgeCoord> edgeCoords)
 {
-	return CreateImages(warpedBoard, edgeCoords, {72, 144});
+	ctn::ScreenCoordMapper mapper ({.center = {500,433}, .size = 150});
+
+	std::map<ctn::EdgeCoord, cv::Mat> ret;
+	for(const auto& coord: edgeCoords) {
+		auto center = mapper(coord);
+		cv::Size2f rectSize = {24, 72};
+		float angle = -60.f * coord.side;
+		ret[coord] = cvutil::CropRotatedRect(warpedBoard, cv::RotatedRect{center, rectSize, angle});
+	}
+	return ret;
 }
 
 
@@ -41,9 +51,15 @@ ctn::BoardIR ctn::CreateBoardIR(cv::Mat warpedBoard)
 	std::vector<VertexCoord> cornerCoords = GenerateVertexCoords();
 	std::vector<EdgeCoord> edgeCoords = GenerateEdgeCoords();
 
+	auto bruh =  createEdgeImages(warpedBoard, edgeCoords);
+	for(const auto& [coord, edge]: bruh) {
+		cv::imshow(fmt::format("edge at {}", coord), edge);
+	}
+
 	return BoardIR {
 		.corners = createCornerImages(warpedBoard, cornerCoords),
 		.cells = createCellImages(warpedBoard, cellCoords),
 		.edges = createEdgeImages(warpedBoard, edgeCoords)
 	};
+
 }

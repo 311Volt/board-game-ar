@@ -45,8 +45,14 @@ int main()
 	ctn::BoardIR boardIR = ctn::CreateBoardIR(warped);
 	
 	ctn::BoardInfo boardInfo = ctn::AnalyzeBoard(boardIR);
-	
-	cv::imshow("Warped board, YUV", cvutil::Convert(warped, cv::COLOR_BGR2YCrCb));
+
+	cv::RotatedRect sample {{290.f, 150.f}, {30.f, 90.f}, -20.f};
+	cv::Point2f rrp[4];
+	sample.points(rrp);
+	for(int i=0; i<4; i++) {
+		cv::line(warped, rrp[(i)%4], rrp[(i+1)%4], {0,255,0});
+	}
+	cv::imshow("bruh", cvutil::CropRotatedRect(warped, sample));
 	
 	DrawCellTypes(warped, boardInfo);
 	DrawSettlements(warped, boardInfo);

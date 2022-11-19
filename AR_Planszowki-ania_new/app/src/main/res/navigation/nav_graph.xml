@@ -33,6 +33,9 @@
         <action
             android:id="@+id/action_SecondFragment_to_liveCameraFragment"
             app:destination="@id/liveCameraFragment" />
+        <action
+            android:id="@+id/action_SecondFragment_to_ARActivity"
+            app:destination="@id/ARActivity" />
     </fragment>
     <fragment
         android:id="@+id/larpsFragment"
@@ -61,4 +64,9 @@
             android:id="@+id/action_liveCameraFragment_to_SecondFragment"
             app:destination="@id/SecondFragment" />
     </fragment>
+    <activity
+        android:id="@+id/ARActivity"
+        android:name="butowska.anna.test2.ARActivity"
+        android:label="activity_aractivity"
+        tools:layout="@layout/activity_aractivity" />
 </navigation>

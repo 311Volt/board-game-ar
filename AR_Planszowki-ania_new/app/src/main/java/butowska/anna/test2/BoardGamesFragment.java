@@ -79,7 +79,7 @@ public class BoardGamesFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 NavHostFragment.findNavController(BoardGamesFragment.this)
-                        .navigate(R.id.action_SecondFragment_to_liveCameraFragment);
+                        .navigate(R.id.action_SecondFragment_to_ARActivity);
             }
         });
     }

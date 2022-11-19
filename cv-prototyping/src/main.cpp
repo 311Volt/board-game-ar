@@ -4,6 +4,7 @@
 #include <catan/board_detection.hpp>
 #include <catan/analysis.hpp>
 #include <catan/utility_opencv.hpp>
+#include <catan/image_correction.hpp> //TODO delete this #include
 
 #include <fmt/format.h>
 
@@ -38,7 +39,7 @@ double GetTime()
 
 int main()
 {
-	auto src = cv::imread("resources/sample.jpg");
+	auto src = cv::imread("resources/sample1.jpg");
 	CatanBoardDetector detector {SEA_COLOR_YCBCR_6500K};
 
 	auto warpedOpt = detector.findBoard(src);
@@ -49,9 +50,18 @@ int main()
 	cv::Mat warped = warpedOpt.value();
 
 	double t0 = GetTime();
-	cv::imshow("mask2", MaskBuildingsAlternative(warped));
+	cv::Mat warpedBlurred = NEW_MAT(tmp) {cv::medianBlur(warped, tmp, 3);};
+	cv::imshow("mask2", MaskBuildingsAlternative(warpedBlurred));
 	double t1 = GetTime();
 	fmt::print("masking took {:.6f} secs\n", t1-t0);
+
+	cv::Mat warpMtx = FindAlignment(IsolateDarkEdges(warped), GenerateReferenceEdgeThres());
+	cv::Mat warped1;
+	cv::warpAffine(warped, warped1, warpMtx, warped.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
+	warped = warped1;
+
+
+	cv::imshow("warped1", warped1);
 
 	ctn::BoardIR boardIR = ctn::CreateBoardIR(warped);
 	

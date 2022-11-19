@@ -55,6 +55,7 @@ namespace cvutil {
 	cv::Mat ToByte(const cv::Mat& input);
 	cv::Vec3b YCrCbOf(cv::Vec3b bgr);
 	cv::Vec3b CrCbOf(cv::Vec3b bgr);
+	int SumOfChannels(cv::Vec3b bgr);
 	MeanStdDev MeanStdDevF32(cv::Mat a);
 	std::array<cvutil::MeanStdDev, 3> MeanStdDevBGR(cv::Mat bgr);
 

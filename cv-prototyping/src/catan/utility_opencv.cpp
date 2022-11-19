@@ -32,6 +32,11 @@ void cvutil::Window::show(cv::Mat img, cvutil::cfg::ShowOptions options)
 	}
 }
 
+int cvutil::SumOfChannels(cv::Vec3b bgr)
+{
+	return (int)bgr[0] + (int)bgr[1] + (int)bgr[2];
+}
+
 cv::Mat cvutil::ConvertToCrCb(cv::Mat image)
 {
 	cv::Mat ycrcb;

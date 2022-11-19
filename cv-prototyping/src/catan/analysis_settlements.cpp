@@ -26,9 +26,7 @@ std::vector<cv::Vec3b> CreateSpectrum(cv::Mat inImage, cv::Vec3b maskColor, int 
 		}
 	}
 
-	static const auto lum = [](const cv::Vec3b& a) -> int32_t {
-		return (int)a[0] + (int)a[1] + (int)a[2];
-	};
+	static const auto lum = cvutil::SumOfChannels;
 	static const auto lumComp = [](const cv::Vec3b& a, const cv::Vec3b& b){
 		return lum(a) < lum(b);
 	};

@@ -54,6 +54,8 @@ namespace ctn {
 			}
 			return side <=> b.side;
 		}
+
+		std::pair<VertexCoord, VertexCoord> asVertexCoordPair() const;
 	};
 
 	template<typename T>

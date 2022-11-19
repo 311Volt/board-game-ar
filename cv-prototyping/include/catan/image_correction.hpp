@@ -5,6 +5,8 @@
 
 
 cv::Mat getPerspectiveCorrectionMatrix(const std::vector<cv::Point>& points);
-
+cv::Mat GenerateReferenceEdgeThres();
+cv::Mat FindAlignment(cv::Mat actualEdges, cv::Mat idealEdges);
+cv::Mat IsolateDarkEdges(cv::Mat input);
 
 #endif /* INCLUDE_CATAN_IMAGE_CORRECTION */

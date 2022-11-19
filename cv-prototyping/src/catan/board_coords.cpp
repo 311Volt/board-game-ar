@@ -15,6 +15,20 @@ long double operator""_deg(unsigned long long x)
 	return x * std::numbers::pi / 180.0;
 }
 
+std::pair<ctn::VertexCoord, ctn::VertexCoord> ctn::EdgeCoord::asVertexCoordPair() const
+{
+	ctn::VertexCoord ret[4];
+	ctn::CellCoord origins[3] = {
+		{origin.x, origin.y-1, origin.z+1},
+		{origin.x, origin.y, origin.z},
+		{origin.x-1, origin.y+1, origin.z}
+	};
+	for(int i=0; i<4; i++) {
+		ret[i] = {.origin = origins[(i+1)/2], .high = ((i&1) == 0)};
+	}
+	return std::make_pair(ret[side+1], ret[side+2]);
+}
+
 ctn::ScreenCoordMapper::ScreenCoordMapper(const HexGridView& view)
 	: view {view}
 {

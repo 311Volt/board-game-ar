@@ -267,6 +267,9 @@ public class ARActivity extends AppCompatActivity {
                     TransformableNode model = new TransformableNode(arFragment.getTransformationSystem());
                     model.setParent(anchorNode);
                     model.setRenderable(renderable);
+                    model.getScaleController().setMinScale(2.0f);
+                    model.getScaleController().setMaxScale(3.0f);
+                    model.setLocalScale(new Vector3(2.5f, 2.5f, 2.5f));
                     model.select();
 
                     FilamentAsset filamentAsset = model.getRenderableInstance().getFilamentAsset();

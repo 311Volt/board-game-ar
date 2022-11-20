@@ -36,6 +36,16 @@ void DrawSettlements(cv::Mat board, const ctn::BoardInfo& boardInfo)
 	}
 }
 
+void DrawRoads(cv::Mat board, const ctn::BoardInfo& boardInfo)
+{
+	ctn::ScreenCoordMapper mapper ({.center = {500,433}, .size = 150});
+
+	for(const auto& [coord, road]: boardInfo.roads) {
+		cv::circle(board, mapper(coord), 7, {255,255,255}, -1);
+		cv::circle(board, mapper(coord), 4, ctn::PlayerColorBGR(road.color), -1);
+	}
+}
+
 double GetTime()
 {
 	static auto t0 = std::chrono::high_resolution_clock::now();
@@ -55,11 +65,11 @@ int main()
 	}
 	cv::Mat warped = warpedOpt.value();
 
-	// double t0 = GetTime();
-	// cv::Mat warpedBlurred = NEW_MAT(tmp) {cv::medianBlur(warped, tmp, 3);};
-	// cv::imshow("mask2", CreateStructureMask(warpedBlurred, {0,0}));
-	// double t1 = GetTime();
-	// fmt::print("masking took {:.6f} secs\n", t1-t0);
+	double t0 = GetTime();
+	cv::Mat warpedBlurred = NEW_MAT(tmp) {cv::medianBlur(warped, tmp, 3);};
+	cv::imshow("mask2", CreateStructureMask(warpedBlurred, {0,0}));
+	double t1 = GetTime();
+	fmt::print("masking took {:.6f} secs\n", t1-t0);
 
 
 	cv::Mat warpMtx = FindAlignment(IsolateDarkEdges(warped), GenerateReferenceEdgeThres());
@@ -77,6 +87,7 @@ int main()
 
 	DrawCellTypes(warped, boardInfo);
 	DrawSettlements(warped, boardInfo);
+	DrawRoads(warped, boardInfo);
 	
 	cv::imshow("Warped board", warped);
 	cv::waitKey();

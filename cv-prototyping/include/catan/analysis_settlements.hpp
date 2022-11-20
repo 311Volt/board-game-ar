@@ -36,7 +36,7 @@ namespace ctn {
 	};
 
 	std::map<VertexCoord, Settlement> FindSettlements(const BoardIR& boardIR);
-	//std::map<EdgeCoord, Road> FindRoads(const BoardIR& boardIR);
+	std::map<EdgeCoord, Road> FindRoads(const BoardIR& boardIR);
 };
 
 cv::Mat CreateStructureMask(const cv::Mat& warped, cv::Vec2f relativeCenter); //TODO DECLARATION FOR DEBUGGING ONLY - REMOVE LATER

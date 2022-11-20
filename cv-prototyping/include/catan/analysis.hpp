@@ -11,7 +11,7 @@ namespace ctn {
 		std::map<CellCoord, std::string> cellTypes;
 		std::map<CellCoord, int> cellNumbers;
 		std::map<VertexCoord, Settlement> settlements;
-		//std::map<EdgeCoord, Road> roads;
+		std::map<EdgeCoord, Road> roads;
 		CellCoord robberPosition;
 	};
 

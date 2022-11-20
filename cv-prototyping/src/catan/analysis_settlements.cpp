@@ -12,33 +12,33 @@ float rating(float x)
 }
 
 
+enum class BuildingColor: char {
+	Blue=0, Red=1, Orange=2, None=3, Unknown=4
+};
+
+cv::Vec3b BuildingColors1Hot[4] = {
+	{255,0,0}, {0,255,0}, {0,0,255}, {0,0,0}
+};
+
 class MinDistThresLookupTable {
 
-	//TODO BSP of the first 9 address bits to quickly discard large areas
-
-	enum {
-		False = 0,
-		True = 1,
-		Unknown = 2
-	};
-
-	std::vector<char> data;
-	std::function<bool(cv::Vec3b)> fn;
+	std::vector<BuildingColor> data;
+	std::function<BuildingColor(cv::Vec3b)> fn;
 
 public:
-	MinDistThresLookupTable(std::function<bool(cv::Vec3b)> fn)
+	MinDistThresLookupTable(std::function<BuildingColor(cv::Vec3b)> fn)
 		: fn(fn)
 	{
-		data = std::vector<char>(32*32*32, Unknown);
+		data = std::vector<BuildingColor>(32*32*32, BuildingColor::Unknown);
 	}
 
-	bool operator()(cv::Vec3b v)
+	BuildingColor operator()(cv::Vec3b v)
 	{
 		int ab = v[0] >> 3;
 		int ag = v[1] >> 3;
 		int ar = v[2] >> 3;
 		int addr = ab + (ag<<5) + (ar<<10);
-		if(data[addr] == Unknown) {
+		if(data[addr] == BuildingColor::Unknown) {
 			data[addr] = fn(v);
 		}
 		return data[addr];
@@ -93,22 +93,27 @@ std::vector<cv::Vec3b> CreateSpectrum(cv::Mat inImage, cv::Vec3b maskColor, int 
 	return finalAverages;
 }
 
-bool PlayerStructureTest(cv::Vec3b pixel)
+BuildingColor PlayerStructureTest(cv::Vec3b pixel)
 {
-	static auto blueSpectrum = CreateSpectrum(cv::imread("resources/elements/blue.png"), {0,0,0}, 10);
-	static auto redSpectrum = CreateSpectrum(cv::imread("resources/elements/red.png"), {0,0,0}, 10);
-	static auto orangeSpectrum = CreateSpectrum(cv::imread("resources/elements/orange.png"), {0,0,0}, 10);
+	static std::vector<std::vector<cv::Vec3b>> spectrum = {
+		CreateSpectrum(cv::imread("resources/elements/blue.png"), {0,0,0}, 10),
+		CreateSpectrum(cv::imread("resources/elements/red.png"), {0,0,0}, 10),
+		CreateSpectrum(cv::imread("resources/elements/orange.png"), {0,0,0}, 10)
+	};
 
 	float minDist = 10e8;
+	BuildingColor result = BuildingColor::None;
 
-	for(auto ref: blueSpectrum) 
-		minDist = std::min(minDist, cvmath::SquareDist(pixel, ref));
-	for(auto ref: redSpectrum)  
-		minDist = std::min(minDist, cvmath::SquareDist(pixel, ref));
-	for(auto ref: orangeSpectrum) 
-		minDist = std::min(minDist, cvmath::SquareDist(pixel, ref));
-	
-	return minDist > 600;
+	for(int i=0; i<spectrum.size(); i++) {
+		for(auto ref: spectrum[i]) {
+			auto dist = cvmath::SquareDist(pixel, ref);
+			if(dist < minDist) {
+				result = static_cast<BuildingColor>(i);
+				minDist = dist;
+			}
+		}
+	}
+	return minDist > 600 ? BuildingColor::None : result;
 }
 
 void ErosionDilationCycle(cv::Mat& img)
@@ -140,40 +145,39 @@ cv::Mat CreateStructureMask(const cv::Mat& input, cv::Vec2f relativeCenter)
 				outRow[x] = {};
 				continue;
 			}
+			auto colorResult = static_cast<char>(lut(inRow[x]));
 
-			if(lut(inRow[x]) || sqDist > 150000) {
+			if(colorResult >= 3 || sqDist > 150000) {
 				outRow[x] = {};
+			} else if(colorResult < 3) {
+				outRow[x] = BuildingColors1Hot[colorResult];
 			} else {
-				outRow[x] = {255, 255, 255};
+				outRow[x] = {};
 			}
 		}
 	}
 
 	for(int i=0; i<5; i++) {
 		ErosionDilationCycle(output);
-		
 	}
 	cv::medianBlur(output, output, 5);
 
 	return output;
 }
 
-float RateCornerMask(cv::Mat corner)
+std::array<float, 3> RateCornerMask(cv::Mat corner)
 {
-	float result = 0;
+	cv::Vec3f result = 0;
 	cv::Vec2f center = {corner.cols/2.f, corner.rows/2.f};
 	for(int y=0; y<corner.rows; y++) {
 		cv::Vec3b* inRow = corner.ptr<cv::Vec3b>(y);
 		for(int x=0; x<corner.cols; x++) {
-			if(inRow[x][0] == 0) {
-				continue;
-			}
 			cv::Vec2f position(x, y);
 			float distFromCenter = cv::norm(position - center);
-			result += 1.0f / (1.0f + distFromCenter);
+			result += cv::Vec3f(inRow[x]) * (1.0f / (1.0f + distFromCenter)) / 255.0f;
 		}
 	}
-	return result;
+	return {result[0], result[1], result[2]};
 }
 
 std::vector<cv::Point> GetLargestContour(cv::Mat mask)
@@ -240,46 +244,52 @@ ctn::SettlementType DetermineSettlementType(cv::Mat corner, cv::Mat mask)
 
 std::map<ctn::VertexCoord, ctn::Settlement> ctn::FindSettlements(const BoardIR& boardIR)
 {
-	static cv::Vec3b sand = cvutil::YCrCbOf({127, 180, 181});
-
-	static cv::Vec3b cityRed = cvutil::YCrCbOf({75, 0, 146});
-	static cv::Vec3b cityBlue = cvutil::YCrCbOf({100, 52, 15});
-	static cv::Vec3b cityOrange = cvutil::YCrCbOf({25, 136, 208});
-	
 	std::map<ctn::VertexCoord, ctn::Settlement> result;
 
 	ScreenCoordMapper mapper({.center={500,433}, .size=150});
 
 	for(const auto& [coord, corner]: boardIR.corners) {
-		auto cornerYCrCb = cvutil::Convert(corner, cv::COLOR_BGR2YCrCb);
 		auto mask = CreateStructureMask(corner, cv::Vec2d(mapper(coord)) - cv::Vec2d(500,433));
 
-		
-		//auto rating = rateChunk(BuildingInverseLikelihood(corner));
+		auto rating = RateCornerMask(mask);
+		auto maxRatingIter = std::max_element(rating.begin(), rating.end());
+		int maxRatingIdx = maxRatingIter - rating.begin();
 
-		if(RateCornerMask(mask) > 80) {
+		if(*maxRatingIter > 80) {
 			cv::imshow(fmt::format("mask at {}", coord), mask);
 
-			cv::Point center = {corner.cols/2, corner.rows/2};
-			float distRed = cvmath::WeightedSquareDist<0, 100, 100>(cornerYCrCb.at<cv::Vec3b>(center), cityRed);
-			float distBlue = cvmath::WeightedSquareDist<0, 100, 100>(cornerYCrCb.at<cv::Vec3b>(center), cityBlue);
-			float distOrange = cvmath::WeightedSquareDist<0, 100, 100>(cornerYCrCb.at<cv::Vec3b>(center), cityOrange);
-
-			float distances[3] = {distRed, distBlue, distOrange};
-			PlayerColor colors[3] = {PlayerColor::Red, PlayerColor::Blue, PlayerColor::Orange};
-			cv::Vec3b crcbColors[3] = {cityRed, cityBlue, cityOrange};
-
-			int idx = std::min_element(distances, distances+3) - distances;
-
-			//auto isolated = IsolateBuilding(corner, crcbColors[idx]);
-			//cv::imshow(fmt::format("isolated building at {}", coord), isolated);
+			PlayerColor colors[3] = {PlayerColor::Blue, PlayerColor::Red, PlayerColor::Orange};
 
 			result[coord] = {
 				.type=DetermineSettlementType(corner, mask), 
-				.color=colors[idx]
+				.color=colors[maxRatingIdx]
 			};
 		}
 	}
 
+	return result;
+}
+
+std::map<ctn::EdgeCoord, ctn::Road> ctn::FindRoads(const BoardIR& boardIR)
+{
+	std::map<ctn::EdgeCoord, ctn::Road> result;
+
+	ScreenCoordMapper mapper({.center={500,433}, .size=150});
+	for(const auto& [coord, edge]: boardIR.edges) {
+		auto mask = CreateStructureMask(edge, cv::Vec2d(mapper(coord)) - cv::Vec2d(500,433));
+
+		auto rating = RateCornerMask(mask);
+		auto maxRatingIter = std::max_element(rating.begin(), rating.end());
+		int maxRatingIdx = maxRatingIter - rating.begin();
+
+		if(*maxRatingIter > 30) {
+			cv::imshow(fmt::format("road mask at {}", coord), mask);
+
+			PlayerColor colors[3] = {PlayerColor::Blue, PlayerColor::Red, PlayerColor::Orange};
+			result[coord] = {
+				.color = colors[maxRatingIdx]
+			};
+		}
+	}
 	return result;
 }

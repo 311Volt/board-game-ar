@@ -84,7 +84,7 @@ std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 	}
 
 	cv::Mat corr = getPerspectiveCorrectionMatrix(boardVtxs.value());
-	cv::Mat warped = NEW_MAT(tmp) {cv::warpPerspective(photo, warped, corr, {1000, 866});};
+	cv::Mat warped = NEW_MAT(tmp) {cv::warpPerspective(photo, tmp, corr, {1000, 866});};
 
 	return warped;
 }

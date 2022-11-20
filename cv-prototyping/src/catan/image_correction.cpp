@@ -37,7 +37,7 @@ cv::Mat GenerateReferenceEdgeThres()
 cv::Mat FindAlignment(cv::Mat actualEdges, cv::Mat idealEdges)
 {
 	cv::Mat warpMtx = cv::Mat::eye(2, 3, CV_32FC1);
-	cv::TermCriteria criteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 70, 1e-6);
+	cv::TermCriteria criteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 70, 1e-9);
 
 	cv::findTransformECC(idealEdges, actualEdges, warpMtx, cv::MOTION_EUCLIDEAN, criteria);
 	return warpMtx;

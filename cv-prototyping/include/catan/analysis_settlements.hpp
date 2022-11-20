@@ -39,6 +39,6 @@ namespace ctn {
 	//std::map<EdgeCoord, Road> FindRoads(const BoardIR& boardIR);
 };
 
-cv::Mat MaskBuildingsAlternative(const cv::Mat& warped); //TODO DECLARATION FOR DEBUGGING ONLY - REMOVE LATER
+cv::Mat CreateStructureMask(const cv::Mat& warped, cv::Vec2f relativeCenter); //TODO DECLARATION FOR DEBUGGING ONLY - REMOVE LATER
 
 #endif /* INCLUDE_CATAN_ANALYSIS_SETTLEMENTS */

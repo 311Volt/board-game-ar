@@ -51,12 +51,6 @@ ctn::BoardIR ctn::CreateBoardIR(cv::Mat warpedBoard)
 	std::vector<VertexCoord> cornerCoords = GenerateVertexCoords();
 	std::vector<EdgeCoord> edgeCoords = GenerateEdgeCoords();
 
-	/*
-	for(const auto& [coord, edge]: createEdgeImages(warpedBoard, edgeCoords)) {
-		cv::imshow(fmt::format("edge {}", coord), edge);
-	}
-	*/
-
 	return BoardIR {
 		.corners = createCornerImages(warpedBoard, cornerCoords),
 		.cells = createCellImages(warpedBoard, cellCoords),

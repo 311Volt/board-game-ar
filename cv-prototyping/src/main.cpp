@@ -101,27 +101,27 @@ int main()
 	//----- cards detection -----//
 	cv::Mat srcCardsPhoto = cv::imread("resources/sampleBoardWithCards.jpg");
 	//srcCardsPhoto = scaleImage(srcCardsPhoto, 0.3);
-	cv::imshow("Src Cards Photo", srcCardsPhoto);
+	cv::imshow("Src Cards Photo", scaleImage(srcCardsPhoto, 0.3));
 
 	std::vector<cv::Mat> croppedOutCards = detectCards(srcCardsPhoto);
 
 	// show every single cropped out card
-	int i = 1;
+	/*int i = 1;
 	for (auto card : croppedOutCards)
 	{
 		cv::imshow("Card " + std::to_string(i), card);
 		i++;
-	}
+	}*/
 
 	std::vector<cv::Mat> templateCards = readTemplateCards();
 	// show templates
-	int z = 1;
+	/*int z = 1;
 	for (auto temp : templateCards)
 	{
 		//cv::imshow("Temp " + std::to_string(j), scaleImage(temp, 0.3));
 		cv::imshow("Temp " + std::to_string(z), temp);
 		z++;
-	}
+	}*/
 
 	/*auto orb = cv::ORB::create(); // ORB
 	auto matcher = cv::BFMatcher::create();

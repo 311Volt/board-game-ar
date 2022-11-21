@@ -11,11 +11,11 @@ cv::Mat detectWhiteFields(cv::Mat image)
 {
 	cv::Mat hsvCardsPhoto;
 	cv::cvtColor(image, hsvCardsPhoto, cv::COLOR_BGR2HSV);
-	cv::imshow("hsv", hsvCardsPhoto);
+	//cv::imshow("hsv", hsvCardsPhoto);
 
 	cv::Mat whiteFieldsofPhoto;
 	cv::inRange(hsvCardsPhoto, cv::Vec3b(0, 0, 110), cv::Vec3b(179, 30, 255), whiteFieldsofPhoto);
-	cv::imshow("White fields of photo", whiteFieldsofPhoto);
+	//cv::imshow("White fields of photo", whiteFieldsofPhoto);
 
 	return whiteFieldsofPhoto;
 }
@@ -63,8 +63,8 @@ cv::Mat cleanCardsMask(cv::Mat mask)
 
 	cv::Mat maskEroded;
 	cv::erode(mask, maskEroded, erosionKernel, cv::Point(-1, -1), erosionIterations);
-	cv::imshow("Eroded mask", maskEroded);
-	cv::waitKey();
+	//cv::imshow("Eroded mask", maskEroded);
+	//cv::waitKey();
 
 	std::vector<std::vector<cv::Point>> contoursEroded;
 	cv::findContours(maskEroded, contoursEroded, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
@@ -72,13 +72,13 @@ cv::Mat cleanCardsMask(cv::Mat mask)
 
 	cv::Mat maskErodedQuadrangles = cv::Mat::zeros(mask.size(), CV_8U);
 	cv::drawContours(maskErodedQuadrangles, contoursQuadranglesThin, -1, cv::Scalar(255, 255, 255), -1);
-	cv::imshow("Filtered eroded", maskErodedQuadrangles);
+	//cv::imshow("Filtered eroded", maskErodedQuadrangles);
 
 	/*cv::Mat maskNormalSizedQuadrangles = cv::Mat::zeros(mask.size(), CV_8U);
 	//cv::dilate(maskErodedQuadrangles, maskNormalSizedQuadrangles, erosionKernel, cv::Point(-1, -1), erosionIterations/2);
 	maskNormalSizedQuadrangles = maskErodedQuadrangles;
 	cv::imshow("Dilated mask", maskNormalSizedQuadrangles);*/
-	cv::waitKey();
+	//cv::waitKey();
 
 	return maskErodedQuadrangles;
 }
@@ -91,7 +91,7 @@ std::vector<cv::Mat> detectCards(cv::Mat image)
 
 	cv::Mat maskToErode = cv::Mat::zeros(image.size(), CV_8U);
 	cv::drawContours(maskToErode, contours, -1, cv::Scalar(255, 255, 255), -1);
-	cv::imshow("maskToErode", maskToErode);
+	//cv::imshow("maskToErode", maskToErode);
 
 	cv::Mat maskNormalSizedQuadrangles = cleanCardsMask(maskToErode);
 	std::vector<std::vector<cv::Point>> filteredContours;
@@ -103,10 +103,10 @@ std::vector<cv::Mat> detectCards(cv::Mat image)
 	cv::Mat maskFiltered = cv::Mat::zeros(image.size(), image.type());
 	cv::drawContours(maskFiltered, filteredContours, -1, cv::Scalar(255, 255, 255), -1);
 	cv::drawContours(maskFiltered, filteredContours, -1, cv::Scalar(255, 255, 255), 12);
-	cv::imshow("Filtered mask", maskFiltered);
+	//cv::imshow("Filtered mask", maskFiltered);
 	cv::Mat maskedCards;
 	cv::bitwise_and(image, maskFiltered, maskedCards);
-	cv::imshow("Masked Cards", maskedCards);
+	//cv::imshow("Masked Cards", maskedCards);
 	cv::imwrite("resources/test_cards/masked_cards.jpg", maskedCards);
 
 	std::vector<cv::Mat> croppedOutCards;

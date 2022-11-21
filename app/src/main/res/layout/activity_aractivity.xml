@@ -1,5 +1,6 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.ARActivity">
@@ -29,12 +30,37 @@
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:layout_weight="1"
-        android:layout_gravity="bottom|right"
+        android:layout_gravity="right|bottom"
         android:text="Next"
         android:onClick="NextStep"
         android:orientation="vertical"
         android:padding="6dp"
         android:layout_margin="6dp">
     </Button>
+
+    <Button
+        android:id="@+id/take_photo_button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@android:color/transparent"
+        android:foreground="@android:drawable/ic_menu_compass"
+        android:layout_weight="1"
+        android:layout_gravity="center|bottom"
+        android:orientation="vertical"
+        android:padding="6dp"
+        android:layout_margin="6dp"
+        tools:ignore="SpeakableTextPresentCheck">
+    </Button>
+
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
 </FrameLayout>

@@ -35,7 +35,6 @@
         <activity
             android:name=".ui.ARActivity"
             android:exported="false">
-            android:theme="@style/Theme.AppCompat.NoActionBar">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />

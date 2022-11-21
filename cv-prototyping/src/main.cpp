@@ -99,8 +99,8 @@ int main()
 	cv::waitKey();*/
 
 	//----- cards detection -----//
-	cv::Mat srcCardsPhoto = cv::imread("resources/sampleCards1.jpg");
-	srcCardsPhoto = scaleImage(srcCardsPhoto, 0.3);
+	cv::Mat srcCardsPhoto = cv::imread("resources/sampleBoardWithCards.jpg");
+	//srcCardsPhoto = scaleImage(srcCardsPhoto, 0.3);
 	cv::imshow("Src Cards Photo", srcCardsPhoto);
 
 	std::vector<cv::Mat> croppedOutCards = detectCards(srcCardsPhoto);

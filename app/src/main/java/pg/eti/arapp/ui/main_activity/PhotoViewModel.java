@@ -1,4 +1,4 @@
-package pg.eti.arapp;
+package pg.eti.arapp.ui.main_activity;
 
 import android.net.Uri;
 

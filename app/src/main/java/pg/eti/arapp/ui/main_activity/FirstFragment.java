@@ -1,4 +1,4 @@
-package pg.eti.arapp;
+package pg.eti.arapp.ui.main_activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,7 +10,9 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
+import pg.eti.arapp.R;
 import pg.eti.arapp.databinding.FragmentFirstBinding;
+import pg.eti.arapp.ui.CameraActivity;
 
 public class FirstFragment extends Fragment {
 

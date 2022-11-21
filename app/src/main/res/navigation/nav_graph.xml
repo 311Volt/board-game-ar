@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="pg.eti.arapp.FirstFragment"
+        android:name="pg.eti.arapp.ui.main_activity.FirstFragment"
         android:label="@string/first_fragment_label"
         tools:layout="@layout/fragment_first">
 
@@ -17,7 +17,7 @@
     </fragment>
     <fragment
         android:id="@+id/SecondFragment"
-        android:name="pg.eti.arapp.BoardGamesFragment"
+        android:name="pg.eti.arapp.ui.main_activity.BoardGamesFragment"
         android:label="@string/second_fragment_label"
         tools:layout="@layout/fragment_board_games">
 
@@ -33,7 +33,7 @@
     </fragment>
     <fragment
         android:id="@+id/photoFragment"
-        android:name="pg.eti.arapp.PhotoFragment"
+        android:name="pg.eti.arapp.ui.main_activity.PhotoFragment"
         android:label="fragment_photo"
         tools:layout="@layout/fragment_photo" >
         <action
@@ -42,7 +42,7 @@
     </fragment>
     <activity
         android:id="@+id/ARActivity"
-        android:name="pg.eti.arapp.ARActivity"
+        android:name="pg.eti.arapp.ui.ARActivity"
         android:label="activity_aractivity"
         tools:layout="@layout/activity_aractivity" />
 </navigation>

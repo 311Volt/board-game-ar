@@ -1,4 +1,4 @@
-package pg.eti.arapp;
+package pg.eti.arapp.ui.main_activity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
+import pg.eti.arapp.R;
 import pg.eti.arapp.databinding.FragmentBoardGamesBinding;
 import pg.eti.arapp.databinding.FragmentPhotoBinding;
 

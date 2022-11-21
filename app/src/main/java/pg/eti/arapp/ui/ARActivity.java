@@ -1,33 +1,22 @@
-package pg.eti.arapp;
+package pg.eti.arapp.ui;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.Context;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.ArraySet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.filament.gltfio.Animator;
-import com.google.android.filament.gltfio.FilamentAsset;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.ar.core.Anchor;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Vector3;
-import com.google.ar.sceneform.rendering.Color;
-import com.google.ar.sceneform.rendering.Material;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
@@ -36,9 +25,12 @@ import com.google.ar.sceneform.ux.TransformableNode;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+
+import pg.eti.arapp.R;
+import pg.eti.arapp.game_elements.Color;
+import pg.eti.arapp.game_elements.Player;
 
 public class ARActivity extends AppCompatActivity {
 
@@ -46,7 +38,7 @@ public class ARActivity extends AppCompatActivity {
     private Renderable renderable;
 
     private short step; // 0 - board, 1-3 - players cards
-    private short numberOfPlayers = 3;
+    private List<Player> players = new ArrayList<>();
 
     private Set<TextView> scoreViews = new ArraySet<>();
     @Override
@@ -57,6 +49,8 @@ public class ARActivity extends AppCompatActivity {
 
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ar_fragment);
 
+        players.add(new Player(Color.ORANGE, (short) 10));
+        players.add(new Player(Color.BLUE, (short) 7));
 
         TextView textView = findViewById(R.id.instructions_text);
         textView.setText(R.string.phase_1);
@@ -142,29 +136,29 @@ public class ARActivity extends AppCompatActivity {
 
     private void NextStepReady(){
         TextView view = findViewById(R.id.instructions_text);
-        step = (short) ((step + 1) % 4);
+        step = (short) ((step + 1) % (1 + players.size()));
         switch(step){
             case 0:
                 view.setText(R.string.phase_1);
                 break;
             case 1:
-                view.setText(R.string.phase_2);
+                view.setText(players.get(0).CameraText());
                 break;
             case 2:
-                view.setText(R.string.phase_3);
+                view.setText(players.get(1).CameraText());
                 break;
             case 3:
-                view.setText(R.string.phase_4);
+                view.setText(players.get(2).CameraText());
                 break;
         }
     }
 
     private String ScoreText(){
-        return String.format(
-                "Blue player:   %d\n" +
-                        "Red player:    %d\n" +
-                        "Orange player: %d",
-                10, 3, 7);
+        String result = "";
+        for(Player p : players){
+            result += p.toString() + "\n";
+        }
+        return result;
     }
 
     public void NextStep(View view) {

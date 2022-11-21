@@ -106,7 +106,7 @@ std::vector<cv::Mat> detectCards(cv::Mat image)
 	//cv::imshow("Filtered mask", maskFiltered);
 	cv::Mat maskedCards;
 	cv::bitwise_and(image, maskFiltered, maskedCards);
-	//cv::imshow("Masked Cards", maskedCards);
+	cv::imshow("Masked Cards", scaleImage(maskedCards, 0.3));
 	cv::imwrite("resources/test_cards/masked_cards.jpg", maskedCards);
 
 	std::vector<cv::Mat> croppedOutCards;

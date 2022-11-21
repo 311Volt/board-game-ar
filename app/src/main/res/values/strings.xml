@@ -23,4 +23,9 @@
     <string name="title_activity_camera">CameraActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <string name="phase_1">Place the camera over the board</string>
+    <string name="phase_2">Place the camera over cards of blue player</string>
+    <string name="phase_3">Place the camera over cards of red player</string>
+    <string name="phase_4">Place the camera over cards of orange player</string>
 </resources>

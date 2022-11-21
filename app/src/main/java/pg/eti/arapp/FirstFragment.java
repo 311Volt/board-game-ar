@@ -42,14 +42,6 @@ public class FirstFragment extends Fragment {
             }
         });
 
-        binding.buttonLarps.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                NavHostFragment.findNavController(FirstFragment.this)
-                        .navigate(R.id.action_FirstFragment_to_larpsFragment);
-            }
-        });
-
         binding.btnCamTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -64,7 +56,6 @@ public class FirstFragment extends Fragment {
         startActivity(intent);
     }
 
-    //private native String stringFromJNI();
 
     @Override
     public void onDestroyView() {

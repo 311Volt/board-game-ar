@@ -12,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import pg.eti.arapp.databinding.FragmentLarpsBinding;
 import pg.eti.arapp.databinding.FragmentPhotoBinding;
 
 public class PhotoFragment extends Fragment {

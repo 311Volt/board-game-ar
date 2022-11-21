@@ -14,9 +14,6 @@
         <action
             android:id="@+id/action_FirstFragment_to_SecondFragment"
             app:destination="@id/SecondFragment" />
-        <action
-            android:id="@+id/action_FirstFragment_to_larpsFragment"
-            app:destination="@id/larpsFragment" />
     </fragment>
     <fragment
         android:id="@+id/SecondFragment"
@@ -30,15 +27,9 @@
         <action
             android:id="@+id/action_SecondFragment_to_photoFragment"
             app:destination="@id/photoFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/larpsFragment"
-        android:name="pg.eti.arapp.LarpsFragment"
-        android:label="fragment_larps"
-        tools:layout="@layout/fragment_larps" >
         <action
-            android:id="@+id/action_larpsFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            android:id="@+id/action_SecondFragment_to_ARActivity"
+            app:destination="@id/ARActivity" />
     </fragment>
     <fragment
         android:id="@+id/photoFragment"
@@ -49,4 +40,9 @@
             android:id="@+id/action_photoFragment_to_SecondFragment"
             app:destination="@id/SecondFragment" />
     </fragment>
+    <activity
+        android:id="@+id/ARActivity"
+        android:name="pg.eti.arapp.ARActivity"
+        android:label="activity_aractivity"
+        tools:layout="@layout/activity_aractivity" />
 </navigation>

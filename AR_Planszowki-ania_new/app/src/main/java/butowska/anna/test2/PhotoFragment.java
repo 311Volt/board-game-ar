@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import butowska.anna.test2.databinding.FragmentLarpsBinding;
 import butowska.anna.test2.databinding.FragmentPhotoBinding;
 
 public class PhotoFragment extends Fragment {

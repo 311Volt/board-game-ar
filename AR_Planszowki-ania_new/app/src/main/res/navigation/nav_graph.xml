@@ -14,9 +14,6 @@
         <action
             android:id="@+id/action_FirstFragment_to_SecondFragment"
             app:destination="@id/SecondFragment" />
-        <action
-            android:id="@+id/action_FirstFragment_to_larpsFragment"
-            app:destination="@id/larpsFragment" />
     </fragment>
     <fragment
         android:id="@+id/SecondFragment"
@@ -31,20 +28,8 @@
             android:id="@+id/action_SecondFragment_to_photoFragment"
             app:destination="@id/photoFragment" />
         <action
-            android:id="@+id/action_SecondFragment_to_liveCameraFragment"
-            app:destination="@id/liveCameraFragment" />
-        <action
             android:id="@+id/action_SecondFragment_to_ARActivity"
             app:destination="@id/ARActivity" />
-    </fragment>
-    <fragment
-        android:id="@+id/larpsFragment"
-        android:name="butowska.anna.test2.LarpsFragment"
-        android:label="fragment_larps"
-        tools:layout="@layout/fragment_larps" >
-        <action
-            android:id="@+id/action_larpsFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
     </fragment>
     <fragment
         android:id="@+id/photoFragment"
@@ -53,15 +38,6 @@
         tools:layout="@layout/fragment_photo" >
         <action
             android:id="@+id/action_photoFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/liveCameraFragment"
-        android:name="butowska.anna.test2.LiveCameraFragment"
-        android:label="fragment_live_camera"
-        tools:layout="@layout/fragment_live_camera" >
-        <action
-            android:id="@+id/action_liveCameraFragment_to_SecondFragment"
             app:destination="@id/SecondFragment" />
     </fragment>
     <activity

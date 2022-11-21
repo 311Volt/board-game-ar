@@ -5,19 +5,36 @@
     tools:context=".ARActivity">
 
     <fragment android:name="com.google.ar.sceneform.ux.ArFragment"
-        android:id="@+id/ux_fragment"
+        android:id="@+id/ar_fragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-<!--    <TextView-->
-<!--        android:id="@+id/tiger_text1"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:background="@drawable/rounded_bg_foreground"-->
-<!--        android:gravity="center"-->
-<!--        android:orientation="vertical"-->
-<!--        android:padding="6dp"-->
-<!--        android:textAlignment="center">-->
-<!--    </TextView>-->
+    <TextView
+        android:id="@+id/instructions_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:gravity="center"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="6dp"
+        android:textSize="16dp"
+        android:textAlignment="center"
+        android:layout_margin="6dp">
+    </TextView>
+
+    <Button
+        android:id="@+id/instructions_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:layout_weight="1"
+        android:layout_gravity="bottom|right"
+        android:text="Next"
+        android:onClick="NextStep"
+        android:orientation="vertical"
+        android:padding="6dp"
+        android:layout_margin="6dp">
+    </Button>
 
 </FrameLayout>

@@ -15,10 +15,15 @@
     <string name="board_games">Board Games</string>
 
     <string name="choose_game">Choose Game</string>
-    <string name="take_photo">Take Photo</string>
+    <string name="take_photo">View board</string>
     <string name="choose_photo">Choose Photo</string>
     <string name="go_back">Go Back</string>
-    <!-- TODO: Remove or change this placeholder text -->
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="result1">Wynik gracza</string>
+
+    <string name="phase_1">Place the camera over the board</string>
+    <string name="phase_2">Place the camera over cards of blue player</string>
+    <string name="phase_3">Place the camera over cards of red player</string>
+    <string name="phase_4">Place the camera over cards of orange player</string>
 </resources>

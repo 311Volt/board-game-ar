@@ -1,16 +1,7 @@
 #include <catan/board_detection.hpp>
 #include <catan/image_correction.hpp>
+#include <catan/utility_opencv.hpp>
 
-cv::Mat convertToCrCb(cv::Mat image)
-{
-	cv::Mat ycrcb;
-	cv::cvtColor(image, ycrcb, cv::COLOR_BGR2YCrCb);
-	cv::Mat ch[3];
-	cv::split(ycrcb, ch);
-	ch[0] = cv::Mat::zeros(ch[0].rows, ch[0].cols, CV_8UC1);
-	cv::merge(ch, 3, ycrcb);
-	return ycrcb;
-}
 
 cv::Mat squareDist(cv::Mat source, cv::Vec3f vec)
 {
@@ -82,13 +73,10 @@ CatanBoardDetector::CatanBoardDetector(cv::Vec3f seaColor)
 
 std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 {
-
-	cv::Mat crcb = convertToCrCb(photo);
-	cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_6500K);
-	//cv::Mat sq = squareDist(crcb, SEA_COLOR_YCBCR_3400K);
+	cv::Mat crcb = cvutil::ConvertToCrCb(photo);
+	cv::Mat sq = squareDist(crcb, seaColor);
 	
-	cv::Mat thres;
-	cv::threshold(sq, thres, 20, 255, cv::THRESH_BINARY_INV);
+	cv::Mat thres = NEW_MAT(tmp) {cv::threshold(sq, tmp, 20, 255, cv::THRESH_BINARY_INV);};
 	
 	auto boardVtxs = findBoardVertices(thres);
 	if(!boardVtxs) {
@@ -96,8 +84,7 @@ std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 	}
 
 	cv::Mat corr = getPerspectiveCorrectionMatrix(boardVtxs.value());
-	cv::Mat warped;
-	cv::warpPerspective(photo, warped, corr, {1000, 866});
+	cv::Mat warped = NEW_MAT(tmp) {cv::warpPerspective(photo, warped, corr, {1000, 866});};
 
 	return warped;
 }

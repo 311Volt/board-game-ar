@@ -1,91 +1,94 @@
-#include <iostream>
 
 #include <opencv2/opencv.hpp>
 
-#include <catan/board_coords.hpp>
 #include <catan/board_detection.hpp>
-#include <catan/image_correction.hpp>
+#include <catan/analysis.hpp>
 #include <catan/utility_opencv.hpp>
+#include <catan/image_correction.hpp> //TODO delete this #include
 
 #include <fmt/format.h>
 
+
+void DrawCellTypes(cv::Mat board, const ctn::BoardInfo& boardInfo)
+{
+	ctn::ScreenCoordMapper mapper ({.center = {500,433}, .size = 150});
+
+	for(const auto& [coord, type]: boardInfo.cellTypes) {
+		auto pos = mapper(coord) - cv::Point2d{40, 0};
+		auto color = cv::Scalar{0, 255, 0};
+		cv::putText(board, type, pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 0.9, color);
+	}
+}
+
+
+void DrawSettlements(cv::Mat board, const ctn::BoardInfo& boardInfo)
+{
+	ctn::ScreenCoordMapper mapper ({.center = {500,433}, .size = 150});
+
+	for(const auto& [coord, settlement]: boardInfo.settlements) {
+		cv::circle(board, mapper(coord), 9, ctn::PlayerColorBGR(settlement.color), -1);
+		cv::putText(
+			board, 
+			(settlement.type == ctn::SettlementType::City ? "city" : "settlement"), 
+			mapper(coord), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, 
+			{255,255,255}
+		);
+	}
+}
+
+void DrawRoads(cv::Mat board, const ctn::BoardInfo& boardInfo)
+{
+	ctn::ScreenCoordMapper mapper ({.center = {500,433}, .size = 150});
+
+	for(const auto& [coord, road]: boardInfo.roads) {
+		cv::circle(board, mapper(coord), 7, {255,255,255}, -1);
+		cv::circle(board, mapper(coord), 4, ctn::PlayerColorBGR(road.color), -1);
+	}
+}
+
+double GetTime()
+{
+	static auto t0 = std::chrono::high_resolution_clock::now();
+	auto t1 = std::chrono::high_resolution_clock::now();
+	return 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t1-t0).count();
+}
+
 int main()
 {
-	auto src = cv::imread("resources/sampleGrayBG.jpg");
+	auto src = cv::imread("resources/sample1.jpg");
 	CatanBoardDetector detector {SEA_COLOR_YCBCR_6500K};
-	cv::Mat warped;
-	try {
-		warped = detector.findBoard(src).value();
-	} catch(std::bad_optional_access& ex) {
-		std::cerr << "error: board not found";
+
+	auto warpedOpt = detector.findBoard(src);
+	if(!warpedOpt.has_value()) {
+		std::cerr << "error: board not found\n";
 		return 1;
 	}
+	cv::Mat warped = warpedOpt.value();
 
-	ScreenCoordMapper mapper ({.center = {500,433}, .size = 150});
-
-	/*for(auto& c: GenerateFieldCoords(3)) {
-		cv::putText(warped, fmt::format("({},{},{})", c.x, c.y, c.z), mapper(c), cv::FONT_HERSHEY_PLAIN, 1, {255,255,255});
-	}*/
-
-	//drawPoints(mapper(GenerateFieldCoords(2)), warped, {255,255,180});
-
-	std::vector<VertexCoord> vertexCoords = GenerateVertexCoords();
-	for (auto& c : vertexCoords) {
-		//cv::putText(warped, fmt::format("({},{},{})", c.origin.x, c.origin.y, c.origin.z), mapper(c), cv::FONT_HERSHEY_PLAIN, 1, { 255,255,255 });
-		auto m = mapper(c);
-		cv::Point* p = new cv::Point(0, 0);
-		//auto col = warped.colRange(m.x - 10, m.x + 10).rowRange(m.y - 10, m.y + 10);
-
-		int rectSize = 48;
-
-		cv::Rect roi(cv::Point(m.x - rectSize/2, m.y - rectSize/2), cv::Size(rectSize, rectSize));
-		cv::Mat destinationROI = warped(roi);
+	double t0 = GetTime();
+	cv::Mat warpedBlurred = NEW_MAT(tmp) {cv::medianBlur(warped, tmp, 3);};
+	cv::imshow("mask2", CreateStructureMask(warpedBlurred, {0,0}));
+	double t1 = GetTime();
+	fmt::print("masking took {:.6f} secs\n", t1-t0);
 
 
-		cv::Mat hsvFull;
-		cv::cvtColor(destinationROI, hsvFull, cv::COLOR_BGR2HSV_FULL);
-		std::vector<uchar> colorsCount(256, 0);
-		cv::Scalar pixel;
-		uchar color;
-		int maxColor = 0, minColor = 255;
-		for (int r = 0; r < hsvFull.rows; r++)
-		{
-			for (int c = 0; c < hsvFull.cols; c++)
-			{
-				pixel = hsvFull.at<cv::Vec3b>(cv::Point(c, r));
-				color = pixel(0);
-				colorsCount[color] += 1;
-				if (colorsCount[color] < colorsCount[minColor]) minColor = color;
-				if (colorsCount[color] > colorsCount[maxColor]) maxColor = color;
-			}
-		}
-		int colorRange = maxColor - minColor;
-		int minCount, maxCount;
-		minCount = colorsCount[minColor];
-		maxCount = colorsCount[maxColor];
+	cv::Mat warpMtx = FindAlignment(IsolateDarkEdges(warped), GenerateReferenceEdgeThres());
+	cv::Mat warped1;
+	cv::warpAffine(warped, warped1, warpMtx, warped.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
+	warped = warped1;
 
-		cv::Mat smallImage(rectSize, rectSize, CV_8UC3, cv::Scalar(255, 255, 255));
-		
-		cv::imshow("Dest", destinationROI);
-		//cv::waitKey();
 
-		if(maxColor - minColor < 100)
-			(smallImage).copyTo(destinationROI);
-		
 
-		//auto rect = n;
+	cv::imshow("warped1", warped1);
 
-		//(*rect).copyTo(col);
-		int i = 0;
-	}
-
-	//drawPoints(mapper(GenerateVertexCoords()), warped, {255,0,0});
+	ctn::BoardIR boardIR = ctn::CreateBoardIR(warped);
 	
-	/*showScaled("Source", src);
-	showScaled("CrCb", crcb);
-	showScaled("sqDiff(CrCb, sea color)", sq);
-	showScaled("Threshold", thres);*/
+	ctn::BoardInfo boardInfo = ctn::AnalyzeBoard(boardIR);
 
-	cv::imshow("Warped", warped);
+	DrawCellTypes(warped, boardInfo);
+	DrawSettlements(warped, boardInfo);
+	DrawRoads(warped, boardInfo);
+	
+	cv::imshow("Warped board", warped);
 	cv::waitKey();
 }

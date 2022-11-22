@@ -1,3 +1,6 @@
+#ifndef INCLUDE_CATAN_BOARD_DETECTION
+#define INCLUDE_CATAN_BOARD_DETECTION
+
 #include <opencv2/opencv.hpp>
 #include <optional>
 
@@ -14,3 +17,6 @@ public:
 private:
 	cv::Vec3f seaColor;
 };
+
+
+#endif /* INCLUDE_CATAN_BOARD_DETECTION */

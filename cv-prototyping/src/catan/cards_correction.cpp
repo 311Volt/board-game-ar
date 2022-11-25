@@ -62,11 +62,6 @@ std::vector<cv::Point2f> getCorrectionPoints(cv::Size cardDimensions)
 	return dstPoints;
 }
 
-/*cv::Mat setCardPositionVertical(cv::Mat card)
-{
-	return card;
-}*/
-
 std::vector<cv::Mat> correctCardsPerspective(std::vector<cv::Mat> detectedCards)
 {
 	std::vector<cv::Mat> correctedCards;
@@ -87,4 +82,19 @@ std::vector<cv::Mat> correctCardsPerspective(std::vector<cv::Mat> detectedCards)
 	}
 
 	return correctedCards;
+}
+
+std::vector<cv::Mat> setCardsPositionVertical(std::vector<cv::Mat> cards)
+{
+	std::vector<cv::Mat> verticalCards;
+	for (auto card : cards)
+	{
+		cv::Mat cardVertical;
+		if (card.size().width > card.size().height)
+			cv::rotate(card, cardVertical, cv::ROTATE_90_CLOCKWISE);
+		else
+			card.copyTo(cardVertical);
+		verticalCards.push_back(cardVertical);
+	}
+	return verticalCards;
 }

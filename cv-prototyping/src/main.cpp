@@ -107,9 +107,10 @@ int main()
 	std::vector<cv::Mat> croppedOutCards = detectCards(srcCardsPhoto);
 
 	auto correctedCards = correctCardsPerspective(croppedOutCards);
+	auto verticalCards = setCardsPositionVertical(correctedCards);
 
 	int j = 1;
-	for (auto card : correctedCards)
+	for (auto card : verticalCards)
 	{
 		cv::imshow("Card warped " + std::to_string(j), card);
 		j++;

@@ -11,110 +11,115 @@ cv::Mat detectWhiteFields(cv::Mat image)
 {
 	cv::Mat hsvCardsPhoto;
 	cv::cvtColor(image, hsvCardsPhoto, cv::COLOR_BGR2HSV);
-	//cv::imshow("hsv", hsvCardsPhoto);
 
 	cv::Mat whiteFieldsofPhoto;
 	cv::inRange(hsvCardsPhoto, cv::Vec3b(0, 0, 110), cv::Vec3b(179, 30, 255), whiteFieldsofPhoto);
-	//cv::imshow("White fields of photo", whiteFieldsofPhoto);
 
 	return whiteFieldsofPhoto;
 }
 
-std::vector<std::vector<cv::Point>> filterContoursForBigQuadrangles(std::vector<std::vector<cv::Point>> contours)
+std::vector<std::vector<cv::Point>> removeSmallContours(std::vector<std::vector<cv::Point>> contours, int contourAreaThreshold)
 {
 	std::vector<std::vector<cv::Point>> filteredContours;
 	for (auto c : contours)
 	{
-		if (cv::contourArea(c) > 5000) //1000
-		{
-			auto peri = cv::arcLength(c, true);
-			std::vector<cv::Point> approx;
-			cv::approxPolyDP(c, approx, peri * 0.04, true); //0.025
-			if (approx.size() == 4)
-			{
-				filteredContours.push_back(c);
-			}
-		}
+		if (cv::contourArea(c) > contourAreaThreshold)
+			filteredContours.push_back(c);
 	}
 	return filteredContours;
 }
 
-cv::Mat maskAndCropOutCard(cv::Mat image, std::vector<cv::Point> c)
+std::vector<std::vector<cv::Point>> filterForPolygonsOfNVerticies(std::vector<std::vector<cv::Point>> contours, int n, float periCoefficient)
 {
-	// masking out single card (or glued, by contours, few cards)
-	cv::Mat mask = cv::Mat::zeros(image.size(), image.type());
-	std::vector<std::vector<cv::Point>> cs = { c };
-	cv::drawContours(mask, cs, -1, cv::Scalar(255, 255, 255), -1);
-	cv::drawContours(mask, cs, -1, cv::Scalar(255, 255, 255), 12);  // compensation for erosion, 6
-	cv::bitwise_and(mask, image, mask);
-
-	//cropping out card
-	cv::Rect cardBoundaries = cv::boundingRect(c);
-	cv::Mat card = mask(cardBoundaries);
-	return card;
+	std::vector<std::vector<cv::Point>> filteredContours;
+	for (auto c : contours)
+	{
+		auto peri = cv::arcLength(c, true);
+		std::vector<cv::Point> approx;
+		cv::approxPolyDP(c, approx, peri * periCoefficient, true);
+		if (approx.size() == n)
+			filteredContours.push_back(c);
+	}
+	return filteredContours;
 }
 
-// improvement of cards detection
-cv::Mat cleanCardsMask(cv::Mat mask)
+cv::Mat getErodedMask(cv::Mat mask, cv::Vec2b erosionKernel, short erosionIterations)
 {
-	//parameteres of erosion
-	cv::Vec2b erosionKernel = cv::Vec2b(5, 5);
-	short erosionIterations = 8; //4
+	std::vector<std::vector<cv::Point>> contours;
+	cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 
-	cv::Mat maskEroded;
-	cv::erode(mask, maskEroded, erosionKernel, cv::Point(-1, -1), erosionIterations);
-	//cv::imshow("Eroded mask", maskEroded);
-	//cv::waitKey();
+	// draw filled white fields - to avoid erosion inside the dark places of cards
+	cv::Mat maskEroded = cv::Mat::zeros(mask.size(), CV_8U);
+	cv::drawContours(maskEroded, contours, -1, cv::Scalar(255, 255, 255), -1);
 
-	std::vector<std::vector<cv::Point>> contoursEroded;
-	cv::findContours(maskEroded, contoursEroded, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
-	std::vector<std::vector<cv::Point>> contoursQuadranglesThin = filterContoursForBigQuadrangles(contoursEroded);
+	// remove some noises that may have glued to the cards contours
+	cv::erode(maskEroded, maskEroded, erosionKernel, cv::Point(-1, -1), erosionIterations);
+	return maskEroded;
+}
 
-	cv::Mat maskErodedQuadrangles = cv::Mat::zeros(mask.size(), CV_8U);
-	cv::drawContours(maskErodedQuadrangles, contoursQuadranglesThin, -1, cv::Scalar(255, 255, 255), -1);
-	//cv::imshow("Filtered eroded", maskErodedQuadrangles);
+std::vector<std::vector<cv::Point>> filterCardsContours(cv::Mat mask)
+{
+	//filter contours
+	std::vector<std::vector<cv::Point>> contours;
+	cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+	std::vector<std::vector<cv::Point>> countoursWithoutNoise = removeSmallContours(contours, 5000);
+	std::vector<std::vector<cv::Point>> contoursQuadrangles = filterForPolygonsOfNVerticies(countoursWithoutNoise, 4, 0.04);
+	return contoursQuadrangles;
+}
 
-	/*cv::Mat maskNormalSizedQuadrangles = cv::Mat::zeros(mask.size(), CV_8U);
-	//cv::dilate(maskErodedQuadrangles, maskNormalSizedQuadrangles, erosionKernel, cv::Point(-1, -1), erosionIterations/2);
-	maskNormalSizedQuadrangles = maskErodedQuadrangles;
-	cv::imshow("Dilated mask", maskNormalSizedQuadrangles);*/
-	//cv::waitKey();
+/*cv::Mat correctQuadranglePerspective(std::vector<cv::Point> c, cv::Mat image)
+{
+	std::vector<cv::Point2f> dstPoints = { cv::Point2f(0,0), cv::Point2f(300, 0), cv::Point2f(0,500), cv::Point2f(300,500) };
+	auto peri = cv::arcLength(c, true);
+	std::vector<cv::Point2f> approx;
+	cv::approxPolyDP(c, approx, peri * 0.04, true); //0.025
 
-	return maskErodedQuadrangles;
+
+	cv::Mat perspectiveMat = cv::getPerspectiveTransform(approx, dstPoints);
+	cv::Mat warped;
+	cv::warpPerspective(image, warped, perspectiveMat, cv::Size(300, 500));
+	cv::imshow("Warped", warped);
+	cv::waitKey();
+	return warped;
+}*/
+
+cv::Mat getDilatedMask(std::vector<cv::Point> c, cv::Size imageSize, cv::Vec2b erosionKernel, short erosionIterations)
+{
+	cv::Mat maskDilatedBack = cv::Mat::zeros(imageSize, CV_8U);
+	std::vector<std::vector<cv::Point>> cs = { c };
+	cv::drawContours(maskDilatedBack, cs, -1, cv::Scalar(255, 255, 255), -1);
+	cv::drawContours(maskDilatedBack, cs, -1, cv::Scalar(255, 255, 255), int(erosionIterations * 1.5));
+	return maskDilatedBack;
+}
+
+cv::Mat cutOutCard(cv::Mat image, cv::Mat mask)
+{
+	cv::Mat card;
+	cv::bitwise_and(image, image, card, mask);
+	std::vector<std::vector<cv::Point>> cs;
+	cv::findContours(mask, cs, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+	cv::Rect cardBoundaries = cv::boundingRect(cs[0]);
+	card = card(cardBoundaries);
+	return card;
 }
 
 std::vector<cv::Mat> detectCards(cv::Mat image)
 {
-	cv::Mat whiteFieldsofPhoto = detectWhiteFields(image);
-	std::vector<std::vector<cv::Point>> contours;
-	cv::findContours(whiteFieldsofPhoto, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+	//parameters of erosion
+	cv::Vec2b erosionKernel = cv::Vec2b(5, 5);
+	short erosionIterations = 8; //4
 
-	cv::Mat maskToErode = cv::Mat::zeros(image.size(), CV_8U);
-	cv::drawContours(maskToErode, contours, -1, cv::Scalar(255, 255, 255), -1);
-	//cv::imshow("maskToErode", maskToErode);
+	cv::Mat whiteFieldsOfPhoto = detectWhiteFields(image);
+	cv::Mat maskEroded = getErodedMask(whiteFieldsOfPhoto, erosionKernel, erosionIterations);
+	std::vector<std::vector<cv::Point>> filteredContours = filterCardsContours(maskEroded);
 
-	cv::Mat maskNormalSizedQuadrangles = cleanCardsMask(maskToErode);
-	std::vector<std::vector<cv::Point>> filteredContours;
-	cv::findContours(maskNormalSizedQuadrangles, filteredContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
-
-	//std::vector<std::vector<cv::Point>> filteredContours = filterContoursForBigQuadrangles(contoursBackToNormalSize);
-
-	// show one mask for all cards (for debugging only, to check if all cards where detected)
-	cv::Mat maskFiltered = cv::Mat::zeros(image.size(), image.type());
-	cv::drawContours(maskFiltered, filteredContours, -1, cv::Scalar(255, 255, 255), -1);
-	cv::drawContours(maskFiltered, filteredContours, -1, cv::Scalar(255, 255, 255), 12);
-	//cv::imshow("Filtered mask", maskFiltered);
-	cv::Mat maskedCards;
-	cv::bitwise_and(image, maskFiltered, maskedCards);
-	cv::imshow("Masked Cards", scaleImage(maskedCards, 0.3));
-	cv::imwrite("resources/test_cards/masked_cards.jpg", maskedCards);
-
-	std::vector<cv::Mat> croppedOutCards;
+	std::vector<cv::Mat> detectedCards;
 	for (auto c : filteredContours)
 	{
-		cv::Mat card = maskAndCropOutCard(image, c);
-		croppedOutCards.push_back(card);
+		cv::Mat maskDilatedBack = getDilatedMask(c, image.size(), erosionKernel, erosionIterations);
+		cv::Mat card = cutOutCard(image, maskDilatedBack);
+		detectedCards.push_back(card);
 	}
 
-	return croppedOutCards;
+	return detectedCards;
 }

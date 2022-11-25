@@ -99,7 +99,7 @@ int main()
 	cv::waitKey();*/
 
 	//----- cards detection -----//
-	cv::Mat srcCardsPhoto = cv::imread("resources/sampleBoardWithCards.jpg");
+	cv::Mat srcCardsPhoto = cv::imread("resources/sampleCards1.jpg");
 	//srcCardsPhoto = scaleImage(srcCardsPhoto, 0.3);
 	cv::imshow("Src Cards Photo", scaleImage(srcCardsPhoto, 0.3));
 
@@ -113,69 +113,25 @@ int main()
 		i++;
 	}*/
 
-	std::vector<cv::Mat> templateCards = readTemplateCards();
-	// show templates
-	/*int z = 1;
-	for (auto temp : templateCards)
-	{
-		//cv::imshow("Temp " + std::to_string(j), scaleImage(temp, 0.3));
-		cv::imshow("Temp " + std::to_string(z), temp);
-		z++;
-	}*/
+	//std::vector<cv::Mat> templateCards = readTemplateCards();
 
-	/*auto orb = cv::ORB::create(); // ORB
-	auto matcher = cv::BFMatcher::create();
-	std::vector<std::vector<cv::KeyPoint>> keypointsTemplates;
-	std::vector<cv::Mat> descriptorsTemplates;
-
-	// prepare orb thingies for all template cards
-	int j = 1;
-	for (auto temp : templateCards)
-	{
-		std::vector<cv::KeyPoint> keypointsTemp;
-		cv::Mat descriptorsTemp;
-		orb->detectAndCompute(temp, NULL, keypointsTemp, descriptorsTemp);
-		keypointsTemplates.push_back(keypointsTemp);
-		descriptorsTemplates.push_back(descriptorsTemp);
-		//cv::imshow("Temp " + std::to_string(j), scaleImage(temp, 0.3));
-		cv::imshow("Temp " + std::to_string(j), temp);
-		j++;
-		
-	}
-
-	// trying to do recognize the cards with orby
-	// comparing each detected card with all template cards
-	int k = 1;
+	//attempts to sharpen photo
+	int i = 1;
 	for (auto card : croppedOutCards)
 	{
-		cv::Mat grayCard;
-		cv::cvtColor(card, grayCard, cv::COLOR_BGR2GRAY);
-		std::vector<cv::KeyPoint> keypointsCard;
-		cv::Mat descriptorsCard;
-		orb->detectAndCompute(grayCard, NULL, keypointsCard, descriptorsCard);
-		for (int a = 0; a < templateCards.size(); a++)
-		{
-			std::vector<cv::DMatch> matches;
-			matcher->match(descriptorsTemplates.at(a), descriptorsCard, matches);
-			// trying to get the best matches, which means the ones with the least distance
-			std::vector<cv::DMatch> goodMatches;
-			std::sort(matches.begin(), matches.end(), [](const auto& first, const auto& second) {return first.distance < second.distance; });
-			for (int p=0; p<30; p++)
-			{
-				if(matches.at(p).distance < 300)
-					goodMatches.push_back(matches.at(p));
-			}
-			// saving comparison images with good matches detected to analyze them
-			cv::Mat comparisonImage;
-			cv::drawMatches(templateCards.at(a), keypointsTemplates.at(a), grayCard, keypointsCard, goodMatches, comparisonImage);
-			//cv::imshow("Match " + std::to_string(a), comparisonImage);
-			cv::imwrite("resources/test_cards/match_" + std::to_string(k) + ".jpg", comparisonImage);
-			k++;
-		}
-	}*/
+		cv::Mat cardGray;
+		cv::Mat cardWithTextOnly;
+		cv::cvtColor(card, cardGray, cv::COLOR_BGR2GRAY);
+		cv::Mat cardBlurred;
+		cv::Mat cardSharpened;
+		cv::GaussianBlur(cardGray, cardBlurred, cv::Size(0, 0), cv::BORDER_DEFAULT);
+		cv::addWeighted(cardGray, 1.5, cardBlurred, -0.5, 0, cardSharpened);
+		//cv::threshold(cardWithTextOnly, cardWithTextOnly, 175, 255, cv::THRESH_OTSU);
+		cv::imshow("Card " + std::to_string(i), cardGray);
+		i++;
+	}
+
 
 	cv::waitKey();
-
-
 
 }

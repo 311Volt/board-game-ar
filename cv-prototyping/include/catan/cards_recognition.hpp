@@ -3,3 +3,5 @@
 
 
 std::vector<cv::Mat> readTemplateCards();
+
+std::vector<std::vector<cv::Mat>> cutOutCardHeadings(std::vector<cv::Mat> cards, float headingAreaCoeff);

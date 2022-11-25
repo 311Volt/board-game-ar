@@ -5,9 +5,10 @@
 #include <catan/analysis.hpp>
 #include <catan/utility_opencv.hpp>
 #include <catan/image_correction.hpp> //TODO delete this #include
+
 #include <catan/cards_detection.hpp>
-#include <catan/cards_recognition.hpp>
 #include <catan/cards_correction.hpp>
+#include <catan/cards_recognition.hpp>
 
 #include <fmt/format.h>
 
@@ -115,14 +116,8 @@ int main()
 		cv::imshow("Card warped " + std::to_string(j), card);
 		j++;
 	}
-	
-	// show every single cropped out card
-	/*int i = 1;
-	for (auto card : croppedOutCards)
-	{
-		cv::imshow("Card " + std::to_string(i), card);
-		i++;
-	}*/
+
+	auto cardHeadingsPairs = cutOutCardHeadings(verticalCards, 0.2);
 
 	//std::vector<cv::Mat> templateCards = readTemplateCards();
 

@@ -67,21 +67,6 @@ std::vector<std::vector<cv::Point>> filterCardsContours(cv::Mat mask)
 	return contoursQuadrangles;
 }
 
-/*cv::Mat correctQuadranglePerspective(std::vector<cv::Point> c, cv::Mat image)
-{
-	std::vector<cv::Point2f> dstPoints = { cv::Point2f(0,0), cv::Point2f(300, 0), cv::Point2f(0,500), cv::Point2f(300,500) };
-	auto peri = cv::arcLength(c, true);
-	std::vector<cv::Point2f> approx;
-	cv::approxPolyDP(c, approx, peri * 0.04, true); //0.025
-
-
-	cv::Mat perspectiveMat = cv::getPerspectiveTransform(approx, dstPoints);
-	cv::Mat warped;
-	cv::warpPerspective(image, warped, perspectiveMat, cv::Size(300, 500));
-	cv::imshow("Warped", warped);
-	cv::waitKey();
-	return warped;
-}*/
 
 cv::Mat getDilatedMask(std::vector<cv::Point> c, cv::Size imageSize, cv::Vec2b erosionKernel, short erosionIterations)
 {

@@ -7,6 +7,7 @@
 #include <catan/image_correction.hpp> //TODO delete this #include
 #include <catan/cards_detection.hpp>
 #include <catan/cards_recognition.hpp>
+#include <catan/cards_correction.hpp>
 
 #include <fmt/format.h>
 
@@ -105,6 +106,15 @@ int main()
 
 	std::vector<cv::Mat> croppedOutCards = detectCards(srcCardsPhoto);
 
+	auto correctedCards = correctCardsPerspective(croppedOutCards);
+
+	int j = 1;
+	for (auto card : correctedCards)
+	{
+		cv::imshow("Card warped " + std::to_string(j), card);
+		j++;
+	}
+	
 	// show every single cropped out card
 	/*int i = 1;
 	for (auto card : croppedOutCards)
@@ -116,7 +126,7 @@ int main()
 	//std::vector<cv::Mat> templateCards = readTemplateCards();
 
 	//attempts to sharpen photo
-	int i = 1;
+	/*int i = 1;
 	for (auto card : croppedOutCards)
 	{
 		cv::Mat cardGray;
@@ -129,7 +139,7 @@ int main()
 		//cv::threshold(cardWithTextOnly, cardWithTextOnly, 175, 255, cv::THRESH_OTSU);
 		cv::imshow("Card " + std::to_string(i), cardGray);
 		i++;
-	}
+	}*/
 
 
 	cv::waitKey();

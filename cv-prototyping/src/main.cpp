@@ -11,6 +11,12 @@
 #include <catan/cards_recognition.hpp>
 
 #include <fmt/format.h>
+#include<tesseract/baseapi.h>
+#include<leptonica/allheaders.h>
+
+
+#include <fstream>
+#include <iostream>
 
 
 void DrawCellTypes(cv::Mat board, const ctn::BoardInfo& boardInfo)
@@ -110,12 +116,12 @@ int main()
 	auto correctedCards = correctCardsPerspective(croppedOutCards);
 	auto verticalCards = setCardsPositionVertical(correctedCards);
 
-	int j = 1;
+	/*int j = 1;
 	for (auto card : verticalCards)
 	{
 		cv::imshow("Card warped " + std::to_string(j), card);
 		j++;
-	}
+	}*/
 
 	auto cardHeadingsPairs = cutOutCardHeadings(verticalCards, 0.2);
 
@@ -137,6 +143,36 @@ int main()
 		i++;
 	}*/
 
+	tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
+	if (api->Init(NULL, "pol")) {
+		fprintf(stderr, "Could not initialize tesseract.\n");
+		exit(1);
+	}
+
+	std::ofstream file;
+	file.open("test.txt");
+
+	for (auto pair : cardHeadingsPairs)
+	{
+		for (int a = 0; a < 2; a++)
+		{
+			cv::Mat cardHeading1 = pair[a];
+			api->SetImage(cardHeading1.data, cardHeading1.cols, cardHeading1.rows, cardHeading1.channels(), cardHeading1.step1());
+			// Get OCR result
+			char* outText;
+			outText = api->GetUTF8Text();
+			if (outText == NULL)
+				continue;
+			std::cout << "OCR output:\n" << outText << std::endl;
+			file << "OCR output:\n" << outText << std::endl;
+		}
+	}
+	file.close();
+	// Destroy used object and release memory
+	api->End();
+	//delete api;
+	//delete[] outText;
+	//pixDestroy(&image);
 
 	cv::waitKey();
 

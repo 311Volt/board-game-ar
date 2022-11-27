@@ -100,6 +100,7 @@ namespace ctn {
 
 }
 
+#ifdef FMT_FORMAT_H_
 
 template<>
 struct fmt::formatter<ctn::CellCoord>
@@ -151,5 +152,6 @@ struct fmt::formatter<ctn::EdgeCoord>
 	}
 };
 
+#endif /* FMT_FORMAT_H_ */
 
 #endif /* INCLUDE_CATAN_BOARD_COORDS */

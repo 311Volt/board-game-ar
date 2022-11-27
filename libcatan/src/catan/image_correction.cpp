@@ -40,11 +40,21 @@ cv::Mat FindAlignment(cv::Mat actualEdges, cv::Mat idealEdges)
 	cv::TermCriteria criteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 70, 1e-9);
 
 	cv::findTransformECC(idealEdges, actualEdges, warpMtx, cv::MOTION_EUCLIDEAN, criteria);
+	
+	double tDet = cv::determinant(warpMtx(cv::Rect{0, 0, 2, 2}));
+	double tNorm = cv::norm(warpMtx(cv::Rect{2,0,1,2}));
+
+	//if either det(transform) or norm(translation) is suspiciously high, fall back to identity
+	if(std::abs(1.0 - tDet) > 0.03 || tNorm > 30) {
+		return cv::Mat::eye(2, 3, CV_32FC1);
+	}
+
 	return warpMtx;
 }
 
 cv::Mat IsolateDarkEdges(cv::Mat input)
 {
+	//step 1: mark pixels that are substantially darker than their neighborhood
 	cv::Mat median = NEW_MAT(tmp) {cv::medianBlur(input, tmp, 5);};
 	cv::Mat thres = cvmath::TransformBin<cv::Vec3b, uint8_t>(input, median, [](cv::Vec3b pxIn, cv::Vec3b pxMed) {
 		const auto lum = cvutil::SumOfChannels;
@@ -54,6 +64,7 @@ cv::Mat IsolateDarkEdges(cv::Mat input)
 		return uint8_t(0);
 	});
 
+	//step 2: clean up the image (remove all islands with <20px area)
 	std::vector<std::vector<cv::Point>> contours;
 	cv::findContours(thres, contours, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
 

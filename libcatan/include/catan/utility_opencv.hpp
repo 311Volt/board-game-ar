@@ -48,6 +48,8 @@ namespace cvutil {
 		void show(cv::Mat img, cfg::ShowOptions options = {});
 	};
 
+	cv::Mat SafeImread(const std::string& filename);
+
 	void drawPoints(const std::vector<cv::Point2d>& points, cv::Mat outImg, cfg::DrawPointsOptions options = {});
 	cv::Mat ConvertToCrCb(cv::Mat image);
 	cv::Mat Convert(cv::Mat image, int code);

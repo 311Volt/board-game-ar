@@ -142,3 +142,12 @@ cv::Mat cvutil::CropRotatedRect(cv::Mat img, cv::RotatedRect roi)
 		cv::Point2i{center + roi.size/2.f}
 	});
 }
+
+cv::Mat cvutil::SafeImread(const std::string &filename)
+{
+	cv::Mat ret = cv::imread(filename);
+	if(ret.data == nullptr) {
+		throw std::runtime_error("Cannot read file: " + filename);
+	}
+	return ret;
+}

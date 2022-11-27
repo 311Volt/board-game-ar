@@ -96,9 +96,9 @@ std::vector<cv::Vec3b> CreateSpectrum(cv::Mat inImage, cv::Vec3b maskColor, int 
 BuildingColor PlayerStructureTest(cv::Vec3b pixel)
 {
 	static std::vector<std::vector<cv::Vec3b>> spectrum = {
-		CreateSpectrum(cv::imread("resources/elements/blue.png"), {0,0,0}, 10),
-		CreateSpectrum(cv::imread("resources/elements/red.png"), {0,0,0}, 10),
-		CreateSpectrum(cv::imread("resources/elements/orange.png"), {0,0,0}, 10)
+		CreateSpectrum(cvutil::SafeImread("resources/elements/blue.png"), {0,0,0}, 10),
+		CreateSpectrum(cvutil::SafeImread("resources/elements/red.png"), {0,0,0}, 10),
+		CreateSpectrum(cvutil::SafeImread("resources/elements/orange.png"), {0,0,0}, 10)
 	};
 
 	float minDist = 10e8;
@@ -256,8 +256,6 @@ std::map<ctn::VertexCoord, ctn::Settlement> ctn::FindSettlements(const BoardIR& 
 		int maxRatingIdx = maxRatingIter - rating.begin();
 
 		if(*maxRatingIter > 80) {
-			cv::imshow(fmt::format("mask at {}", coord), mask);
-
 			PlayerColor colors[3] = {PlayerColor::Blue, PlayerColor::Red, PlayerColor::Orange};
 
 			result[coord] = {
@@ -283,8 +281,6 @@ std::map<ctn::EdgeCoord, ctn::Road> ctn::FindRoads(const BoardIR& boardIR)
 		int maxRatingIdx = maxRatingIter - rating.begin();
 
 		if(*maxRatingIter > 30) {
-			cv::imshow(fmt::format("road mask at {}", coord), mask);
-
 			PlayerColor colors[3] = {PlayerColor::Blue, PlayerColor::Red, PlayerColor::Orange};
 			result[coord] = {
 				.color = colors[maxRatingIdx]

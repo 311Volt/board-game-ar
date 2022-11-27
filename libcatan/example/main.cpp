@@ -55,7 +55,7 @@ double GetTime()
 
 int main()
 {
-	auto src = cv::imread("resources/sample1.jpg");
+	auto src = cvutil::SafeImread("resources/samples/sample1.jpg");
 	CatanBoardDetector detector {SEA_COLOR_YCBCR_6500K};
 
 	auto warpedOpt = detector.findBoard(src);

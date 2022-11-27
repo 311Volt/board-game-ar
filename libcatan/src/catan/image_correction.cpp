@@ -1,9 +1,6 @@
-#include <catan/image_correction.hpp>
-#include <catan/utility_opencv.hpp>
-#include <catan/common_math.hpp>
-#include <catan/board_coords.hpp>
+#include <catan.hpp>
 
-cv::Mat getPerspectiveCorrectionMatrix(const std::vector<cv::Point>& points)
+cv::Mat ctn::GetBoardPerspectiveCorrectionMatrix(const std::vector<cv::Point>& points)
 {
 	std::vector<cv::Point> dstPoints = {
 		{0, 433},
@@ -16,7 +13,7 @@ cv::Mat getPerspectiveCorrectionMatrix(const std::vector<cv::Point>& points)
 	return cv::findHomography(points, dstPoints);
 }
 
-cv::Mat GenerateReferenceEdgeThres()
+cv::Mat ctn::GenerateIdealEdgeMask()
 {
 	cv::Mat output = cv::Mat::zeros({1000, 866}, CV_8UC1);
 
@@ -28,16 +25,17 @@ cv::Mat GenerateReferenceEdgeThres()
 		
 		auto p1 = mapper(vt.first);
 		auto p2 = mapper(vt.second);
-		cv::line(output, p1, p2, {255,255,255});
+		cv::line(output, p1, p2, {255,255,255}, 2);
 	}
 
 	return output;
 }
 
-cv::Mat FindAlignment(cv::Mat actualEdges, cv::Mat idealEdges)
+
+cv::Mat ctn::FindFineAlignment(cv::Mat actualEdges, cv::Mat idealEdges)
 {
 	cv::Mat warpMtx = cv::Mat::eye(2, 3, CV_32FC1);
-	cv::TermCriteria criteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 70, 1e-9);
+	cv::TermCriteria criteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-7);
 
 	cv::findTransformECC(idealEdges, actualEdges, warpMtx, cv::MOTION_EUCLIDEAN, criteria);
 	
@@ -52,7 +50,7 @@ cv::Mat FindAlignment(cv::Mat actualEdges, cv::Mat idealEdges)
 	return warpMtx;
 }
 
-cv::Mat IsolateDarkEdges(cv::Mat input)
+cv::Mat ctn::CreateDarkEdgeMask(cv::Mat input)
 {
 	//step 1: mark pixels that are substantially darker than their neighborhood
 	cv::Mat median = NEW_MAT(tmp) {cv::medianBlur(input, tmp, 5);};

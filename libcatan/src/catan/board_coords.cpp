@@ -1,4 +1,4 @@
-#include <catan/board_coords.hpp>
+#include <catan.hpp>
 
 #include <numbers>
 

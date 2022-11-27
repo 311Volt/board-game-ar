@@ -1,8 +1,4 @@
-#include <catan/analysis_cells.hpp>
-
-#include <catan/common_math.hpp>
-#include <catan/utility_opencv.hpp>
-
+#include <catan.hpp>
 
 inline float rating1(float x)
 {

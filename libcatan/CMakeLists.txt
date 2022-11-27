@@ -9,6 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #set(CMAKE_VERBOSE_MAKEFILE 1)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -ffast-math -march=haswell")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 
 file(GLOB_RECURSE AR_PROTO_SOURCES "src/*.cpp")
 
@@ -16,7 +17,7 @@ add_library(libcatan ${AR_PROTO_SOURCES})
 target_include_directories(libcatan PUBLIC include/)
 
 target_link_libraries(libcatan ${OpenCV_LIBRARIES})
-target_precompile_headers(libcatan PRIVATE "<opencv2/opencv.hpp>")
+target_precompile_headers(libcatan PRIVATE "<catan.hpp>")
 
 
 

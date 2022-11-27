@@ -1,5 +1,4 @@
-#include <catan/utility_opencv.hpp>
-
+#include <catan.hpp>
 
 void cvutil::drawPoints(const std::vector<cv::Point2d>& points, cv::Mat outImg, cvutil::cfg::DrawPointsOptions options)
 {

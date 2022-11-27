@@ -1,5 +1,4 @@
-#include <catan/board_ir.hpp>
-#include <catan/utility_opencv.hpp>
+#include <catan.hpp>
 
 #include <span>
 

@@ -5,6 +5,8 @@
 #include <catan/analysis_cells.hpp>
 #include <catan/analysis_settlements.hpp>
 
+#include <optional>
+
 namespace ctn {
 
 	struct BoardInfo {
@@ -15,10 +17,8 @@ namespace ctn {
 		CellCoord robberPosition;
 	};
 
-	//TODO: jobject* CreateBoardInfoJavaObject(const BoardInfo& boardInfo);
-
 	BoardInfo AnalyzeBoard(const BoardIR& boardIR);
-
+	std::optional<BoardInfo> AnalyzeBoardImage(const cv::Mat& image);
 };
 
 #endif /* INCLUDE_CATAN_ANALYSIS */

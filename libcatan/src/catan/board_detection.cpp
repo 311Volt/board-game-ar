@@ -1,7 +1,4 @@
-#include <catan/board_detection.hpp>
-#include <catan/image_correction.hpp>
-#include <catan/utility_opencv.hpp>
-
+#include <catan.hpp>
 
 cv::Mat squareDist(cv::Mat source, cv::Vec3f vec)
 {
@@ -83,8 +80,13 @@ std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 		return std::nullopt;
 	}
 
-	cv::Mat corr = getPerspectiveCorrectionMatrix(boardVtxs.value());
+	cv::Mat corr = ctn::GetBoardPerspectiveCorrectionMatrix(boardVtxs.value());
 	cv::Mat warped = NEW_MAT(tmp) {cv::warpPerspective(photo, warped, corr, {1000, 866});};
+
+	cv::Mat warpMtx = ctn::FindFineAlignment(ctn::CreateDarkEdgeMask(warped), ctn::GenerateIdealEdgeMask());
+	cv::Mat warped1;
+	cv::warpAffine(warped, warped1, warpMtx, warped.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
+	warped = warped1;
 
 	return warped;
 }

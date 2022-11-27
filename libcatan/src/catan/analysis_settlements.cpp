@@ -1,8 +1,4 @@
-#include <opencv2/opencv.hpp>
-
-#include <catan/analysis_settlements.hpp>
-#include <catan/utility_opencv.hpp>
-#include <catan/common_math.hpp>
+#include <catan.hpp>
 
 static constexpr float INV_255 = 1.0f / 255.0f;
 

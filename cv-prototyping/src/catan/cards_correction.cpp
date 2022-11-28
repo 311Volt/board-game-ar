@@ -22,18 +22,10 @@ std::vector<cv::Point> getApproxOfPolygon(std::vector<cv::Point> c, float periCo
 
 std::vector<cv::Point2f> sortQuadrangleVerticies(std::vector<cv::Point> approx)
 {
-	std::vector<cv::Point> vectorForSorting = approx;
-
-	// sort descending by sum
-	std::sort(vectorForSorting.begin(), vectorForSorting.end(), [](auto a1, auto a2) {return a1.x + a1.y > a2.x + a2.y; });
-	cv::Point2f topLeft = vectorForSorting[3];  // the smallest sum
-	cv::Point2f bottomRight = vectorForSorting[0]; // the biggest sum
-
-	// sort descending by difference
-	std::sort(vectorForSorting.begin(), vectorForSorting.end(), [](auto a1, auto a2) {return a1.x - a1.y > a2.x - a2.y; });
-	cv::Point2f topRight = vectorForSorting[0];  // the biggest difference
-	cv::Point2f bottomLeft = vectorForSorting[3];  // the smallest difference
-	
+	cv::Point2f topLeft = approx[0];
+	cv::Point2f bottomLeft = approx[1];
+	cv::Point2f bottomRight = approx[2];
+	cv::Point2f topRight = approx[3];
 	std::vector<cv::Point2f> sortedApprox = { topLeft, topRight, bottomRight, bottomLeft };
 	return sortedApprox;
 }

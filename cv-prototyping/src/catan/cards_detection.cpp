@@ -108,3 +108,41 @@ std::vector<cv::Mat> detectCards(cv::Mat image)
 
 	return detectedCards;
 }
+
+
+cv::Mat detectCreamyFields(cv::Mat image)
+{
+	cv::Mat hsvCardsPhoto;
+	cv::cvtColor(image, hsvCardsPhoto, cv::COLOR_BGR2HSV);
+
+	cv::Mat creamyFieldsofPhoto;
+	//cv::inRange(hsvCardsPhoto, cv::Vec3b(8, 70, 170), cv::Vec3b(28, 120, 255), creamyFieldsofPhoto); // H = 36/2 For photos with ML
+	cv::inRange(hsvCardsPhoto, cv::Vec3b(12, 70, 150), cv::Vec3b(22, 140, 255), creamyFieldsofPhoto);
+	cv::imshow("Creamy fields", scaleImage(creamyFieldsofPhoto, 0.2));
+	cv::waitKey();
+
+	return creamyFieldsofPhoto;
+}
+
+std::vector<cv::Mat> detectCardsPlasticVer(cv::Mat image)
+{
+	//parameters of erosion
+	cv::Vec2b erosionKernel = cv::Vec2b(5, 5);
+	short erosionIterations = 8; //4
+
+	cv::Mat creamyFieldsOfPhoto = detectCreamyFields(image);
+	cv::Mat maskEroded = getErodedMask(creamyFieldsOfPhoto, erosionKernel, erosionIterations);
+	cv::imshow("Mask eroded", scaleImage(maskEroded, 0.2));
+	cv::waitKey();
+	std::vector<std::vector<cv::Point>> filteredContours = filterCardsContours(maskEroded);
+
+	std::vector<cv::Mat> detectedCards;
+	for (auto c : filteredContours)
+	{
+		cv::Mat maskDilatedBack = getDilatedMask(c, image.size(), erosionKernel, erosionIterations);
+		cv::Mat card = cutOutCard(image, maskDilatedBack);
+		detectedCards.push_back(card);
+	}
+
+	return detectedCards;
+}

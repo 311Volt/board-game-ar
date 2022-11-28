@@ -1,7 +1,9 @@
 #include <opencv2/opencv.hpp>
+#include<tesseract/baseapi.h>
+#include<leptonica/allheaders.h>
+
 #include <catan/cards_detection.hpp>
+#include <catan/cards_correction.hpp>
 
 
-std::vector<cv::Mat> readTemplateCards();
-
-std::vector<std::vector<cv::Mat>> cutOutCardHeadings(std::vector<cv::Mat> cards, float headingAreaCoeff);
+int* recognizeCardsFromImage(cv::Mat image, bool isPlasticVer);

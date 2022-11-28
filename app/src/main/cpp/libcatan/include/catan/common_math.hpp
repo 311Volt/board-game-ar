@@ -32,7 +32,7 @@ namespace cvmath {
 	concept UnaryImageFn = 
 		MatFragment<InFragT> && 
 		MatFragment<OutFragT> &&
-		std::invocable<FuncT, InFragT> && 
+//		std::invocable<FuncT, InFragT> &&
 		requires(FuncT fn, InFragT fr) {
 			{fn(fr)} -> std::same_as<OutFragT>;
 		};
@@ -40,7 +40,7 @@ namespace cvmath {
 	template<typename FuncT, typename FragT>
 	concept UnaryImageOp = 
 		MatFragment<FragT> && 
-		std::invocable<FuncT, FragT> && 
+//		std::invocable<FuncT, FragT> &&
 		requires(FuncT fn, FragT fr) {
 			fr = fn(fr);
 			{fn(fr)} -> std::same_as<FragT>;
@@ -50,7 +50,7 @@ namespace cvmath {
 	concept BinaryImageFn = 
 		MatFragment<InFragT> && 
 		MatFragment<OutFragT> &&
-		std::invocable<FuncT, InFragT, InFragT> && 
+//		std::invocable<FuncT, InFragT, InFragT> &&
 		requires(FuncT fn, InFragT fr) {
 			{fn(fr, fr)} -> std::same_as<OutFragT>;
 		};
@@ -58,7 +58,7 @@ namespace cvmath {
 	template<typename FuncT, typename FragT>
 	concept BinaryImageOp = 
 		MatFragment<FragT> && 
-		std::invocable<FuncT, FragT, FragT> &&
+//		std::invocable<FuncT, FragT, FragT> &&
 		requires(FuncT fn, FragT fr) {
 			fr = fn(fr, fr);
 			{fn(fr, fr)} -> std::same_as<FragT>;

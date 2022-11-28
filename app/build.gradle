@@ -19,7 +19,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags "-frtti -fexceptions"
-                arguments "-DANDROID_ARM_NEON=TRUE", "-DOpenCV_DIR=" + opencvsdk + "/sdk/native/jni"
+                arguments "-DANDROID_ARM_NEON=TRUE", "-DOpenCV_DIR=" + opencvsdk + "/sdk/native/jni", "-DANDROID_STL=c++_shared", "-DBUILD_SHARED_LIBS=true"
             }
         }
     }

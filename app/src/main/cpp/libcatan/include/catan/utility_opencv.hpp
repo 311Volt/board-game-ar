@@ -5,8 +5,6 @@
 #include <concepts>
 #include <optional>
 
-#include <fmt/format.h>
-
 namespace cvutil {
 	struct dummy {};
 
@@ -14,7 +12,7 @@ namespace cvutil {
 		double mean, stddev;
 	};
 
-	template<std::invocable<cv::Mat&> FuncT>
+	template<typename FuncT>
 	cv::Mat operator+(dummy, FuncT func)
 	{
 		cv::Mat output;
@@ -68,7 +66,7 @@ namespace cvutil {
 	cv::Mat MergeBGR(const std::array<cv::Mat, 3>& bgr);
 }
 
-
+#ifdef FMT_FORMAT_H_
 
 template<>
 struct fmt::formatter<cvutil::MeanStdDev>
@@ -86,6 +84,7 @@ struct fmt::formatter<cvutil::MeanStdDev>
 	}
 };
 
+#endif // FMT_FORMAT_H_
 
 #define NEW_MAT(tmpName__) ::cvutil::dummy() + [&](cv::Mat& tmpName__)
 

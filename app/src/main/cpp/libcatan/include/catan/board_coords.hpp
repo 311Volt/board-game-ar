@@ -4,9 +4,29 @@
 #include <opencv2/opencv.hpp>
 
 #include <concepts>
-#include <fmt/format.h>
+#include <compare>
+#include <tuple>
+
+#if __cplusplus < 202002L
+#error "need C++20 compiler"
+#endif
 
 namespace ctn {
+
+#if defined(_LIBCPP_VERSION) && _LIBCPP_STD_VER < 20
+	template<typename T, typename U, typename V>
+	inline std::strong_ordering operator<=>(const std::tuple<T,U,V>& a, const std::tuple<T,U,V>& b)
+	{
+		if(std::get<0>(a) < std::get<0>(b)) return std::strong_ordering::less;
+		if(std::get<0>(a) > std::get<0>(b)) return std::strong_ordering::greater;
+		if(std::get<1>(a) < std::get<1>(b)) return std::strong_ordering::less;
+		if(std::get<1>(a) > std::get<1>(b)) return std::strong_ordering::greater;
+		if(std::get<2>(a) < std::get<2>(b)) return std::strong_ordering::less;
+		if(std::get<2>(a) > std::get<2>(b)) return std::strong_ordering::greater;
+		return std::strong_ordering::equal;
+	}
+#endif
+
 
 	/* 
 	* Maps a hexagonal cell to coordinates (x,y,z), where x+y+z=0

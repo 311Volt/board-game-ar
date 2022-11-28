@@ -1,6 +1,9 @@
 #include <catan.hpp>
 
-#include <numbers>
+namespace MC {
+	static constexpr double pi = 3.14159265358979;
+	static constexpr double sqrt3 = 1.73205080757;
+}
 
 cv::Point2d cis(double theta)
 {
@@ -8,11 +11,11 @@ cv::Point2d cis(double theta)
 }
 long double operator""_deg(long double x)
 {
-	return x * std::numbers::pi / 180.0;
+	return x * MC::pi / 180.0;
 }
 long double operator""_deg(unsigned long long x)
 {
-	return x * std::numbers::pi / 180.0;
+	return x * MC::pi / 180.0;
 }
 
 std::pair<ctn::VertexCoord, ctn::VertexCoord> ctn::EdgeCoord::asVertexCoordPair() const
@@ -37,7 +40,7 @@ ctn::ScreenCoordMapper::ScreenCoordMapper(const HexGridView& view)
 
 cv::Point2d ctn::ScreenCoordMapper::operator()(const CellCoord& cell)
 {
-	static constexpr double M[] = { 1, 0.5, 0, -std::numbers::sqrt3 / 2.0 };
+	static constexpr double M[] = { 1, 0.5, 0, -MC::sqrt3 / 2.0 };
 	return view.center + view.size * cv::Point2d{
 		cell.x * M[0] + cell.y * M[1],
 		cell.x * M[2] + cell.y * M[3]
@@ -45,7 +48,7 @@ cv::Point2d ctn::ScreenCoordMapper::operator()(const CellCoord& cell)
 }
 cv::Point2d ctn::ScreenCoordMapper::operator()(const VertexCoord& vtx)
 {
-	static constexpr double r = 1.0 / std::numbers::sqrt3;
+	static constexpr double r = 1.0 / MC::sqrt3;
 	return (*this)(vtx.origin) + view.size * r * cis(vtx.high ? 30_deg : -30_deg);
 }
 cv::Point2d ctn::ScreenCoordMapper::operator()(const EdgeCoord& edge)

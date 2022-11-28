@@ -54,6 +54,10 @@ std::optional<std::vector<cv::Point>> findBoardVertices(cv::Mat thres)
 
 	cv::findContours(thres, contours, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
 
+	if(contours.size() == 0) {
+		return std::nullopt;
+	}
+
 	auto it = std::max_element(contours.begin(), contours.end(), [](auto&& a, auto&& b) {
 		return cv::contourArea(a) < cv::contourArea(b);
 	});
@@ -83,10 +87,12 @@ std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 	cv::Mat corr = ctn::GetBoardPerspectiveCorrectionMatrix(boardVtxs.value());
 	cv::Mat warped = NEW_MAT(tmp) {cv::warpPerspective(photo, warped, corr, {1000, 866});};
 
+#ifdef CATAN_APPLY_FINE_ALIGNMENT
 	cv::Mat warpMtx = ctn::FindFineAlignment(ctn::CreateDarkEdgeMask(warped), ctn::GenerateIdealEdgeMask());
 	cv::Mat warped1;
 	cv::warpAffine(warped, warped1, warpMtx, warped.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
 	warped = warped1;
+#endif
 
 	return warped;
 }

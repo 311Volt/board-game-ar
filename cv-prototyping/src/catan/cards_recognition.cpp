@@ -1,19 +1,6 @@
 #include <catan/cards_recognition.hpp>
 
 
-/*// PS. the cards are downscaled here too
-std::vector<cv::Mat> readTemplateCards()
-{
-	std::vector<cv::Mat> templateCards;
-	templateCards.push_back(scaleImage(cv::imread("resources/cards/point_cathedral.jpg", cv::IMREAD_GRAYSCALE), 0.3));
-	templateCards.push_back(scaleImage(cv::imread("resources/cards/point_cityHall.jpg", cv::IMREAD_GRAYSCALE), 0.3));
-	templateCards.push_back(scaleImage(cv::imread("resources/cards/point_library.jpg", cv::IMREAD_GRAYSCALE), 0.3));
-	templateCards.push_back(scaleImage(cv::imread("resources/cards/point_marketplace.jpg", cv::IMREAD_GRAYSCALE), 0.3));
-	templateCards.push_back(scaleImage(cv::imread("resources/cards/point_university.jpg", cv::IMREAD_GRAYSCALE), 0.3));
-	return templateCards;
-}*/
-
-
 cv::Mat cutOutCardBottom(cv::Mat card, float bottomAreaCoeff)
 {
 	cv::Rect bottomBoundingRect = cv::Rect(cv::Point(0, card.size().height * (1.0 - bottomAreaCoeff)), cv::Point(card.size().width - 1, card.size().height - 1));
@@ -35,45 +22,111 @@ char* recognizeTextOnImage(cv::Mat cardPart, tesseract::TessBaseAPI* api)
 	return outText;
 }
 
-int recognizeCard(cv::Mat card, tesseract::TessBaseAPI* api)
+std::string trimNonAlphabethical(std::string text)
+{
+	std::string s = text;
+	for (int i = 0; i < s.size(); i++)
+	{
+		char character = s[i];
+		if (!((character >= 'A' && character <= 'Z') || (character >= 'a' && character <= 'z')))
+		{
+			s.erase(i, 1);
+			i--;
+		}
+	}
+	return s;
+}
+
+std::string prepareString(std::string text)
+{
+	std::string s = trimNonAlphabethical(text);
+	for (char& character : s)
+		character = std::toupper(character);
+	return s;
+}
+
+scoringCardType assignCardTypeBasedOnText(char* outText)
+{
+	/*std::string cardsCaptions[] = {"Koszty budowy", "Rycerz", "Katedra", "Ratusz", "Biblioteka", "Rynek", "Uniwersytet", "Postêp",
+		"Najwy¿sza W³adza Rycerska 2 Punkty Zwyciêstwa", "Najd³u¿sza Droga Handlowa 2 Punkty Zwyciêstwa" };*/
+	std::string twoPointCardsContents[] = { "Najwy¿sza",  "W³adza", "Rycerska", "Najd³u¿sza", "Droga Handlowa" }; // "2 Punkty Zwyciêstwa"
+	std::string onePointCardsContents[] = { /*"1",*/  "Punkt", "Zwyciêstwa", "Katedra", "Ratusz", "Biblioteka", "Rynek", "Uniwersytet" };
+	std::string cardText = outText;
+	cardText = prepareString(cardText);
+
+	std::string costsTableContents[] = { "Koszty budowy", "Rozwój" };
+	for (auto templateText : costsTableContents)
+	{
+		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
+
+		if (cardText.find(prepareString(templateText)) != std::string::npos)
+			return scoringCardType::OTHER;
+	}
+
+	for (auto templateText : twoPointCardsContents)
+	{
+		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
+		
+		if (cardText.find(prepareString(templateText)) != std::string::npos)
+			return scoringCardType::TWO_POINTS;
+	}
+	for (auto templateText : onePointCardsContents)
+	{
+		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
+		if (cardText.find(prepareString(templateText)) != std::string::npos)
+			return scoringCardType::ONE_POINT;
+	}
+
+	return scoringCardType::OTHER;
+}
+
+std::string cardTypeToString(scoringCardType cardType)
+{
+	switch (cardType)
+	{
+	case scoringCardType::ONE_POINT:
+		return "ONE POINT CARD";
+	case scoringCardType::TWO_POINTS:
+		return "TWO POINTS CARD";
+	default:
+		return "OTHER/UNDEFINED CARD";
+	}
+}
+
+scoringCardType recognizeCard(cv::Mat card, tesseract::TessBaseAPI* api, bool isPlasticVer)
 {
 	cv::Mat cardCopy;
 	card.copyTo(cardCopy);
 	char* outText = NULL;
+	scoringCardType cardType;
+	cv::Mat cardPart;
 	for (int a = 0; a < 2; a++)
 	{
-		cv::Mat cardBottom = cutOutCardHeading(cardCopy, 0.2);
-		outText = recognizeTextOnImage(cardBottom, api);
-		std::cout << "OCR output:\n" << outText << std::endl;
-		cv::imshow("Card part", cardBottom);
-		cv::waitKey();
+		if(!isPlasticVer)
+			cardPart = cutOutCardHeading(cardCopy, 0.2);
+		else
+			cardPart = cutOutCardBottom(cardCopy, 0.4);
+
+		outText = recognizeTextOnImage(cardPart, api);
+		cardType = assignCardTypeBasedOnText(outText);
+
+		//std::cout << "OCR output:\n" << prepareString(std::string(outText)) << std::endl;
+		//std::cout << "Recognition:\n" << cardTypeToString(cardType) << std::endl;
+		//cv::imshow("Card part", cardPart);
+		//cv::waitKey();
+
+		if (cardType != scoringCardType::OTHER)
+			return cardType;
 		cv::rotate(cardCopy, cardCopy, cv::ROTATE_180);
 	}
 
-	return 0;
-}
-
-int recognizeCardPlasticVer(cv::Mat card, tesseract::TessBaseAPI* api)
-{
-	cv::Mat cardCopy;
-	card.copyTo(cardCopy);
-	char* outText = NULL;
-	for (int a = 0; a < 2; a++)
-	{
-		cv::Mat cardBottom = cutOutCardBottom(cardCopy, 0.4);
-		outText = recognizeTextOnImage(cardBottom, api);
-		std::cout << "OCR output:\n" << outText << std::endl;
-		cv::imshow("Card part", cardBottom);
-		cv::waitKey();
-		cv::rotate(cardCopy, cardCopy, cv::ROTATE_180);
-	}
-	return 0;
+	return cardType;
 }
 
 
-int* recognizeCards(std::vector<cv::Mat> cards, bool isPlasticVer)
+std::vector<scoringCardType> recognizeCards(std::vector<cv::Mat> cards, bool isPlasticVer)
 {
-	int* results = NULL;
+	std::vector<scoringCardType> results;
 
 	tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
 	if (api->Init(NULL, "pol")) {
@@ -83,10 +136,8 @@ int* recognizeCards(std::vector<cv::Mat> cards, bool isPlasticVer)
 
 	for (auto card : cards)
 	{
-		if (!isPlasticVer)
-			recognizeCard(card, api);
-		else
-			recognizeCardPlasticVer(card, api);
+		scoringCardType cardType = recognizeCard(card, api, isPlasticVer);
+		results.push_back(cardType);
 	}
 	// Destroy used object and release memory
 	//api->End();
@@ -101,7 +152,6 @@ int* recognizeCards(std::vector<cv::Mat> cards, bool isPlasticVer)
 
 int* recognizeCardsFromImage(cv::Mat image, bool isPlasticVer)
 {
-	int* results;
 	std::vector<cv::Mat> croppedOutCards;
 	if (!isPlasticVer)
 		croppedOutCards = detectCards(image);
@@ -111,14 +161,28 @@ int* recognizeCardsFromImage(cv::Mat image, bool isPlasticVer)
 	auto correctedCards = correctCardsPerspective(croppedOutCards);
 	auto verticalCards = setCardsPositionVertical(correctedCards);
 
-	int j = 1;
+	/*int j = 1;
 	for (auto card : verticalCards)
 	{
 		cv::imshow("Card warped " + std::to_string(j), card);
 		j++;
 	}
+	cv::waitKey();*/
+
+	std::vector<scoringCardType> cardTypes = recognizeCards(verticalCards, isPlasticVer);
+
+	for (int i=0; i<verticalCards.size(); i++)
+	{
+		auto card = verticalCards[i];
+		std::string cardTypeString = cardTypeToString(cardTypes[i]);
+		cv::putText(card, cardTypeString, cv::Point(card.size().width/4, card.size().height/4), cv::FONT_HERSHEY_COMPLEX_SMALL, 2.0, cv::Scalar(0, 255, 0));
+		cv::imshow("Card recognized " + std::to_string(i), card);
+	}
 	cv::waitKey();
 
-	results = recognizeCards(verticalCards, isPlasticVer);
+	int* results = new int[cardTypes.size()];
+	for (int i=0; i<cardTypes.size(); i++)
+		results[i] = (int)cardTypes[i];
+
 	return results;
 }

@@ -2,3 +2,5 @@
 /build
 /.vs
 /out
+# for testing
+/resources/sampleCards

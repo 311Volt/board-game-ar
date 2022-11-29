@@ -103,10 +103,10 @@ int main()
 	cv::waitKey();*/
 
 	//----- cards detection -----//
-	cv::Mat srcCardsPhoto = cv::imread("resources/sampleCards1.jpg");
+	cv::Mat srcCardsPhoto = cv::imread("resources/sampleCardsPOnPaper1.jpg");
 	//srcCardsPhoto = scaleImage(srcCardsPhoto, 0.3);
 	cv::imshow("Src Cards Photo", scaleImage(srcCardsPhoto, 0.3));
 
-	auto recognizedCardsInfo = recognizeCardsFromImage(srcCardsPhoto, false);
+	auto recognizedCardsInfo = recognizeCardsFromImage(srcCardsPhoto, true);
 
 }

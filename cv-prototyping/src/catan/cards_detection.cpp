@@ -118,8 +118,8 @@ cv::Mat detectCreamyFields(cv::Mat image)
 	cv::Mat creamyFieldsofPhoto;
 	//cv::inRange(hsvCardsPhoto, cv::Vec3b(8, 70, 170), cv::Vec3b(28, 120, 255), creamyFieldsofPhoto); // H = 36/2 For photos with ML
 	cv::inRange(hsvCardsPhoto, cv::Vec3b(12, 70, 150), cv::Vec3b(22, 140, 255), creamyFieldsofPhoto);
-	cv::imshow("Creamy fields", scaleImage(creamyFieldsofPhoto, 0.2));
-	cv::waitKey();
+	//cv::imshow("Creamy fields", scaleImage(creamyFieldsofPhoto, 0.2));
+	//cv::waitKey();
 
 	return creamyFieldsofPhoto;
 }
@@ -132,8 +132,8 @@ std::vector<cv::Mat> detectCardsPlasticVer(cv::Mat image)
 
 	cv::Mat creamyFieldsOfPhoto = detectCreamyFields(image);
 	cv::Mat maskEroded = getErodedMask(creamyFieldsOfPhoto, erosionKernel, erosionIterations);
-	cv::imshow("Mask eroded", scaleImage(maskEroded, 0.2));
-	cv::waitKey();
+	//cv::imshow("Mask eroded", scaleImage(maskEroded, 0.2));
+	//cv::waitKey();
 	std::vector<std::vector<cv::Point>> filteredContours = filterCardsContours(maskEroded);
 
 	std::vector<cv::Mat> detectedCards;

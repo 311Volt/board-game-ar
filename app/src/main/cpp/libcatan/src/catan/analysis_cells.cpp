@@ -49,7 +49,6 @@ cv::Mat WarpCell(cv::Mat src)
 	return dst({75, 0, 75, 150});
 }
 
-
 struct ReferenceCell 
 {
 	std::string typeName;
@@ -64,7 +63,7 @@ struct ReferenceCell
 	ReferenceCell(const char* typeName)
 		: typeName(typeName)
 	{
-		sourceImage = cvutil::SafeImread("resources/cells/" + std::string(typeName) + ".jpg");
+		sourceImage = ctn::GetBitmapResource("cell_" + std::string(typeName));
 		polarWarped = WarpCell(sourceImage);
 		masked = cvmath::TransformBin<cv::Vec3b, cv::Vec3b>(sourceImage, CellMask.u8, cvmath::Mask8UC3);
 		maskYCrCb = cvutil::Convert(masked, cv::COLOR_BGR2YCrCb);

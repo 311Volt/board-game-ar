@@ -10,5 +10,6 @@
 #include <catan/common_math.hpp>
 #include <catan/image_correction.hpp>
 #include <catan/utility_opencv.hpp>
+#include <catan/resource_provider.hpp>
 
 #endif /* INCLUDE_CATAN */

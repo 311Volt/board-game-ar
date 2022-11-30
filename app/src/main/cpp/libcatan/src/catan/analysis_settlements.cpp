@@ -92,9 +92,9 @@ std::vector<cv::Vec3b> CreateSpectrum(cv::Mat inImage, cv::Vec3b maskColor, int 
 BuildingColor PlayerStructureTest(cv::Vec3b pixel)
 {
 	static std::vector<std::vector<cv::Vec3b>> spectrum = {
-		CreateSpectrum(cvutil::SafeImread("resources/elements/blue.png"), {0,0,0}, 10),
-		CreateSpectrum(cvutil::SafeImread("resources/elements/red.png"), {0,0,0}, 10),
-		CreateSpectrum(cvutil::SafeImread("resources/elements/orange.png"), {0,0,0}, 10)
+		CreateSpectrum(ctn::GetBitmapResource("element_blue"), {0,0,0}, 10),
+		CreateSpectrum(ctn::GetBitmapResource("element_red"), {0,0,0}, 10),
+		CreateSpectrum(ctn::GetBitmapResource("element_orange"), {0,0,0}, 10)
 	};
 
 	float minDist = 10e8;

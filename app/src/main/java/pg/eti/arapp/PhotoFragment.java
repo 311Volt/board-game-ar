@@ -2,17 +2,15 @@ package pg.eti.arapp;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import pg.eti.arapp.databinding.FragmentLarpsBinding;
 import pg.eti.arapp.databinding.FragmentPhotoBinding;
 
 public class PhotoFragment extends Fragment {

@@ -18,6 +18,19 @@ void msg(const std::string& msg)
 
 int main()
 {
+	ctn::InitBitmapResources({
+		{"cell_desert", cvutil::SafeImread("resources/cells/desert.jpg")},
+		{"cell_fields", cvutil::SafeImread("resources/cells/fields.jpg")},
+		{"cell_forest", cvutil::SafeImread("resources/cells/forest.jpg")},
+		{"cell_hills", cvutil::SafeImread("resources/cells/hills.jpg")},
+		{"cell_mountains", cvutil::SafeImread("resources/cells/mountains.jpg")},
+		{"cell_pasture", cvutil::SafeImread("resources/cells/pasture.jpg")},
+		{"element_blue", cvutil::SafeImread("resources/elements/blue.png")},
+		{"element_orange", cvutil::SafeImread("resources/elements/orange.png")},
+		{"element_red", cvutil::SafeImread("resources/elements/red.png")}
+	});
+
+
 	msg("init");
 	auto src = cvutil::SafeImread("resources/samples/sample1.jpg");
 	CatanBoardDetector detector {SEA_COLOR_YCBCR_6500K};

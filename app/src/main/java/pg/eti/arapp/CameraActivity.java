@@ -2,6 +2,22 @@ package pg.eti.arapp;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.WindowInsets;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -15,44 +31,20 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.WindowInsets;
-import android.widget.Toast;
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 import pg.eti.arapp.catan.CatanBoardDetector;
 import pg.eti.arapp.databinding.ActivityCameraBinding;
 import pg.eti.arapp.detectortl.BufferBitmap;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- */
+
 public class CameraActivity extends AppCompatActivity {
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -152,6 +144,7 @@ public class CameraActivity extends AppCompatActivity {
         mVisible = true;
         mControlsView = binding.fullscreenContentControls;
         mContentView = binding.viewFinder;
+        binding.analyzeButton.setVisibility(View.INVISIBLE);
 
         if(checkRequiredPermissions()) {
             startCamera();
@@ -200,7 +193,18 @@ public class CameraActivity extends AppCompatActivity {
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         binding.dummyButton.setOnTouchListener(mDelayHideTouchListener);
+
+        initAnalyzer();
     }
+
+    private void initAnalyzer() {
+
+        CatanBoardDetector.initializeDetector(getResources());
+
+        Toast.makeText(getBaseContext(), "Analyzer is ready", Toast.LENGTH_SHORT).show();
+        binding.analyzeButton.setVisibility(View.VISIBLE);
+    }
+
     ImageCapture imageCapture;
 
     private void takePhoto(View view) {
@@ -299,7 +303,10 @@ public class CameraActivity extends AppCompatActivity {
                 Toast.makeText(this, "error: user did not grant permissions", Toast.LENGTH_SHORT).show();
             }
         }
+
     }
+
+
 
     static private String[] requiredPermissions;
     static {

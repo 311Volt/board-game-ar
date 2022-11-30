@@ -28,11 +28,16 @@ Java_pg_eti_arapp_catan_CatanBoardDetector_detectBoard(JNIEnv *env, jobject thiz
     auto optWarped = detector.findBoard(result);
     if(optWarped) {
         auto warped = optWarped.value();
-        //auto optInfo = ctn::AnalyzeBoard(ctn::CreateBoardIR(warped));
-        //ctn::DrawBoardInfo(optInfo, warped);
+        auto optInfo = ctn::AnalyzeBoard(ctn::CreateBoardIR(warped));
+        ctn::DrawBoardInfo(optInfo, warped);
         result = warped;
     }
 
 
     return ToJavaBitmap(env, NEW_MAT(tmp) {cv::resize(result, tmp, {640,480});});
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_pg_eti_arapp_catan_CatanBoardDetector_initializeDetectorNative(JNIEnv *env, jclass clazz, jobject dict) {
+    ctn::InitBitmapResources(FromJavaBitmapDict(env, dict));
 }

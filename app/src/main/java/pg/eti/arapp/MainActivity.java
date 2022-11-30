@@ -1,20 +1,18 @@
 package pg.eti.arapp;
 
 import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
-
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-
-import pg.eti.arapp.databinding.ActivityMainBinding;
-
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+
 import org.opencv.android.OpenCVLoader;
+
+import pg.eti.arapp.databinding.ActivityMainBinding;
 
 
 public class MainActivity extends AppCompatActivity {

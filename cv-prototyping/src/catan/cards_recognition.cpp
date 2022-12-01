@@ -49,12 +49,12 @@ scoringCardType assignCardTypeBasedOnText(char* outText)
 {
 	/*std::string cardsCaptions[] = {"Koszty budowy", "Rycerz", "Katedra", "Ratusz", "Biblioteka", "Rynek", "Uniwersytet", "Postêp",
 		"Najwy¿sza W³adza Rycerska 2 Punkty Zwyciêstwa", "Najd³u¿sza Droga Handlowa 2 Punkty Zwyciêstwa" };*/
-	std::string twoPointCardsContents[] = { "Najwy¿sza",  "W³adza", "Rycerska", "Najd³u¿sza", "Droga Handlowa" }; // "2 Punkty Zwyciêstwa"
+	std::string twoPointCardsContents[] = { "Najwy¿sza",  "W³adza", "Rycerska", "Najd³u¿sza", "Droga Handlowa", "trzy karty rycerz", "piêæ po³¹czonych dróg", "Punkty Zwyciêstwa" }; // "2 Punkty Zwyciêstwa"
 	std::string onePointCardsContents[] = { /*"1",*/  "Punkt", "Zwyciêstwa", "Katedra", "Ratusz", "Biblioteka", "Rynek", "Uniwersytet" };
 	std::string cardText = outText;
 	cardText = prepareString(cardText);
 
-	std::string costsTableContents[] = { "Koszty budowy", "Rozwój" };
+	std::string costsTableContents[] = { "Koszty budowy", "Rozwój", "pkt"};
 	for (auto templateText : costsTableContents)
 	{
 		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
@@ -150,6 +150,20 @@ std::vector<scoringCardType> recognizeCards(std::vector<cv::Mat> cards, bool isP
 	return results;
 }
 
+std::vector<cv::Mat> getCardsFromImage(cv::Mat image, bool isPlasticVer)
+{
+	std::vector<cv::Mat> croppedOutCards;
+	if (!isPlasticVer)
+		croppedOutCards = detectCards(image);
+	else
+		croppedOutCards = detectCardsPlasticVer(image);
+
+	auto correctedCards = correctCardsPerspective(croppedOutCards);
+	auto verticalCards = setCardsPositionVertical(correctedCards);
+
+	return verticalCards;
+}
+
 int* recognizeCardsFromImage(cv::Mat image, bool isPlasticVer)
 {
 	std::vector<cv::Mat> croppedOutCards;
@@ -160,6 +174,8 @@ int* recognizeCardsFromImage(cv::Mat image, bool isPlasticVer)
 
 	auto correctedCards = correctCardsPerspective(croppedOutCards);
 	auto verticalCards = setCardsPositionVertical(correctedCards);
+
+	//auto verticalCards = getCardsFromImage(image, isPlasticVer);
 
 	/*int j = 1;
 	for (auto card : verticalCards)
@@ -176,7 +192,7 @@ int* recognizeCardsFromImage(cv::Mat image, bool isPlasticVer)
 		auto card = verticalCards[i];
 		std::string cardTypeString = cardTypeToString(cardTypes[i]);
 		cv::putText(card, cardTypeString, cv::Point(card.size().width/4, card.size().height/4), cv::FONT_HERSHEY_COMPLEX_SMALL, 2.0, cv::Scalar(0, 255, 0));
-		cv::imshow("Card recognized " + std::to_string(i), card);
+		cv::imshow("Card recognized " + std::to_string(i+1), card);
 	}
 	cv::waitKey();
 

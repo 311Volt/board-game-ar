@@ -19,7 +19,7 @@ Java_pg_eti_arapp_FirstFragment_stringFromJNI(
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_pg_eti_arapp_catan_CatanBoardDetector_detectBoard(JNIEnv *env, jobject thiz, jobject bitmap) {
+Java_pg_eti_arapp_catan_CatanBoardDetector_analyzeToImage(JNIEnv *env, jobject thiz, jobject bitmap) {
     cv::Mat mat = FromJavaBitmap(env, bitmap);
 
     cv::Mat result = NEW_MAT(tmp) {cv::resize(mat, tmp, {1280, 960});};
@@ -40,4 +40,22 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_pg_eti_arapp_catan_CatanBoardDetector_initializeDetectorNative(JNIEnv *env, jclass clazz, jobject dict) {
     ctn::InitBitmapResources(FromJavaBitmapDict(env, dict));
+}
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_pg_eti_arapp_catan_CatanBoardDetector_analyzeNative(JNIEnv *env, jobject thiz, jobject bitmap) {
+    cv::Mat mat = FromJavaBitmap(env, bitmap);
+
+    cv::Mat result = NEW_MAT(tmp) {cv::resize(mat, tmp, {1280, 960});};
+
+    CatanBoardDetector detector(SEA_COLOR_YCBCR_6500K);
+    auto optWarped = detector.findBoard(result);
+    if(optWarped) {
+        auto warped = optWarped.value();
+        auto optInfo = ctn::AnalyzeBoard(ctn::CreateBoardIR(warped));
+        ctn::DrawBoardInfo(optInfo, warped);
+        return env->NewStringUTF(ctn::SerializeBoardInfo(optInfo).c_str());
+    }
+
+    return env->NewStringUTF("");
 }

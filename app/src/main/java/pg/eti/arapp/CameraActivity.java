@@ -6,7 +6,6 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -40,6 +39,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import pg.eti.arapp.catan.BoardInfo;
 import pg.eti.arapp.catan.CatanBoardDetector;
 import pg.eti.arapp.databinding.ActivityCameraBinding;
 import pg.eti.arapp.detectortl.BufferBitmap;
@@ -179,12 +179,7 @@ public class CameraActivity extends AppCompatActivity {
                 CatanBoardDetector detector = new CatanBoardDetector();
                 Bitmap bmp = binding.viewFinder.getBitmap();
                 if(bmp != null) {
-                    Bitmap xd = detector.detectBoard(new BufferBitmap(binding.viewFinder.getBitmap())).toAndroidBitmap();
-                    if(xd == null) {
-                        Log.e("cv", "conversion to android bitmap not successful");
-                    } else {
-                        binding.analyzerOutputView.setImageBitmap(xd);
-                    }
+                    BoardInfo boardInfo = detector.analyze(new BufferBitmap(binding.viewFinder.getBitmap()));
                 }
             }
         });

@@ -20,6 +20,7 @@ namespace ctn {
 	BoardInfo AnalyzeBoard(const BoardIR& boardIR);
 	std::optional<BoardInfo> AnalyzeBoardImage(const cv::Mat& image);
 	void DrawBoardInfo(const BoardInfo& boardInfo, cv::Mat& warpedBoard);
+    std::string SerializeBoardInfo(const BoardInfo& boardInfo);
 };
 
 #endif /* INCLUDE_CATAN_ANALYSIS */

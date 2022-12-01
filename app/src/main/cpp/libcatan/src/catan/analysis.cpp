@@ -65,3 +65,55 @@ void ctn::DrawBoardInfo(const BoardInfo &boardInfo, cv::Mat &warpedBoard)
 	DrawSettlements(warpedBoard, boardInfo);
 	DrawRoads(warpedBoard, boardInfo);
 }
+
+std::string ctn::SerializeBoardInfo(const BoardInfo &boardInfo)
+{
+	auto cell2str = [](CellCoord x) {
+		char buf[256];
+		sprintf(buf, "%d %d %d", x.x, x.y, x.z);
+		return std::string(buf);
+	};
+
+	auto vtx2str = [cell2str](VertexCoord x) {
+		char buf[256];
+		sprintf(buf, "%s / %s", cell2str(x.origin).c_str(), x.high ? "true" : "false");
+		return std::string(buf);
+	};
+
+	auto edge2str = [cell2str](EdgeCoord x) {
+		char buf[256];
+		sprintf(buf, "%s / %d", cell2str(x.origin).c_str(), (int)x.side);
+		return std::string(buf);
+	};
+
+
+	auto pc2str = [](PlayerColor r) {
+		switch (r) {
+			case PlayerColor::Red: return "red";
+			case PlayerColor::Blue: return "blue";
+			case PlayerColor::Orange: return "orange";
+            default: break;
+		}
+		return "";
+	};
+
+	std::string outputData;
+	outputData += "cells\n";
+	for(const auto& [cellCoord, cellType]: boardInfo.cellTypes) {
+		outputData += cell2str(cellCoord) + " : " + cellType + "\n";
+	}
+	outputData += "roads\n";
+	for(const auto& [edgeCoord, road]: boardInfo.roads) {
+		outputData += edge2str(edgeCoord) + " : " + pc2str(road.color) + "\n";
+	}
+	outputData += "settlements\n";
+	for(const auto& [vertexCoord, settlement]: boardInfo.settlements) {
+		outputData
+           += vtx2str(vertexCoord) + " : "
+            + pc2str(settlement.color) + " "
+            + ((settlement.type == SettlementType::City) ? "true" : "false")
+            + "\n";
+	}
+    return outputData;
+
+}

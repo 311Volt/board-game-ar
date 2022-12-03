@@ -4,6 +4,8 @@ import static org.opencv.core.CvType.CV_8UC1;
 import static org.opencv.imgproc.Imgproc.cvtColor;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,6 +33,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.ar.core.Anchor;
@@ -74,41 +78,31 @@ public class ARActivity extends AppCompatActivity {
     private ArFragment arFragment;
     private Renderable renderable;
     private ActivityAractivityBinding binding;
-    private final Handler mHideHandler = new Handler(Looper.myLooper());
-    private View mContentView;
-    private View mControlsView;
-    private boolean mVisible;
-
-    private static final int UI_ANIMATION_DELAY = 300;
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
-    private static final boolean AUTO_HIDE = true;
 
     private short step; // 0 - board, 1-3 - players cards
     private List<Player> players = new ArrayList<>();
     private static final String TAG = "Create file";
 
     private Set<TextView> scoreViews = new ArraySet<>();
-
+    private int notification_id = 0;
 
 
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_aractivity);
 
         binding = ActivityAractivityBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         requestRequiredPermissions();
 
+        createNotificationChannel();
+
         binding.takePhotoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //goBack(view);
                 try{
-                    //Toast.makeText(getBaseContext(), "Trying...", Toast.LENGTH_SHORT).show();
-//                    takePhoto(view);
                     GetPicture();
                 } catch (Exception x){
                     Log.e(TAG, "onClick: " + x.getMessage(), x);
@@ -120,11 +114,13 @@ public class ARActivity extends AppCompatActivity {
 
         players.add(new Player(Color.ORANGE, (short) 10));
         players.add(new Player(Color.BLUE, (short) 7));
+        players.get(0).AddScoreFromCards(3, true, true);
+        players.get(1).AddScoreFromCards(1, false, false);
 
         TextView textView = findViewById(R.id.instructions_text);
         textView.setText(R.string.phase_1);
 
-        WeakReference<ARActivity> weakActivity = new WeakReference<>(this);
+        WeakReference<ARActivity> arActivityWeakReference = new WeakReference<>(this);
 
         ModelRenderable.builder()
                 .setSource(this, Uri.parse("info_board.glb"))
@@ -132,7 +128,7 @@ public class ARActivity extends AppCompatActivity {
                 .build()
                 .thenAccept(
                         modelRenderable -> {
-                            ARActivity activity = weakActivity.get();
+                            ARActivity activity = arActivityWeakReference.get();
                             if (activity != null) {
                                 activity.renderable = modelRenderable;
                             }
@@ -140,8 +136,7 @@ public class ARActivity extends AppCompatActivity {
                 .exceptionally(
                         throwable -> {
                             Toast toast =
-                                    Toast.makeText(this, "Unable to load Tiger renderable", Toast.LENGTH_LONG);
-                            toast.setGravity(Gravity.CENTER, 0, 0);
+                                    Toast.makeText(this, "Unable to load Info Board renderable", Toast.LENGTH_LONG);
                             toast.show();
                             return null;
                         });
@@ -161,7 +156,7 @@ public class ARActivity extends AppCompatActivity {
                     model.setRenderable(renderable);
                     model.getScaleController().setMinScale(2.0f);
                     model.getScaleController().setMaxScale(3.0f);
-                    model.setLocalScale(new Vector3(2.5f, 2.5f, 2.5f));
+                    model.setLocalScale(new Vector3(2.0f, 2.0f, 2.0f));
                     model.select();
 
                     // adding score to display on the info board
@@ -204,8 +199,10 @@ public class ARActivity extends AppCompatActivity {
     }
 
     private void NextStepReady(){
+        DisplayNotification();
         TextView view = findViewById(R.id.instructions_text);
         step = (short) ((step + 1) % (1 + players.size()));
+
         switch(step){
             case 0:
                 view.setText(R.string.phase_1);
@@ -219,6 +216,63 @@ public class ARActivity extends AppCompatActivity {
             case 3:
                 view.setText(players.get(2).CameraText());
                 break;
+        }
+    }
+
+    public void DisplayNotification(){
+        NotificationCompat.Builder builder;
+
+        String title = "";
+        String text = "";
+
+        switch(step){
+            case 0:
+                title = "Analysing the board complete";
+                text = "Analysing the board has been completed successfully";
+                break;
+            case 1:
+                title = players.get(0).CompleteAnaysisText();
+                text = players.get(0).AnalysedCards();
+                break;
+            case 2:
+                title = players.get(1).CompleteAnaysisText();
+                text = players.get(1).AnalysedCards();
+                break;
+            case 3:
+                title = players.get(2).CompleteAnaysisText();
+                text = players.get(2).AnalysedCards();
+                break;
+        }
+
+        if(Build.VERSION.SDK_INT < 26)
+            builder = new NotificationCompat.Builder(this, getResources().getString(R.string.channel_id))
+                    .setSmallIcon(R.drawable.rounded_bg_foreground)
+                    .setContentTitle(title)
+                    .setContentText(text)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        else
+            builder = new NotificationCompat.Builder(this, getResources().getString(R.string.channel_id))
+                    .setSmallIcon(R.drawable.rounded_bg_foreground)
+                    .setContentTitle(title)
+                    .setContentText(text)
+                    .setStyle(new NotificationCompat.BigTextStyle()
+                            .bigText(text))
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(notification_id, builder.build());
+        notification_id++;
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= 26) {
+            NotificationChannel channel = new NotificationChannel(
+                    getResources().getString(R.string.channel_id),
+                    getString(R.string.channel_name),
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription(getString(R.string.channel_description));
+
+            getSystemService(NotificationManager.class).createNotificationChannel(channel);
         }
     }
 
@@ -237,13 +291,8 @@ public class ARActivity extends AppCompatActivity {
     private void GetPicture(){
         try {
             Image currentImage = arFragment.getArSceneView().getArFrame().acquireCameraImage();
-            int imageFormat = currentImage.getFormat();
             String path = getPictureName();
-
             WriteImageInformation(currentImage, path);
-            if (imageFormat == ImageFormat.YUV_420_888) {
-                Log.d("ImageFormat", "Image format is YUV_420_888");
-            }
             currentImage.close();
         } catch (NotYetAvailableException e) {
             e.printStackTrace();
@@ -287,7 +336,6 @@ public class ARActivity extends AppCompatActivity {
 
         nv21 = new byte[ySize + uSize + vSize];
 
-        //U and V are swapped
         yBuffer.get(nv21, 0, ySize);
         vBuffer.get(nv21, ySize, vSize);
         uBuffer.get(nv21, ySize + vSize, uSize);

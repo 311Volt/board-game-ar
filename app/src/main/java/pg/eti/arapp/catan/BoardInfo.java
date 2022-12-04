@@ -1,6 +1,8 @@
 package pg.eti.arapp.catan;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.Queue;
 
 import pg.eti.arapp.catan.coord.CellCoord;
 import pg.eti.arapp.catan.coord.EdgeCoord;
@@ -49,5 +51,18 @@ public class BoardInfo {
         }
 
         return new BoardInfo(cellTypes, roads, settlements);
+    }
+
+    private HashMap<VertexCoord, Integer> breadthFirstSearch(VertexCoord begin) {
+
+        HashMap<VertexCoord, Integer> result = new HashMap<>();
+        Queue<VertexCoord> bfsQueue = new ArrayDeque<>();
+        bfsQueue.add(begin);
+
+        while(!bfsQueue.isEmpty()) {
+            VertexCoord coord = bfsQueue.remove();
+
+        }
+        return result;
     }
 }

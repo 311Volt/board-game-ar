@@ -1,5 +1,6 @@
 package pg.eti.arapp.catan.coord;
 
+import java.util.List;
 import java.util.Objects;
 
 public class VertexCoord {
@@ -27,5 +28,14 @@ public class VertexCoord {
     @Override
     public int hashCode() {
         return Objects.hash(origin, high);
+    }
+
+    public List<VertexCoord> possibleNeighbors() {
+        int mulHigh = high ? -1 : 1;
+        return List.of(
+            new VertexCoord(new CellCoord(origin.x, origin.y, origin.z), !high),
+            new VertexCoord(new CellCoord(origin.x, origin.y - mulHigh, origin.z + mulHigh), !high),
+            new VertexCoord(new CellCoord(origin.x + mulHigh, origin.y - mulHigh, origin.z), !high)
+        );
     }
 }

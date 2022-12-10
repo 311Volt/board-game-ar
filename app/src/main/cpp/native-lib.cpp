@@ -64,21 +64,12 @@ void yuv420toNv21(int image_width, int image_height, const int8_t* y_buffer,
                   const int8_t* u_buffer, const int8_t* v_buffer, int y_pixel_stride,
                   int uv_pixel_stride, int y_row_stride, int uv_row_stride,
                   int8_t *nv21) {
-    // Copy Y channel.
     for(int y = 0; y < image_height; ++y) {
         int destOffset = image_width * y;
         int yOffset = y * y_row_stride;
         memcpy(nv21 + destOffset, y_buffer + yOffset, image_width);
     }
 
-    if (v_buffer - u_buffer == sizeof(int8_t)) {
-        // format = nv21
-        // TODO: If the format is VUVUVU & pixel stride == 1 we can simply the copy
-        // with memcpy. In Android Camera2 I have mostly come across UVUVUV packaging
-        // though.
-    }
-
-    // Copy UV Channel.
     int idUV = image_width * image_height;
     int uv_width = image_width / 2;
     int uv_height = image_height / 2;
@@ -86,9 +77,7 @@ void yuv420toNv21(int image_width, int image_height, const int8_t* y_buffer,
         int uvOffset = y * uv_row_stride;
         for (int x = 0; x < uv_width; ++x) {
             int bufferIndex = uvOffset + (x * uv_pixel_stride);
-            // V channel.
             nv21[idUV++] = v_buffer[bufferIndex];
-            // U channel.
             nv21[idUV++] = u_buffer[bufferIndex];
         }
     }

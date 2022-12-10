@@ -1,16 +1,18 @@
-package pg.eti.arapp.game_elements;
+package pg.eti.arapp.catan;
+
+import pg.eti.arapp.catan.PlayerColor;
 
 public class Player {
 
-    private Color color;
+    private PlayerColor color;
     private short score;
     private boolean longestRoad = false;
     private boolean highestKnight = false;
     private int pointsCards = 0;
 
-    public Player(Color color, short score) {
+    public Player(PlayerColor color) {
         this.color = color;
-        this.score = score;
+        this.score = 0;
     }
 
     public void AddScoreFromCards(int pointsCards, boolean longestRoad, boolean highestKnight){
@@ -43,5 +45,13 @@ public class Player {
         String knight = highestKnight ? "\nPlayer has Highest Knight card" : "";
         String road = longestRoad ? "\nPlayer has Longest Road card" : "";
         return String.format("Player has %d point cards", this.pointsCards) + knight + road;
+    }
+
+    public void AddPoints(short points){
+        this.score += points;
+    }
+
+    public PlayerColor getColor() {
+        return color;
     }
 }

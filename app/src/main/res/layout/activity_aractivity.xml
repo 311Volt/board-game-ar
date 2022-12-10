@@ -5,6 +5,13 @@
     android:layout_height="match_parent"
     tools:context=".ui.ARActivity">
 
+<!--    <androidx.camera.view.PreviewView-->
+<!--        android:id="@+id/viewFinder"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
+
+<!--    </androidx.camera.view.PreviewView>-->
+
     <fragment android:name="com.google.ar.sceneform.ux.ArFragment"
         android:id="@+id/ar_fragment"
         android:layout_width="match_parent"
@@ -52,15 +59,15 @@
         tools:ignore="SpeakableTextPresentCheck">
     </Button>
 
-    <ImageView
-        android:id="@+id/image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+<!--    <ImageView-->
+<!--        android:id="@+id/image"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintHorizontal_bias="0.0"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintVertical_bias="0.0" />-->
 
 </FrameLayout>

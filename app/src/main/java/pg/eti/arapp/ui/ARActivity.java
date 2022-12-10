@@ -1,32 +1,18 @@
 package pg.eti.arapp.ui;
 
-import static org.opencv.core.CvType.CV_8UC1;
-import static org.opencv.imgproc.Imgproc.cvtColor;
-
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
-import android.graphics.Rect;
-import android.graphics.YuvImage;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
-import android.provider.MediaStore;
 import android.util.ArraySet;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,28 +36,25 @@ import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
-
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 
 import pg.eti.arapp.R;
+import pg.eti.arapp.catan.BoardInfo;
+import pg.eti.arapp.catan.CatanBoardDetector;
+import pg.eti.arapp.catan.Settlement;
+import pg.eti.arapp.catan.coord.VertexCoord;
 import pg.eti.arapp.databinding.ActivityAractivityBinding;
-import pg.eti.arapp.game_elements.Color;
-import pg.eti.arapp.game_elements.Player;
+import pg.eti.arapp.detectortl.BufferBitmap;
+import pg.eti.arapp.catan.Player;
+import pg.eti.arapp.utils.YuvConverter;
 
 public class ARActivity extends AppCompatActivity {
 
@@ -110,12 +93,24 @@ public class ARActivity extends AppCompatActivity {
             }
         });
 
-        arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ar_fragment);
 
-        players.add(new Player(Color.ORANGE, (short) 10));
-        players.add(new Player(Color.BLUE, (short) 7));
-        players.get(0).AddScoreFromCards(3, true, true);
-        players.get(1).AddScoreFromCards(1, false, false);
+
+        binding.instructionsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CatanBoardDetector detector = new CatanBoardDetector();
+                if (currentImage != null) {
+                    YuvConverter yuvConverter = new YuvConverter(getApplicationContext(), currentImage.getWidth(), currentImage.getHeight());
+                    Bitmap bmp = yuvConverter.toBitmap(currentImage);
+                    currentImage.close();
+                    if (bmp != null) {
+                        ProcessStep(detector, bmp);
+                    }
+                }
+            }
+        });
+
+        arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ar_fragment);
 
         TextView textView = findViewById(R.id.instructions_text);
         textView.setText(R.string.phase_1);
@@ -219,6 +214,32 @@ public class ARActivity extends AppCompatActivity {
         }
     }
 
+    private void ProcessStep(CatanBoardDetector detector, Bitmap bmp){
+        switch(step){
+            case 0:
+                players.clear();
+                BoardInfo boardInfo = detector.analyze(new BufferBitmap(bmp));
+                for (HashMap.Entry<VertexCoord, Settlement> settlementEntry: boardInfo.settlements.entrySet()) {
+                    Optional<Player> optionalPlayer = players.stream().filter(p -> p.getColor() == settlementEntry.getValue().playerColor).findAny();
+                    Player player;
+                    if(!optionalPlayer.isPresent()){
+                        player = new Player(settlementEntry.getValue().playerColor);
+                        players.add(player);
+                    }else
+                        player = optionalPlayer.get();
+                    player.AddPoints((short) (settlementEntry.getValue().isCity ? 2 : 1));
+                }
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+        }
+        NextStepReady();
+    }
+
     public void DisplayNotification(){
         NotificationCompat.Builder builder;
 
@@ -283,75 +304,21 @@ public class ARActivity extends AppCompatActivity {
         }
         return result;
     }
-
+    Image currentImage;
     public void NextStep(View view) {
         NextStepReady();
     }
 
     private void GetPicture(){
         try {
-            Image currentImage = arFragment.getArSceneView().getArFrame().acquireCameraImage();
+            if (currentImage != null)
+                currentImage.close();
+            currentImage = arFragment.getArSceneView().getArFrame().acquireCameraImage();
             String path = getPictureName();
-            WriteImageInformation(currentImage, path);
-            currentImage.close();
         } catch (NotYetAvailableException e) {
             e.printStackTrace();
         }
     }
-
-    private void SavePicture(Image image){
-
-    }
-
-    private static byte[] NV21toJPEG(byte[] nv21, int width, int height) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        YuvImage yuv = new YuvImage(nv21, ImageFormat.NV21, width, height, null);
-        yuv.compressToJpeg(new Rect(0, 0, width, height), 100, out);
-        return out.toByteArray();
-    }
-
-    public void WriteImageInformation(Image image, String path) {
-        byte[] data = null;
-        data = NV21toJPEG(YUV_420_888toNV21(image),
-                image.getWidth(), image.getHeight());
-        ImageView imgViewer = (ImageView) findViewById(R.id.image);
-        Bitmap bm = BitmapFactory.decodeByteArray(data, 0, data.length);
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-
-        imgViewer.setMinimumHeight(dm.heightPixels);
-        imgViewer.setMinimumWidth(dm.widthPixels);
-        imgViewer.setImageBitmap(bm);
-    }
-
-    private static byte[] YUV_420_888toNV21(Image image) {
-        byte[] nv21;
-        ByteBuffer yBuffer = image.getPlanes()[0].getBuffer();
-        ByteBuffer uBuffer = image.getPlanes()[1].getBuffer();
-        ByteBuffer vBuffer = image.getPlanes()[2].getBuffer();
-
-        int ySize = yBuffer.remaining();
-        int uSize = uBuffer.remaining();
-        int vSize = vBuffer.remaining();
-
-        nv21 = new byte[ySize + uSize + vSize];
-
-        yBuffer.get(nv21, 0, ySize);
-        vBuffer.get(nv21, ySize, vSize);
-        uBuffer.get(nv21, ySize + vSize, uSize);
-
-//        Mat mRgb = getYUV2Mat(image, nv21);
-
-        return nv21;
-    }
-
-//    public static Mat getYUV2Mat(Image image, byte[] data) {
-//        Mat mYuv = new Mat(image.getHeight() + image.getHeight() / 2, image.getWidth(), CV_8UC1);
-//        mYuv.put(0, 0, data);
-//        Mat mRGB = new Mat();
-//        cvtColor(mYuv, mRGB, Imgproc.COLOR_YUV2RGB_NV21, 3);
-//        return mRGB;
-//    }
 
     static private String[] requiredPermissions;
     static {
@@ -361,19 +328,6 @@ public class ARActivity extends AppCompatActivity {
         }
         requiredPermissions = new String[tmp.size()];
         requiredPermissions = tmp.toArray(requiredPermissions);
-    }
-
-    private File createFolderIfNotExist() {
-        File file = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES) + "/" + getApplicationContext().getString(R.string.app_name));
-        if (!file.exists()) {
-            if (!file.mkdir()) {
-                Log.d(TAG, "Folder Create -> Failure");
-            } else {
-                Log.d(TAG, "Folder Create -> Success");
-            }
-        }
-        return file;
     }
 
     private String getPictureName() {
@@ -405,4 +359,5 @@ public class ARActivity extends AppCompatActivity {
                 .stream(requiredPermissions)
                 .allMatch((p) -> ContextCompat.checkSelfPermission(getBaseContext(), p) == PackageManager.PERMISSION_GRANTED);
     }
+
 }

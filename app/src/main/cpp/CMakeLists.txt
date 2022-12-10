@@ -16,6 +16,11 @@ project("boardgamear")
 
 find_package(OpenCV 4.6 REQUIRED java)
 
+set(LIBCATAN_SKIP_EXAMPLE ON)
+add_subdirectory("libcatan")
+
+set(CMAKE_CXX_STANDARD 20)
+
 add_library( # Sets the name of the library.
         boardgamear
 
@@ -23,7 +28,7 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        native-lib.cpp
+        native-lib.cpp BitmapDecoder.cpp
 )
 
 # Searches for a specified prebuilt library and stores the path as a
@@ -46,6 +51,7 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
         boardgamear
+        libcatan
         ${OpenCV_LIBRARIES}
         # Links the target library to the log library
         # included in the NDK.

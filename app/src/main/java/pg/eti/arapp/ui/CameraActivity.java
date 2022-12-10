@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -38,14 +39,14 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import pg.eti.arapp.catan.BoardInfo;
+import pg.eti.arapp.catan.CatanBoardDetector;
 import pg.eti.arapp.R;
 import pg.eti.arapp.databinding.ActivityCameraBinding;
+import pg.eti.arapp.detectortl.BufferBitmap;
 import pg.eti.arapp.ui.main_activity.MainActivity;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- */
+
 public class CameraActivity extends AppCompatActivity {
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -64,7 +65,6 @@ public class CameraActivity extends AppCompatActivity {
      * and a change of the status and navigation bar.
      */
     private static final int UI_ANIMATION_DELAY = 300;
-    private static final String TAG_WYKONAJ_ZDJECIE = "Robie zdjecie";
     private static final String TAG = "Create file";
     private final Handler mHideHandler = new Handler(Looper.myLooper());
     private View mContentView;
@@ -146,6 +146,7 @@ public class CameraActivity extends AppCompatActivity {
         mVisible = true;
         mControlsView = binding.fullscreenContentControls;
         mContentView = binding.viewFinder;
+        binding.analyzeButton.setVisibility(View.INVISIBLE);
 
         if(checkRequiredPermissions()) {
             startCamera();
@@ -174,11 +175,33 @@ public class CameraActivity extends AppCompatActivity {
             }
         });
 
+        binding.analyzeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CatanBoardDetector detector = new CatanBoardDetector();
+                Bitmap bmp = binding.viewFinder.getBitmap();
+                if(bmp != null) {
+                    BoardInfo boardInfo = detector.analyze(new BufferBitmap(binding.viewFinder.getBitmap()));
+                }
+            }
+        });
+
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         binding.dummyButton.setOnTouchListener(mDelayHideTouchListener);
+
+        initAnalyzer();
     }
+
+    private void initAnalyzer() {
+
+        CatanBoardDetector.initializeDetector(getResources());
+
+        Toast.makeText(getBaseContext(), "Analyzer is ready", Toast.LENGTH_SHORT).show();
+        binding.analyzeButton.setVisibility(View.VISIBLE);
+    }
+
     ImageCapture imageCapture;
 
     private void takePhoto(View view) {
@@ -277,7 +300,10 @@ public class CameraActivity extends AppCompatActivity {
                 Toast.makeText(this, "error: user did not grant permissions", Toast.LENGTH_SHORT).show();
             }
         }
+
     }
+
+
 
     static private String[] requiredPermissions;
     static {
@@ -300,6 +326,7 @@ public class CameraActivity extends AppCompatActivity {
                 .stream(requiredPermissions)
                 .allMatch((p) -> ContextCompat.checkSelfPermission(getBaseContext(), p) == PackageManager.PERMISSION_GRANTED);
     }
+
 
 
     private void toggle() {

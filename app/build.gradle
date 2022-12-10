@@ -19,7 +19,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags "-frtti -fexceptions"
-                arguments "-DANDROID_ARM_NEON=TRUE", "-DOpenCV_DIR=" + opencvsdk + "/sdk/native/jni"
+                arguments "-DANDROID_ARM_NEON=TRUE", "-DOpenCV_DIR=" + opencvsdk + "/sdk/native/jni", "-DANDROID_STL=c++_shared", "-DBUILD_SHARED_LIBS=true"
             }
         }
     }
@@ -51,9 +51,6 @@ task prepareKotlinBuildScriptModel {
 }
 
 dependencies {
-
-    annotationProcessor 'org.projectlombok:lombok:1.18.24'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
 
     implementation 'androidx.appcompat:appcompat:1.5.0'
     implementation 'com.google.android.material:material:1.6.1'

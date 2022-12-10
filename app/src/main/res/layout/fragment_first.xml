@@ -8,24 +8,13 @@
     tools:context=".ui.main_activity.FirstFragment">
 
     <Button
-        android:id="@+id/btnCamTest"
-        android:layout_width="157dp"
-        android:layout_height="90dp"
-        android:layout_marginTop="172dp"
-        android:layout_marginEnd="16dp"
-        android:text="CAMERA TEST"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
-
-    <Button
         android:id="@+id/buttonBoardGames"
         android:layout_width="157dp"
         android:layout_height="90dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="172dp"
+        android:layout_marginTop="192dp"
         android:text="@string/board_games"
         android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 

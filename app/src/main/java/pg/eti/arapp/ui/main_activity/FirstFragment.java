@@ -44,12 +44,12 @@ public class FirstFragment extends Fragment {
             }
         });
 
-        binding.btnCamTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                launchCamera(view);
-            }
-        });
+//        binding.btnCamTest.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                launchCamera(view);
+//            }
+//        });
     }
 
 

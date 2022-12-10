@@ -10,9 +10,9 @@
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
 
-    <string name="ar_game_support">AR Game Support</string>
+    <string name="ar_game_support">Catan Companion</string>
     <string name="larps">LARPs</string>
-    <string name="board_games">Board Games</string>
+    <string name="board_games">Analyze</string>
 
     <string name="choose_game">Choose Game</string>
     <string name="take_photo">Take Photo</string>

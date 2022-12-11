@@ -1,4 +1,6 @@
 #include <catan/cards_recognition.hpp>
+#include <catan/utility_opencv.hpp>
+#include <catan/common_math.hpp>
 
 
 cv::Mat cutOutCardBottom(cv::Mat card, float bottomAreaCoeff)
@@ -47,14 +49,14 @@ std::string prepareString(std::string text)
 
 scoringCardType assignCardTypeBasedOnText(char* outText)
 {
-	/*std::string cardsCaptions[] = {"Koszty budowy", "Rycerz", "Katedra", "Ratusz", "Biblioteka", "Rynek", "Uniwersytet", "Postêp",
-		"Najwy¿sza W³adza Rycerska 2 Punkty Zwyciêstwa", "Najd³u¿sza Droga Handlowa 2 Punkty Zwyciêstwa" };*/
-	std::string twoPointCardsContents[] = { "Najwy¿sza",  "W³adza", "Rycerska", "Najd³u¿sza", "Droga Handlowa", "trzy karty rycerz", "piêæ po³¹czonych dróg", "Punkty Zwyciêstwa" }; // "2 Punkty Zwyciêstwa"
-	std::string onePointCardsContents[] = { /*"1",*/  "Punkt", "Zwyciêstwa", "Katedra", "Ratusz", "Biblioteka", "Rynek", "Uniwersytet" };
+	//std::string cardsCaptions[] = {"Koszty budowy", "Rycerz", "Katedra", "Ratusz", "Biblioteka", "Rynek", "Uniwersytet", "Postï¿½p",
+		//"Najwyï¿½sza Wï¿½adza Rycerska 2 Punkty Zwyciï¿½stwa", "Najdï¿½uï¿½sza Droga Handlowa 2 Punkty Zwyciï¿½stwa" };
+	std::string twoPointCardsContents[] = { "Najwyï¿½sza",  "Wï¿½adza", "Rycerska", "Najdï¿½uï¿½sza", "Droga Handlowa", "trzy karty rycerz", "piï¿½ï¿½ poï¿½ï¿½czonych drï¿½g", "Punkty Zwyciï¿½stwa" }; // "2 Punkty Zwyciï¿½stwa"
+	std::string onePointCardsContents[] = { /*"1",*/  "Punkt", "Zwyciï¿½stwa", "Katedra", "Ratusz", "Biblioteka", "Rynek", "Uniwersytet" };
 	std::string cardText = outText;
 	cardText = prepareString(cardText);
-
-	std::string costsTableContents[] = { "Koszty budowy", "Rozwój", "pkt"};
+	std::cout << cardText << "\n";
+	std::string costsTableContents[] = { "Koszty budowy", "Rozwï¿½j", "pkt"};
 	for (auto templateText : costsTableContents)
 	{
 		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
@@ -93,8 +95,85 @@ std::string cardTypeToString(scoringCardType cardType)
 	}
 }
 
+cv::Mat EqualizeHist(cv::Mat input)
+{
+	auto split = cvutil::SplitBGR(input);
+	for(auto& ch: split) {
+		cv::equalizeHist(ch, ch);
+	}
+	return cvutil::MergeBGR(split);
+}
+
+double DissimilarityRating(cv::Mat img1, cv::Mat img2)
+{
+	cv::Mat proc1 = NEW_MAT(tmp) {cv::resize(img1, tmp, {100,150});};
+	cv::Mat proc2 = NEW_MAT(tmp) {cv::resize(img2, tmp, {100,150});};
+	
+	proc1 = EqualizeHist(proc1);
+	proc2 = EqualizeHist(proc2);
+
+	proc1 = cvutil::Convert(proc1, cv::COLOR_BGR2YCrCb);
+	proc2 = cvutil::Convert(proc2, cv::COLOR_BGR2YCrCb);
+	
+	//cv::imshow("proc1", proc1);
+	//cv::imshow("proc2", proc2);
+	//cv::waitKey();
+
+	cv::Mat sqDist = cvmath::TransformBin<cv::Vec3b, float>(proc1, proc2, cvmath::WeightedSquareDist<40, 100, 100>);
+
+	return cv::sum(sqDist)[0];
+}
+
 scoringCardType recognizeCard(cv::Mat card, tesseract::TessBaseAPI* api, bool isPlasticVer)
 {
+
+	static std::vector<cv::Mat> referenceCards = {
+		cv::imread("resources/cards/knight.jpg"),
+		cv::imread("resources/cards/point_cathedral.jpg"),
+		cv::imread("resources/cards/point_cityHall.jpg"),
+		cv::imread("resources/cards/point_library.jpg"),
+		cv::imread("resources/cards/point_marketplace.jpg"),
+		cv::imread("resources/cards/point_university.jpg"),
+		cv::imread("resources/cards/progress_invention.jpg"),
+		cv::imread("resources/cards/progress_monopoly.jpg"),
+		cv::imread("resources/cards/progress_roads.jpg"),
+		cv::imread("resources/cards/build_cost.jpg"),
+		cv::imread("resources/cards/longest_road.jpg"),
+		cv::imread("resources/cards/triple_knight.jpg"),
+		
+	};
+	static std::vector<std::string> cardNames = {
+		"knight", "point_cathedral", "point_cityHall", "point_library",
+		"point_marketplace", "point_university", "progress_invention",
+		"progress_monopoly", "progress_roads", "build_cost", "longest_road",
+		"triple_knight"
+	};
+	static int indexPoints[] = {
+		0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 2, 2
+	};
+	static int counter = 0; 
+
+	std::vector<double> results(referenceCards.size(), 10e9);
+	for(int i=0; i<referenceCards.size(); i++) {
+		results[i] = DissimilarityRating(card, referenceCards[i]);
+		//cv::Mat flipped = NEW_MAT(tmp) {cv::flip(card, tmp, 0);};
+		//results[i] = std::min(results[i], DissimilarityRating(flipped, referenceCards[i]));
+		std::cout << i << " -> " << results[i] << "\n";
+	}
+	int minIdx = std::min_element(results.begin(), results.end()) - results.begin();
+	std::cout << "__________minIdx = " << minIdx << "\n\n\n\n";
+
+	cv::Mat card1 = card.clone();
+	cv::putText(card1, cardNames[minIdx], {10, 30}, cv::FONT_HERSHEY_COMPLEX_SMALL, 0.3, {255,0,0});
+	cv::imshow("card" + std::to_string(++counter), card1);
+
+	switch(minIdx) {
+		case 1: return scoringCardType::ONE_POINT;
+		case 2: return scoringCardType::TWO_POINTS;
+		default: return scoringCardType::OTHER;
+	}
+	/////////////////////////////////////////
+	
 	cv::Mat cardCopy;
 	card.copyTo(cardCopy);
 	char* outText = NULL;
@@ -121,6 +200,7 @@ scoringCardType recognizeCard(cv::Mat card, tesseract::TessBaseAPI* api, bool is
 	}
 
 	return cardType;
+	
 }
 
 

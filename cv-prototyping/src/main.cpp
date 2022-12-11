@@ -104,9 +104,9 @@ int main()
 
 	//----- cards detection -----//
 	//cv::Mat srcCardsPhoto = cv::imread("resources/sampleCards/Tests2/sampleCardsPD16.jpg");
-	cv::Mat srcCardsPhoto = cv::imread("resources/sampleCardsPOnPaper1.jpg");
+	cv::Mat srcCardsPhoto = cv::imread("resources/sampleCards/Tests2/sampleCardsPD1.jpg"); //DarkCardboard //OnGray //CardsOnWood4
 	//srcCardsPhoto = scaleImage(srcCardsPhoto, 0.3);
-	cv::imshow("Src Cards Photo", scaleImage(srcCardsPhoto, 0.3));
+	//cv::imshow("Src Cards Photo", scaleImage(srcCardsPhoto, 0.3));
 
 	auto recognizedCardsInfo = recognizeCardsFromImage(srcCardsPhoto, true);
 

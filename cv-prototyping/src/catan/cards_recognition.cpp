@@ -187,14 +187,14 @@ int* recognizeCardsFromImage(cv::Mat image, bool isPlasticVer)
 
 	std::vector<scoringCardType> cardTypes = recognizeCards(verticalCards, isPlasticVer);
 
-	for (int i=0; i<verticalCards.size(); i++)
+	/*for (int i = 0; i<verticalCards.size(); i++)
 	{
 		auto card = verticalCards[i];
 		std::string cardTypeString = cardTypeToString(cardTypes[i]);
 		cv::putText(card, cardTypeString, cv::Point(card.size().width/4, card.size().height/4), cv::FONT_HERSHEY_COMPLEX_SMALL, 2.0, cv::Scalar(0, 255, 0));
 		cv::imshow("Card recognized " + std::to_string(i+1), card);
 	}
-	cv::waitKey();
+	cv::waitKey();*/
 
 	int* results = new int[cardTypes.size()];
 	for (int i=0; i<cardTypes.size(); i++)

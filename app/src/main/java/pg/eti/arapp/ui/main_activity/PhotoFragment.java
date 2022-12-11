@@ -1,18 +1,33 @@
 package pg.eti.arapp.ui.main_activity;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
 import pg.eti.arapp.R;
+import pg.eti.arapp.catan.BoardInfo;
+import pg.eti.arapp.catan.CatanBoardDetector;
+import pg.eti.arapp.catan.Player;
+import pg.eti.arapp.catan.Settlement;
+import pg.eti.arapp.catan.coord.VertexCoord;
 import pg.eti.arapp.databinding.FragmentPhotoBinding;
+import pg.eti.arapp.detectortl.BufferBitmap;
 
 public class PhotoFragment extends Fragment {
 
@@ -44,5 +59,47 @@ public class PhotoFragment extends Fragment {
                         .navigate(R.id.action_photoFragment_to_SecondFragment);
             }
         });
+
+        binding.buttonAnalyze.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    Analyse(selectedImageUri);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
+
+    public void Analyse(Uri imageUri) throws IOException {
+        List<Player> players = new ArrayList<>();
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getActivity().getContentResolver(), imageUri);
+        CatanBoardDetector detector = new CatanBoardDetector();
+
+        if (bitmap != null) {
+            BoardInfo boardInfo = detector.analyze(new BufferBitmap(bitmap));
+            TextView view = getActivity().findViewById(R.id.score_view_board);
+            for (HashMap.Entry<VertexCoord, Settlement> settlementEntry: boardInfo.settlements.entrySet()) {
+                Optional<Player> optionalPlayer = players.stream().filter(p -> p.getColor() == settlementEntry.getValue().playerColor).findAny();
+                Player player;
+                if(!optionalPlayer.isPresent()){
+                    player = new Player(settlementEntry.getValue().playerColor);
+                    players.add(player);
+                } else
+                    player = optionalPlayer.get();
+                player.AddPoints((short) (settlementEntry.getValue().isCity ? 2 : 1));
+            }
+            view.setText(String.format("%s", ScoreText(players)));
+        }
+    }
+
+    private String ScoreText(List<Player> players){
+        String result = "";
+        for(Player p : players){
+            result += p.toString() + "\n";
+        }
+        return result;
+    }
+
 }

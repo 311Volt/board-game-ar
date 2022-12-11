@@ -32,7 +32,9 @@ public class Player {
 
     @Override
     public String toString() {
-        return color.getName() + " player:\t" + score;
+        return HasWon()
+                ? "!!! " + color.getName() + " player:\t" + score + " !!!"
+                : color.getName() + " player:\t" + score;
     }
 
     public String CameraText(){

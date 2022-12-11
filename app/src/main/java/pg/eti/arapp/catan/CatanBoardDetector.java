@@ -18,7 +18,7 @@ public class CatanBoardDetector {
     public BoardInfo analyze(BufferBitmap bitmap) {
         String data = analyzeNative(bitmap);
         Log.d("analyzer", data);
-        return BoardInfo.parse(analyzeNative(bitmap));
+        return BoardInfo.parse(data);
     }
 
 

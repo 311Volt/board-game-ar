@@ -12,8 +12,9 @@ public class EdgeCoord {
     }
 
     public static EdgeCoord parse(String values) {
+        values = values.trim();
         String[] split = values.split("/");
-        return new EdgeCoord(CellCoord.parse(split[0]), Short.parseShort(split[1]));
+        return new EdgeCoord(CellCoord.parse(split[0].trim()), Short.parseShort(split[1].trim()));
     }
 
     public static EdgeCoord ofVertexPair(VertexCoord a, VertexCoord b) {

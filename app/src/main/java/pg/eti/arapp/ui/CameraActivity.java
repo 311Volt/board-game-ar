@@ -181,7 +181,7 @@ public class CameraActivity extends AppCompatActivity {
                 CatanBoardDetector detector = new CatanBoardDetector();
                 Bitmap bmp = binding.viewFinder.getBitmap();
                 if(bmp != null) {
-                    BoardInfo boardInfo = detector.analyze(new BufferBitmap(binding.viewFinder.getBitmap()));
+                    BoardInfo boardInfo = detector.analyze(new BufferBitmap(bmp));
                 }
             }
         });

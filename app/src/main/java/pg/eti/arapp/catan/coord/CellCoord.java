@@ -16,6 +16,7 @@ public class CellCoord implements Comparable<CellCoord> {
     public static final CellCoord ORIGIN = new CellCoord(0,0,0);
 
     public static CellCoord parse(String values) {
+        values = values.trim();
         String[] split = values.split(" ");
         return new CellCoord(
             Integer.parseInt(split[0]),

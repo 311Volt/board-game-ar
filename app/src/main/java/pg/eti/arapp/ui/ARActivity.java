@@ -9,9 +9,11 @@ import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.ArraySet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.PixelCopy;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,9 +26,16 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.ar.core.Anchor;
+import com.google.ar.core.Config;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
+import com.google.ar.core.Session;
+import com.google.ar.core.SharedCamera;
 import com.google.ar.core.exceptions.NotYetAvailableException;
+import com.google.ar.core.exceptions.UnavailableApkTooOldException;
+import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
+import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
+import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Vector3;
@@ -40,6 +49,7 @@ import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -70,6 +80,10 @@ public class ARActivity extends AppCompatActivity {
     private int notification_id = 0;
 
 
+//    Session session = null;
+//    private SharedCamera sharedCamera;
+//    private String cameraId;
+
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +92,8 @@ public class ARActivity extends AppCompatActivity {
         binding = ActivityAractivityBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+//        createSession();
+        
         requestRequiredPermissions();
 
         createNotificationChannel();
@@ -102,6 +118,7 @@ public class ARActivity extends AppCompatActivity {
                 if (currentImage != null) {
                     YuvConverter yuvConverter = new YuvConverter(getApplicationContext(), currentImage.getWidth(), currentImage.getHeight());
                     Bitmap bmp = yuvConverter.toBitmap(currentImage);
+//                    Bitmap bmp = bitmapAR;
                     currentImage.close();
                     if (bmp != null) {
                         ProcessStep(detector, bmp);
@@ -191,6 +208,44 @@ public class ARActivity extends AppCompatActivity {
                                 scoreView.setText(String.format("%s", ScoreText()));
                             }
                         });
+
+        initAnalyzer();
+
+    }
+
+//    public void createSession() {
+//        // Create a new ARCore session.
+//        try {
+//            session = new Session(this, EnumSet.of(Session.Feature.SHARED_CAMERA));
+//        } catch (UnavailableArcoreNotInstalledException e) {
+//            e.printStackTrace();
+//        } catch (UnavailableApkTooOldException e) {
+//            e.printStackTrace();
+//        } catch (UnavailableSdkTooOldException e) {
+//            e.printStackTrace();
+//        } catch (UnavailableDeviceNotCompatibleException e) {
+//            e.printStackTrace();
+//        }
+//
+//        // Store the ARCore shared camera reference.
+//        sharedCamera = session.getSharedCamera();
+//
+//// Store the ID of the camera that ARCore uses.
+//        cameraId = session.getCameraConfig().getCameraId();
+//
+//        // Create a session config.
+//        Config config = new Config(session);
+//
+//        // Do feature-specific operations here, such as enabling depth or turning on
+//        // support for Augmented Faces.
+//
+//        // Configure the session.
+//        session.configure(config);
+//    }
+
+    private void initAnalyzer() {
+
+        CatanBoardDetector.initializeDetector(getResources());
     }
 
     private void NextStepReady(){
@@ -308,12 +363,23 @@ public class ARActivity extends AppCompatActivity {
     public void NextStep(View view) {
         NextStepReady();
     }
-
+    Bitmap bitmapAR;
     private void GetPicture(){
         try {
             if (currentImage != null)
                 currentImage.close();
             currentImage = arFragment.getArSceneView().getArFrame().acquireCameraImage();
+
+//            bitmapAR = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888);
+//            Handler handler = new Handler();
+//            PixelCopy.request(arFragment.getArSceneView(), bitmapAR, (copyResult) -> {
+//                if (copyResult == PixelCopy.SUCCESS) {
+//                     //Save bitmap
+//                } else {
+//                     //Error
+//                }
+//            }, handler);
+
             String path = getPictureName();
         } catch (NotYetAvailableException e) {
             e.printStackTrace();

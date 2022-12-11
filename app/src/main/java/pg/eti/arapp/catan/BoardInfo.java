@@ -41,11 +41,11 @@ public class BoardInfo {
 
             String[] split = line.split(":");
             if(mode == ParseMode.CELLS) {
-                cellTypes.put(CellCoord.parse(split[0]), split[1]);
+                cellTypes.put(CellCoord.parse(split[0].trim()), split[1].trim());
             } else if(mode == ParseMode.ROADS) {
-                roads.put(EdgeCoord.parse(split[0]), PlayerColor.parse(split[1]));
+                roads.put(EdgeCoord.parse(split[0].trim()), PlayerColor.parse(split[1].trim()));
             } else if(mode == ParseMode.SETTLEMENTS) {
-                settlements.put(VertexCoord.parse(split[0]), Settlement.parse(split[1]));
+                settlements.put(VertexCoord.parse(split[0].trim()), Settlement.parse(split[1].trim()));
             }
 
         }

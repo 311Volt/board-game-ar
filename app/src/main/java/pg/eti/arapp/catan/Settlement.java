@@ -10,6 +10,7 @@ public class Settlement {
     }
 
     public static Settlement parse(String str) {
+        str = str.trim();
         String[] split = str.split(" ");
         return new Settlement(PlayerColor.parse(split[0]), Boolean.parseBoolean(split[1]));
     }

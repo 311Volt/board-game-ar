@@ -13,7 +13,7 @@ cv::Mat ctn::GetBoardPerspectiveCorrectionMatrix(const std::vector<cv::Point>& p
 	return cv::findHomography(points, dstPoints);
 }
 
-cv::Mat ctn::GenerateIdealEdgeMask()
+cv::Mat ctn::GenerateIdealEdgeMask(cv::Scalar color, float thickness)
 {
 	cv::Mat output = cv::Mat::zeros({1000, 866}, CV_8UC1);
 
@@ -25,7 +25,7 @@ cv::Mat ctn::GenerateIdealEdgeMask()
 		
 		auto p1 = mapper(vt.first);
 		auto p2 = mapper(vt.second);
-		cv::line(output, p1, p2, {255,255,255}, 2);
+		cv::line(output, p1, p2, color, thickness);
 	}
 
 	return output;

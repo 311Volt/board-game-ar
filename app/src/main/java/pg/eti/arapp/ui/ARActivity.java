@@ -259,6 +259,7 @@ public class ARActivity extends AppCompatActivity {
                 break;
             case 1:
                 view.setText(players.get(0).CameraText());
+//                players.get(0).AddPoints((short) 10);
                 break;
             case 2:
                 view.setText(players.get(1).CameraText());
@@ -267,6 +268,14 @@ public class ARActivity extends AppCompatActivity {
                 view.setText(players.get(2).CameraText());
                 break;
         }
+    }
+
+    private String CreateNotificationBoardText(){
+        String result = "";
+        for (Player player : players) {
+            result += player.AnalysedBoard() + '\n';
+        }
+        return result;
     }
 
     private void ProcessStep(CatanBoardDetector detector, Bitmap bmp){
@@ -282,7 +291,11 @@ public class ARActivity extends AppCompatActivity {
                         players.add(player);
                     }else
                         player = optionalPlayer.get();
-                    player.AddPoints((short) (settlementEntry.getValue().isCity ? 2 : 1));
+                    if (settlementEntry.getValue().isCity) {
+                        player.AddCity();
+                    } else {
+                        player.AddSettlement();
+                    }
                 }
                 break;
             case 1:
@@ -304,7 +317,7 @@ public class ARActivity extends AppCompatActivity {
         switch(step){
             case 0:
                 title = "Analysing the board complete";
-                text = "Analysing the board has been completed successfully";
+                text = CreateNotificationBoardText();
                 break;
             case 1:
                 title = players.get(0).CompleteAnaysisText();

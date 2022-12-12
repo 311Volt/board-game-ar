@@ -19,9 +19,9 @@ public class CellCoord implements Comparable<CellCoord> {
         values = values.trim();
         String[] split = values.split(" ");
         return new CellCoord(
-            Integer.parseInt(split[0]),
-            Integer.parseInt(split[1]),
-            Integer.parseInt(split[2])
+            Integer.parseInt(split[0].trim()),
+            Integer.parseInt(split[1].trim()),
+            Integer.parseInt(split[2].trim())
         );
    }
 

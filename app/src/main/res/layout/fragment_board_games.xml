@@ -8,12 +8,26 @@
     tools:context=".ui.main_activity.BoardGamesFragment">
 
     <Button
-        android:id="@+id/button_choose_photo"
-        android:layout_width="250sp"
+        android:id="@+id/button_choose_photo_board"
+        android:layout_width="250dp"
         android:layout_height="60sp"
-        android:layout_marginBottom="60dp"
+        android:layout_marginBottom="45dp"
         android:lineSpacingExtra="20sp"
-        android:text="@string/choose_photo"
+        android:text="@string/choose_photo_board"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/button_choose_photo_cards"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/button_choose_photo_cards"
+        android:layout_width="250dp"
+        android:layout_height="60sp"
+        android:layout_marginBottom="100dp"
+        android:lineSpacingExtra="20sp"
+        android:text="@string/choose_photo_cards"
         android:textAlignment="center"
         android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/button_main"
@@ -30,7 +44,7 @@
         android:text="@string/take_photo"
         android:textAlignment="center"
         android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@+id/button_choose_photo"
+        app:layout_constraintBottom_toTopOf="@+id/button_choose_photo_board"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent" />
@@ -39,7 +53,7 @@
         android:id="@+id/button_main"
         android:layout_width="250sp"
         android:layout_height="60sp"
-        android:layout_marginBottom="148dp"
+        android:layout_marginBottom="64dp"
         android:lineSpacingExtra="20sp"
         android:text="@string/go_back"
         android:textAlignment="center"

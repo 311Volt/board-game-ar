@@ -1,5 +1,8 @@
 package pg.eti.arapp.catan;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class Settlement {
     public PlayerColor playerColor;
     public boolean isCity;

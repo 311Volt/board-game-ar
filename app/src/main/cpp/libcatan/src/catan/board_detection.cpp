@@ -72,27 +72,105 @@ CatanBoardDetector::CatanBoardDetector(cv::Vec3f seaColor)
 
 }
 
+cv::Vec3f getRoadColor(cv::Mat warped, cv::Mat thresWarped)
+{
+	if(warped.cols != thresWarped.cols || warped.rows != thresWarped.rows) {
+		throw std::runtime_error("non-matching dimensions");
+	}
+	if(warped.depth() != CV_32F) {
+		warped = cvutil::ToFloat(warped);
+	}
+
+	std::vector<float> vb(1), vg(1), vr(1);
+
+	for(int y=0; y<warped.rows; y+=4) {
+		cv::Vec3f* imgRow = warped.ptr<cv::Vec3f>(y);
+		uint8_t* thresRow = thresWarped.ptr<uint8_t>(y);
+		for(int x=0; x<warped.cols; x+=4) {
+			if(thresRow[x] > 200) {
+				vb.push_back(imgRow[x][0]);
+				vg.push_back(imgRow[x][1]);
+				vr.push_back(imgRow[x][2]);
+			}
+		}
+	}
+
+	std::sort(vb.begin(), vb.end());
+	std::sort(vg.begin(), vg.end());
+	std::sort(vr.begin(), vr.end());
+	
+	return {vb[vb.size()/2] * 1.0f, vg[vg.size()/2] * 1.0f, vr[vr.size()/2] * 1.0f};
+}
+
+
+cv::Mat applyColorCorrection(cv::Mat image, cv::Vec3f actualRoadColor, cv::Vec3f wantedRoadColor)
+{
+	cv::Mat squaredWarped = cvmath::Transform<cv::Vec3f, cv::Vec3f>(
+		cvutil::ToFloat(image), 
+		[](cv::Vec3f px){return cv::Vec3f{px[0]*px[0], px[1]*px[1], px[2]*px[2]};}
+	);
+	//wantedRoadColor = wantedRoadColor * wantedRoadColor;
+	//actualRoadColor = actualRoadColor * actualRoadColor;
+	cv::multiply(wantedRoadColor, wantedRoadColor, wantedRoadColor);
+	cv::multiply(actualRoadColor, actualRoadColor, actualRoadColor);
+	
+	//fmt::print("wanted road color: {} {} {}\n", wantedRoadColor[0], wantedRoadColor[1], wantedRoadColor[2]);
+	//fmt::print("actual road color: {} {} {}\n", actualRoadColor[0], actualRoadColor[1], actualRoadColor[2]);
+		
+
+	cv::Vec3f scaleFactor = {
+		wantedRoadColor[0] / actualRoadColor[0],
+		wantedRoadColor[1] / actualRoadColor[1],
+		wantedRoadColor[2] / actualRoadColor[2]
+	};
+
+	cvmath::Apply<cv::Vec3f>(squaredWarped, [scaleFactor](cv::Vec3f frag){
+		return cv::Vec3f {
+			frag[0] * scaleFactor[0],
+			frag[1] * scaleFactor[1],
+			frag[2] * scaleFactor[2]
+		};
+	});
+
+	cvmath::Apply<cv::Vec3f>(squaredWarped, [scaleFactor](cv::Vec3f frag){
+		return cv::Vec3f {std::sqrt(frag[0]), std::sqrt(frag[1]), std::sqrt(frag[2])};
+	});
+
+
+
+	return cvutil::ToByte(squaredWarped);
+}
+
+
 std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 {
-	cv::Mat crcb = cvutil::ConvertToCrCb(photo);
+	auto photoMedian = NEW_MAT(tmp) {cv::medianBlur(photo, tmp, 5);};
+	cv::Mat crcb = cvutil::ConvertToCrCb(photoMedian);
 	cv::Mat sq = squareDist(crcb, seaColor);
 	
 	cv::Mat thres = NEW_MAT(tmp) {cv::threshold(sq, tmp, 20, 255, cv::THRESH_BINARY_INV);};
-	
+
 	auto boardVtxs = findBoardVertices(thres);
 	if(!boardVtxs) {
 		return std::nullopt;
 	}
 
 	cv::Mat corr = ctn::GetBoardPerspectiveCorrectionMatrix(boardVtxs.value());
-	cv::Mat warped = NEW_MAT(tmp) {cv::warpPerspective(photo, warped, corr, {1000, 866});};
+	cv::Mat warped = NEW_MAT(tmp) {cv::warpPerspective(photo, tmp, corr, {1000, 866});};
+	cv::Mat thresWarped = NEW_MAT(tmp) {cv::warpPerspective(thres, tmp, corr, {1000, 866});};
+	
+	auto roadMask = ctn::GenerateIdealEdgeMask({255,255,255}, 15);
+	cv::Vec3f roadColor = getRoadColor(warped, roadMask);
+#ifndef ANDROID
+#define CATAN_APPLY_FINE_ALIGNMENT
+#endif
 
 #ifdef CATAN_APPLY_FINE_ALIGNMENT
-	cv::Mat warpMtx = ctn::FindFineAlignment(ctn::CreateDarkEdgeMask(warped), ctn::GenerateIdealEdgeMask());
+	cv::Mat warpMtx = ctn::FindFineAlignment(ctn::CreateDarkEdgeMask(warped), ctn::GenerateIdealEdgeMask({255,255,255}, 4));
 	cv::Mat warped1;
 	cv::warpAffine(warped, warped1, warpMtx, warped.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
 	warped = warped1;
 #endif
 
-	return warped;
+	return applyColorCorrection(warped, roadColor, {0.439f, 0.603f, 0.627f});
 }

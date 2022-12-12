@@ -24,6 +24,7 @@ import pg.eti.arapp.R;
 import pg.eti.arapp.catan.BoardInfo;
 import pg.eti.arapp.catan.CatanBoardDetector;
 import pg.eti.arapp.catan.Player;
+import pg.eti.arapp.catan.PlayerColor;
 import pg.eti.arapp.catan.Settlement;
 import pg.eti.arapp.catan.coord.VertexCoord;
 import pg.eti.arapp.databinding.FragmentPhotoBinding;
@@ -64,7 +65,10 @@ public class PhotoFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 try {
-                    Analyse(selectedImageUri);
+                    if(photoViewModel.isBoard())
+                        AnalyseBoard(selectedImageUri);
+                    else
+                        AnalyseCards(selectedImageUri);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -72,7 +76,7 @@ public class PhotoFragment extends Fragment {
         });
     }
 
-    public void Analyse(Uri imageUri) throws IOException {
+    public void AnalyseBoard(Uri imageUri) throws IOException {
         List<Player> players = new ArrayList<>();
         Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getActivity().getContentResolver(), imageUri);
         CatanBoardDetector detector = new CatanBoardDetector();
@@ -91,6 +95,17 @@ public class PhotoFragment extends Fragment {
                 player.AddPoints((short) (settlementEntry.getValue().isCity ? 2 : 1));
             }
             view.setText(String.format("%s", ScoreText(players)));
+        }
+    }
+
+    public void AnalyseCards(Uri imageUri) throws IOException {
+        Player player = new Player(PlayerColor.BLUE);
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getActivity().getContentResolver(), imageUri);
+
+        if (bitmap != null) {
+            TextView view = getActivity().findViewById(R.id.score_view_board);
+            view.setTextSize(20);
+            view.setText(player.AnalysedCards());
         }
     }
 

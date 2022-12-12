@@ -28,7 +28,7 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        native-lib.cpp BitmapDecoder.cpp
+        native-lib.cpp BitmapDecoder.cpp cards_detection.cpp cards_correction.cpp cards_recognition.cpp
 )
 
 # Searches for a specified prebuilt library and stores the path as a

@@ -6,5 +6,5 @@ import pg.eti.arapp.detectortl.BufferBitmap;
 
 public class CatanCardsDetector {
 
-    //public native ArrayList<BufferBitmap> getCardsNative(BufferBitmap bitmap);
+    public native ArrayList<BufferBitmap> getCardsNative(BufferBitmap bitmap);
 }

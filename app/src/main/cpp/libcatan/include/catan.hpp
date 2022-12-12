@@ -11,8 +11,8 @@
 #include <catan/image_correction.hpp>
 #include <catan/utility_opencv.hpp>
 #include <catan/resource_provider.hpp>
-#include <catan/cards_detection.hpp>
-#include <catan/cards_correction.hpp>
-#include <catan/cards_recognition.hpp>
+//#include <catan/cards_detection.hpp>
+//#include <catan/cards_correction.hpp>
+//#include <catan/cards_recognition.hpp>
 
 #endif /* INCLUDE_CATAN */

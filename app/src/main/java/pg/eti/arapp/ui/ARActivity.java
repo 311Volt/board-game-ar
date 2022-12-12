@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.PixelCopy;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,6 +60,7 @@ import java.util.Set;
 import pg.eti.arapp.R;
 import pg.eti.arapp.catan.BoardInfo;
 import pg.eti.arapp.catan.CatanBoardDetector;
+import pg.eti.arapp.catan.CatanCardsDetector;
 import pg.eti.arapp.catan.Settlement;
 import pg.eti.arapp.catan.coord.VertexCoord;
 import pg.eti.arapp.databinding.ActivityAractivityBinding;
@@ -251,14 +253,18 @@ public class ARActivity extends AppCompatActivity {
     private void NextStepReady(){
         DisplayNotification();
         TextView view = findViewById(R.id.instructions_text);
-        step = (short) ((step + 1) % (1 + players.size()));
+        //step = (short) ((step + 1) % (1 + players.size()));
+        step++;
+        if(step > 1)
+            step = 0;
 
         switch(step){
             case 0:
                 view.setText(R.string.phase_1);
                 break;
             case 1:
-                view.setText(players.get(0).CameraText());
+                //view.setText(players.get(0).CameraText());
+                view.setText("Jo, am artificial player 1");
                 break;
             case 2:
                 view.setText(players.get(1).CameraText());
@@ -272,6 +278,7 @@ public class ARActivity extends AppCompatActivity {
     private void ProcessStep(CatanBoardDetector detector, Bitmap bmp){
         switch(step){
             case 0:
+                Log.d("Board: ", "We are here");
                 players.clear();
                 BoardInfo boardInfo = detector.analyze(new BufferBitmap(bmp));
                 for (HashMap.Entry<VertexCoord, Settlement> settlementEntry: boardInfo.settlements.entrySet()) {
@@ -286,13 +293,24 @@ public class ARActivity extends AppCompatActivity {
                 }
                 break;
             case 1:
+                Log.d("Cards: ", "We are here");
+                CatanCardsDetector cardsDetector = new CatanCardsDetector();
+                ArrayList<BufferBitmap> cards = cardsDetector.getCardsNative(new BufferBitmap(bmp));
+                Log.d("Cards: ","Get cards native was called");
+                Log.d("Cards: ", cards == null ? "null" : "not null");
+                if(cards !=null && cards.size() != 0)
+                {
+                    Log.d("Cards: ","Karta 1: "+cards.get(0).width+", "+cards.get(0).height);
+                }
                 break;
             case 2:
                 break;
             case 3:
                 break;
         }
+        Log.d("Step: ", this.step+"");
         NextStepReady();
+        Log.d("Step after: ", this.step+"");
     }
 
     public void DisplayNotification(){

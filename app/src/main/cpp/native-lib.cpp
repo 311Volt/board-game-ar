@@ -5,6 +5,7 @@
 #include "BitmapDecoder.hpp"
 
 #include <catan.hpp>
+#include "cards_recognition.hpp"
 #include <optional>
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -114,7 +115,10 @@ JNIEXPORT jobject JNICALL
 Java_pg_eti_arapp_catan_CatanCardsDetector_getCardsNative(JNIEnv *env, jobject thiz,
                                                           jobject bitmap) {
     // TODO: implement getCardsNative()
-    /*cv::Mat mat = FromJavaBitmap(env, bitmap);
+    cv::Mat mat = FromJavaBitmap(env, bitmap);
+
+    /*if(mat.empty())
+        return nullptr;*/
 
     std::vector<cv::Mat> cards = getCardsFromImage(mat, true);
 
@@ -123,10 +127,13 @@ Java_pg_eti_arapp_catan_CatanCardsDetector_getCardsNative(JNIEnv *env, jobject t
     jmethodID java_util_ArrayList_add  = env->GetMethodID(java_util_ArrayList, "add", "(Ljava/lang/Object;)Z");
     jobject result = env->NewObject(java_util_ArrayList, java_util_ArrayList_, (jint)cards.size());
 
+    if(cards.empty())
+        return nullptr;
+
     for(const auto& card : cards)
     {
         env->CallBooleanMethod(result, java_util_ArrayList_add, ToJavaBitmap(env, card));
     }
 
-    return result;*/
+    return result;
 }

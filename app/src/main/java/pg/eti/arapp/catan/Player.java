@@ -9,10 +9,14 @@ public class Player {
     private boolean longestRoad = false;
     private boolean highestKnight = false;
     private int pointsCards = 0;
+    private int settlements = 0;
+    private int cities = 0;
 
     public Player(PlayerColor color) {
         this.color = color;
         this.score = 0;
+        this.settlements = 0;
+        this.cities = 0;
     }
 
     public void AddScoreFromCards(int pointsCards, boolean longestRoad, boolean highestKnight){
@@ -33,15 +37,15 @@ public class Player {
     @Override
     public String toString() {
         return HasWon()
-                ? "!!! " + color.getName() + " player:\t" + score + " !!!"
-                : color.getName() + " player:\t" + score;
+                ? "!!! " + color + " player:\t" + score + " !!!"
+                : color + " player:\t" + score;
     }
 
     public String CameraText(){
-        return String.format("Place the camera over cards of %s player", color.getSmallName());
+        return String.format("Place the camera over cards of %s player", color);
     }
 
-    public String CompleteAnaysisText(){return String.format("Analysing cards of %s player complete", color.getSmallName());}
+    public String CompleteAnaysisText(){return String.format("Analysing cards of %s player complete", color);}
 
     public String AnalysedCards(){
         String knight = highestKnight ? "\nPlayer has Highest Knight card" : "";
@@ -49,8 +53,22 @@ public class Player {
         return String.format("Player has %d point cards", this.pointsCards) + knight + road;
     }
 
+    public String AnalysedBoard(){
+        return String.format("%s player has %d settlements and %d cities", this.color , this.settlements, this.cities);
+    }
+
     public void AddPoints(short points){
         this.score += points;
+    }
+
+    public void AddCity(){
+        this.cities++;
+        AddPoints((short) 2);
+    }
+
+    public void AddSettlement(){
+        this.settlements++;
+        AddPoints((short) 1);
     }
 
     public PlayerColor getColor() {

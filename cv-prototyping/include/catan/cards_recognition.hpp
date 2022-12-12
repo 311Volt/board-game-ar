@@ -32,3 +32,5 @@ enum scoringCardType
 };
 
 int* recognizeCardsFromImage(cv::Mat image, bool isPlasticVer);
+
+std::vector<cv::Mat> getCardsFromImage(cv::Mat image, bool isPlasticVer);

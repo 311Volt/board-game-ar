@@ -40,3 +40,10 @@ task fetchAndUnzipOpenCV(dependsOn: fetchOpenCV, type: Copy) {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+// tesseract4Android
+/*allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}*/

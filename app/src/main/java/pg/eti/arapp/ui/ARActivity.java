@@ -253,10 +253,10 @@ public class ARActivity extends AppCompatActivity {
     private void NextStepReady(){
         DisplayNotification();
         TextView view = findViewById(R.id.instructions_text);
-        //step = (short) ((step + 1) % (1 + players.size()));
-        step++;
+        step = (short) ((step + 1) % (1 + players.size()));
+        /*step++;
         if(step > 1)
-            step = 0;
+            step = 0;*/
 
         switch(step){
             case 0:
@@ -264,9 +264,9 @@ public class ARActivity extends AppCompatActivity {
                 break;
             case 1:
                 //view.setText(players.get(0).CameraText());
-                view.setText("Jo, am artificial player 1");
+                //view.setText("Jo, am artificial player 1");
 
-                //view.setText(players.get(0).CameraText());
+                view.setText(players.get(0).CameraText());
 //                players.get(0).AddPoints((short) 10);
                 //players.get(0).AddScoreFromCards(2, true, true);
 

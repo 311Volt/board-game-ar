@@ -108,3 +108,25 @@ Java_pg_eti_arapp_utils_YuvConverter_yuv420_1888toNv21(JNIEnv *env, jclass clazz
     env->ReleaseByteArrayElements(nv21_array, nv21, 0);
     return true;
 }
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_pg_eti_arapp_catan_CatanCardsDetector_getCardsNative(JNIEnv *env, jobject thiz,
+                                                          jobject bitmap) {
+    // TODO: implement getCardsNative()
+    /*cv::Mat mat = FromJavaBitmap(env, bitmap);
+
+    std::vector<cv::Mat> cards = getCardsFromImage(mat, true);
+
+    jclass java_util_ArrayList = env->FindClass("java/util/ArrayList");
+    jmethodID java_util_ArrayList_ = env->GetMethodID(java_util_ArrayList, "<init>", "(I)V");
+    jmethodID java_util_ArrayList_add  = env->GetMethodID(java_util_ArrayList, "add", "(Ljava/lang/Object;)Z");
+    jobject result = env->NewObject(java_util_ArrayList, java_util_ArrayList_, (jint)cards.size());
+
+    for(const auto& card : cards)
+    {
+        env->CallBooleanMethod(result, java_util_ArrayList_add, ToJavaBitmap(env, card));
+    }
+
+    return result;*/
+}

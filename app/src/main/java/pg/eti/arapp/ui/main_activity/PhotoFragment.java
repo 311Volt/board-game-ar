@@ -23,6 +23,7 @@ import java.util.Optional;
 import pg.eti.arapp.R;
 import pg.eti.arapp.catan.BoardInfo;
 import pg.eti.arapp.catan.CatanBoardDetector;
+import pg.eti.arapp.catan.CatanCardsDetector;
 import pg.eti.arapp.catan.Player;
 import pg.eti.arapp.catan.PlayerColor;
 import pg.eti.arapp.catan.Settlement;
@@ -102,6 +103,13 @@ public class PhotoFragment extends Fragment {
     public void AnalyseCards(Uri imageUri) throws IOException {
         Player player = new Player(PlayerColor.BLUE);
         Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getActivity().getContentResolver(), imageUri);
+
+        CatanCardsDetector cardsDetector = new CatanCardsDetector();
+        ArrayList<BufferBitmap> cards = cardsDetector.getCardsNative(new BufferBitmap(bitmap));
+        if(cards != null && !cards.isEmpty())
+        {
+            binding.imageView3.setImageBitmap(cards.get(0).toAndroidBitmap());
+        }
 
         if (bitmap != null) {
             TextView view = getActivity().findViewById(R.id.score_view_board);

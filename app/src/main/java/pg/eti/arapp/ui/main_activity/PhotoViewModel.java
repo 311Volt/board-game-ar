@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 public class PhotoViewModel extends ViewModel {
     private Uri imageUri;
+    private boolean isBoard;
 
     public PhotoViewModel() {
     }
@@ -18,4 +19,11 @@ public class PhotoViewModel extends ViewModel {
         this.imageUri = imageUri;
     }
 
+    public boolean isBoard() {
+        return isBoard;
+    }
+
+    public void setBoard(boolean board) {
+        isBoard = board;
+    }
 }

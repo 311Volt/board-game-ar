@@ -260,6 +260,7 @@ public class ARActivity extends AppCompatActivity {
             case 1:
                 view.setText(players.get(0).CameraText());
 //                players.get(0).AddPoints((short) 10);
+                players.get(0).AddScoreFromCards(2, true, true);
                 break;
             case 2:
                 view.setText(players.get(1).CameraText());

@@ -53,11 +53,19 @@ public class BoardGamesFragment extends Fragment {
             }
         });
 
-        binding.buttonChoosePhoto.setOnClickListener(new View.OnClickListener() {
+        binding.buttonChoosePhotoBoard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startForResultFromGallery.launch(intent);
+                startForResultFromGalleryBoard.launch(intent);
+            }
+        });
+
+        binding.buttonChoosePhotoCards.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startForResultFromGalleryCards.launch(intent);
             }
         });
 
@@ -88,7 +96,7 @@ public class BoardGamesFragment extends Fragment {
         }
     }
 
-    private ActivityResultLauncher  startForResultFromGallery = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+    private ActivityResultLauncher startForResultFromGalleryBoard = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
         @Override
         public void onActivityResult(ActivityResult result) {
             if (result.getResultCode() == Activity.RESULT_OK){
@@ -97,6 +105,30 @@ public class BoardGamesFragment extends Fragment {
                         Uri selectedImageUri = result.getData().getData();
                         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
                         photoViewModel.setImageUri(selectedImageUri);
+                        photoViewModel.setBoard(true);
+                        //selectedImageUri.
+                        //photoBinding.imageView3.setImageURI(selectedImageUri);
+                        NavHostFragment.findNavController(BoardGamesFragment.this)
+                                .navigate(R.id.action_SecondFragment_to_photoFragment);
+                        int k = 0;
+                    }
+                }catch (Exception exception){
+                    Log.d("TAG",""+exception.getLocalizedMessage());
+                }
+            }
+        }
+    });
+
+    private ActivityResultLauncher  startForResultFromGalleryCards = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            if (result.getResultCode() == Activity.RESULT_OK){
+                try {
+                    if (result.getData() != null){
+                        Uri selectedImageUri = result.getData().getData();
+                        photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
+                        photoViewModel.setImageUri(selectedImageUri);
+                        photoViewModel.setBoard(false);
                         //selectedImageUri.
                         //photoBinding.imageView3.setImageURI(selectedImageUri);
                         NavHostFragment.findNavController(BoardGamesFragment.this)

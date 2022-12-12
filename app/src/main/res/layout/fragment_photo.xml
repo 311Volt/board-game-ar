@@ -38,7 +38,7 @@
         android:layout_width="144dp"
         android:layout_height="57dp"
         android:layout_marginEnd="44dp"
-        android:text="@string/go_back"
+        android:text="@string/board_games"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

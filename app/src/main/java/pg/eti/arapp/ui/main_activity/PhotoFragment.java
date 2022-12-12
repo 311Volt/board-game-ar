@@ -74,6 +74,7 @@ public class PhotoFragment extends Fragment {
                 }
             }
         });
+        CatanBoardDetector.initializeDetector(getResources());
     }
 
     public void AnalyseBoard(Uri imageUri) throws IOException {

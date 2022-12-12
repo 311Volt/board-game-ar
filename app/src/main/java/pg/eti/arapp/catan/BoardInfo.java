@@ -1,7 +1,10 @@
 package pg.eti.arapp.catan;
 
+import android.util.Pair;
+
 import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Queue;
 
 import pg.eti.arapp.catan.coord.CellCoord;
@@ -53,16 +56,40 @@ public class BoardInfo {
         return new BoardInfo(cellTypes, roads, settlements);
     }
 
-    private HashMap<VertexCoord, Integer> breadthFirstSearch(VertexCoord begin) {
+
+    /* Performs a modified breadth-first search algorithm. Finds all possible settlement
+     * coordinates reachable through roads by the player that owns the settlement at "begin".
+     */
+    private HashMap<VertexCoord, Integer> roadBreadthFirstSearch(VertexCoord begin) {
 
         HashMap<VertexCoord, Integer> result = new HashMap<>();
-        Queue<VertexCoord> bfsQueue = new ArrayDeque<>();
-        bfsQueue.add(begin);
+        Queue<Pair<VertexCoord, Integer>> bfsQueue = new ArrayDeque<>();
+        bfsQueue.add(new Pair<>(begin, 0));
+
+        if(!settlements.containsKey(begin)) {
+            throw new RuntimeException("Cannot begin BFS from a non-occupied vertex");
+        }
+        PlayerColor targetColor = Objects.requireNonNull(settlements.get(begin)).playerColor;
 
         while(!bfsQueue.isEmpty()) {
-            VertexCoord coord = bfsQueue.remove();
+            var entry = bfsQueue.remove();
+            int bfsLevel = entry.second;
+            VertexCoord coord = entry.first;
 
+            result.put(coord, bfsLevel);
+
+            if(!settlements.containsKey(coord)) {
+                continue;
+            }
+
+            for(VertexCoord neigh: coord.possibleNeighbors()) {
+                PlayerColor road = roads.get(EdgeCoord.ofVertexPair(coord, neigh));
+                if(road == targetColor) {
+                    bfsQueue.add(new Pair<>(neigh, bfsLevel+1));
+                }
+            }
         }
         return result;
     }
+
 }

@@ -34,13 +34,20 @@ cv::Mat ctn::GenerateIdealEdgeMask(cv::Scalar color, float thickness)
 
 cv::Mat ctn::FindFineAlignment(cv::Mat actualEdges, cv::Mat idealEdges)
 {
+	static constexpr int SCALE_FACTOR = 4;
+
 	cv::Mat warpMtx = cv::Mat::eye(2, 3, CV_32FC1);
 	cv::TermCriteria criteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-7);
 
-	cv::findTransformECC(idealEdges, actualEdges, warpMtx, cv::MOTION_EUCLIDEAN, criteria);
+	cv::Mat actualEdgesScaled = NEW_MAT(tmp) {cv::resize(actualEdges, tmp, actualEdges.size()/SCALE_FACTOR);};
+	cv::Mat idealEdgesScaled = NEW_MAT(tmp) {cv::resize(idealEdges, tmp, idealEdges.size()/SCALE_FACTOR);};
+
+	cv::findTransformECC(idealEdgesScaled, actualEdgesScaled, warpMtx, cv::MOTION_EUCLIDEAN, criteria);
 	
 	double tDet = cv::determinant(warpMtx(cv::Rect{0, 0, 2, 2}));
 	double tNorm = cv::norm(warpMtx(cv::Rect{2,0,1,2}));
+	warpMtx.at<float>(0, 2) *= SCALE_FACTOR;
+	warpMtx.at<float>(1, 2) *= SCALE_FACTOR;
 
 	//if either det(transform) or norm(translation) is suspiciously high, fall back to identity
 	if(std::abs(1.0 - tDet) > 0.03 || tNorm > 30) {

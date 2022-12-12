@@ -163,8 +163,9 @@ std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 	auto roadMask = ctn::GenerateIdealEdgeMask({255,255,255}, 15);
 	cv::Vec3f roadColor = getRoadColor(warped, roadMask);
 
+#define CATAN_APPLY_FINE_ALIGNMENT
 #ifdef CATAN_APPLY_FINE_ALIGNMENT
-	cv::Mat warpMtx = ctn::FindFineAlignment(ctn::CreateDarkEdgeMask(warped), ctn::GenerateIdealEdgeMask());
+	cv::Mat warpMtx = ctn::FindFineAlignment(ctn::CreateDarkEdgeMask(warped), ctn::GenerateIdealEdgeMask({255,255,255}, 4));
 	cv::Mat warped1;
 	cv::warpAffine(warped, warped1, warpMtx, warped.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
 	warped = warped1;

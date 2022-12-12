@@ -1,5 +1,8 @@
 package pg.eti.arapp.catan;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class Settlement {
     public PlayerColor playerColor;
     public boolean isCity;
@@ -10,7 +13,7 @@ public class Settlement {
     }
 
     public static Settlement parse(String str) {
-        String[] split = str.split(" ");
+        String[] split = Arrays.stream(str.split(" ")).filter(s -> !s.isEmpty()).toArray(String[]::new);
         return new Settlement(PlayerColor.parse(split[0]), Boolean.parseBoolean(split[1]));
     }
 }

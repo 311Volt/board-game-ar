@@ -6,6 +6,7 @@ public enum PlayerColor {
     ORANGE;
 
     public static PlayerColor parse(String str) {
+        str = str.trim();
         switch(str) {
             case "red": return RED;
             case "orange": return ORANGE;

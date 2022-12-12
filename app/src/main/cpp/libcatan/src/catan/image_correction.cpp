@@ -42,8 +42,11 @@ cv::Mat ctn::FindFineAlignment(cv::Mat actualEdges, cv::Mat idealEdges)
 	cv::Mat actualEdgesScaled = NEW_MAT(tmp) {cv::resize(actualEdges, tmp, actualEdges.size()/SCALE_FACTOR);};
 	cv::Mat idealEdgesScaled = NEW_MAT(tmp) {cv::resize(idealEdges, tmp, idealEdges.size()/SCALE_FACTOR);};
 
-	cv::findTransformECC(idealEdgesScaled, actualEdgesScaled, warpMtx, cv::MOTION_EUCLIDEAN, criteria);
-	
+    int sum = cv::sum(actualEdgesScaled)[0];
+	if(sum > 40000) {
+		cv::findTransformECC(idealEdgesScaled, actualEdgesScaled, warpMtx, cv::MOTION_EUCLIDEAN, criteria);
+	}
+
 	double tDet = cv::determinant(warpMtx(cv::Rect{0, 0, 2, 2}));
 	double tNorm = cv::norm(warpMtx(cv::Rect{2,0,1,2}));
 	warpMtx.at<float>(0, 2) *= SCALE_FACTOR;

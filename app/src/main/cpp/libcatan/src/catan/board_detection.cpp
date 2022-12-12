@@ -1,5 +1,4 @@
 #include <catan.hpp>
-#include <fmt/format.h>
 
 cv::Mat squareDist(cv::Mat source, cv::Vec3f vec)
 {
@@ -115,8 +114,8 @@ cv::Mat applyColorCorrection(cv::Mat image, cv::Vec3f actualRoadColor, cv::Vec3f
 	cv::multiply(wantedRoadColor, wantedRoadColor, wantedRoadColor);
 	cv::multiply(actualRoadColor, actualRoadColor, actualRoadColor);
 	
-	fmt::print("wanted road color: {} {} {}\n", wantedRoadColor[0], wantedRoadColor[1], wantedRoadColor[2]);
-	fmt::print("actual road color: {} {} {}\n", actualRoadColor[0], actualRoadColor[1], actualRoadColor[2]);
+	//fmt::print("wanted road color: {} {} {}\n", wantedRoadColor[0], wantedRoadColor[1], wantedRoadColor[2]);
+	//fmt::print("actual road color: {} {} {}\n", actualRoadColor[0], actualRoadColor[1], actualRoadColor[2]);
 		
 
 	cv::Vec3f scaleFactor = {
@@ -162,8 +161,10 @@ std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 	
 	auto roadMask = ctn::GenerateIdealEdgeMask({255,255,255}, 15);
 	cv::Vec3f roadColor = getRoadColor(warped, roadMask);
-
+#ifndef ANDROID
 #define CATAN_APPLY_FINE_ALIGNMENT
+#endif
+
 #ifdef CATAN_APPLY_FINE_ALIGNMENT
 	cv::Mat warpMtx = ctn::FindFineAlignment(ctn::CreateDarkEdgeMask(warped), ctn::GenerateIdealEdgeMask({255,255,255}, 4));
 	cv::Mat warped1;

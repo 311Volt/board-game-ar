@@ -14,7 +14,7 @@ public class VertexCoord {
 
     public static VertexCoord parse(String values) {
         String[] split = values.split("/");
-        return new VertexCoord(CellCoord.parse(split[0]), Boolean.parseBoolean(split[1]));
+        return new VertexCoord(CellCoord.parse(split[0]), Boolean.parseBoolean(split[1].trim()));
     }
 
     @Override

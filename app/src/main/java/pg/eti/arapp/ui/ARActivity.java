@@ -170,7 +170,7 @@ public class ARActivity extends AppCompatActivity {
                     model.setRenderable(renderable);
                     model.getScaleController().setMinScale(2.0f);
                     model.getScaleController().setMaxScale(3.0f);
-                    model.setLocalScale(new Vector3(2.0f, 2.0f, 2.0f));
+                    model.setLocalScale(new Vector3(1.5f, 1.5f, 1.5f));
                     model.select();
 
                     // adding score to display on the info board

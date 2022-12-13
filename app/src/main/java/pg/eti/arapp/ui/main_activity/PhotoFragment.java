@@ -144,7 +144,7 @@ public class PhotoFragment extends Fragment {
 
         if (bitmap != null) {
             TextView view = getActivity().findViewById(R.id.score_view_board);
-            view.setTextSize(20);
+            view.setTextSize(15);
             view.setText(player.AnalysedCards());
         }
     }

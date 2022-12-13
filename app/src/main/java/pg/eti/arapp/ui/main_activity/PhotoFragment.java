@@ -110,6 +110,9 @@ public class PhotoFragment extends Fragment {
         {
             binding.imageView3.setImageBitmap(cards.get(0).toAndroidBitmap());
         }
+        cardsDetector.initTesseract(getContext(), "pol");
+        cardsDetector.freeTesseract();
+        //cardsDetector.setupOCR(getContext());
 
         if (bitmap != null) {
             TextView view = getActivity().findViewById(R.id.score_view_board);

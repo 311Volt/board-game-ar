@@ -3,42 +3,42 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/TitleFragment">
 
     <fragment
-        android:id="@+id/FirstFragment"
+        android:id="@+id/TitleFragment"
         android:name="pg.eti.arapp.ui.main_activity.FirstFragment"
         android:label="@string/first_fragment_label"
         tools:layout="@layout/fragment_first">
 
         <action
             android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
+            app:destination="@id/BoardGamesFragment" />
     </fragment>
     <fragment
-        android:id="@+id/SecondFragment"
+        android:id="@+id/BoardGamesFragment"
         android:name="pg.eti.arapp.ui.main_activity.BoardGamesFragment"
         android:label="@string/second_fragment_label"
         tools:layout="@layout/fragment_board_games">
 
         <action
             android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            app:destination="@id/TitleFragment" />
         <action
             android:id="@+id/action_SecondFragment_to_photoFragment"
-            app:destination="@id/photoFragment" />
+            app:destination="@id/PhotoFragment" />
         <action
             android:id="@+id/action_SecondFragment_to_ARActivity"
             app:destination="@id/ARActivity" />
     </fragment>
     <fragment
-        android:id="@+id/photoFragment"
+        android:id="@+id/PhotoFragment"
         android:name="pg.eti.arapp.ui.main_activity.PhotoFragment"
         android:label="fragment_photo"
         tools:layout="@layout/fragment_photo" >
         <action
             android:id="@+id/action_photoFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
+            app:destination="@id/BoardGamesFragment" />
     </fragment>
     <activity
         android:id="@+id/ARActivity"

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import pg.eti.arapp.R;
@@ -21,6 +22,7 @@ public class FirstFragment extends Fragment {
     }
 
     private FragmentFirstBinding binding;
+    private ModeModel modeModel;
 
     @Override
     public View onCreateView(
@@ -36,20 +38,33 @@ public class FirstFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
+        modeModel = new ViewModelProvider(requireActivity()).get(ModeModel.class);
+
         binding.buttonBoardGames.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                modeModel.setExperimental(false);
                 NavHostFragment.findNavController(FirstFragment.this)
                         .navigate(R.id.action_FirstFragment_to_SecondFragment);
             }
         });
 
-        /*binding.button2.setOnClickListener(new View.OnClickListener() {
+        binding.button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                launchCamera(view);
+                modeModel.setExperimental(true);
+                NavHostFragment.findNavController(FirstFragment.this)
+                        .navigate(R.id.action_FirstFragment_to_SecondFragment);
             }
-        });*/
+        });
+
+//        binding.button2.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                launchCamera(view);
+//            }
+//        });
     }
 
 

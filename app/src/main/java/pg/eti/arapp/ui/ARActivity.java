@@ -9,13 +9,10 @@ import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.ArraySet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.PixelCopy;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,16 +24,9 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.ar.core.Anchor;
-import com.google.ar.core.Config;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
-import com.google.ar.core.Session;
-import com.google.ar.core.SharedCamera;
 import com.google.ar.core.exceptions.NotYetAvailableException;
-import com.google.ar.core.exceptions.UnavailableApkTooOldException;
-import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
-import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
-import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Vector3;
@@ -46,11 +36,12 @@ import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
+import org.opencv.core.Mat;
+
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -100,6 +91,10 @@ public class ARActivity extends AppCompatActivity {
 
         createNotificationChannel();
 
+
+        CatanCardsDetector cardsDetector = new CatanCardsDetector();
+        cardsDetector.initTesseract(getApplicationContext(), "pol");
+
         binding.takePhotoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -123,7 +118,12 @@ public class ARActivity extends AppCompatActivity {
 //                    Bitmap bmp = bitmapAR;
                     currentImage.close();
                     if (bmp != null) {
-                        ProcessStep(detector, bmp);
+                        if(!getIntent().getBooleanExtra("Experimental", false)) {
+                            ProcessStep(detector, bmp);
+                        }
+                        else {
+                            // TODO: part for 3 players
+                        }
                     }
                 }
             }
@@ -288,12 +288,12 @@ public class ARActivity extends AppCompatActivity {
         return result;
     }
 
-    private void ProcessStep(CatanBoardDetector detector, Bitmap bmp){
+    private void ProcessStep(CatanBoardDetector boardDetector, Bitmap bmp){
         switch(step){
             case 0:
                 Log.d("Board: ", "We are here");
                 players.clear();
-                BoardInfo boardInfo = detector.analyze(new BufferBitmap(bmp));
+                BoardInfo boardInfo = boardDetector.analyze(new BufferBitmap(bmp));
                 for (HashMap.Entry<VertexCoord, Settlement> settlementEntry: boardInfo.settlements.entrySet()) {
                     Optional<Player> optionalPlayer = players.stream().filter(p -> p.getColor() == settlementEntry.getValue().playerColor).findAny();
                     Player player;
@@ -310,24 +310,66 @@ public class ARActivity extends AppCompatActivity {
                 }
                 break;
             case 1:
-                Log.d("Cards: ", "We are here");
-                CatanCardsDetector cardsDetector = new CatanCardsDetector();
-                ArrayList<BufferBitmap> cards = cardsDetector.getCardsNative(new BufferBitmap(bmp));
-                Log.d("Cards: ","Get cards native was called");
-                Log.d("Cards: ", cards == null ? "null" : "not null");
-                if(cards !=null && cards.size() != 0)
-                {
-                    Log.d("Cards: ","Karta 1: "+cards.get(0).width+", "+cards.get(0).height);
+//                Log.d("Cards: ", "We are here");
+//                CatanCardsDetector cardsDetector = new CatanCardsDetector();
+//                ArrayList<BufferBitmap> cards = cardsDetector.getCardsNative(new BufferBitmap(bmp));
+//                Log.d("Cards: ","Get cards native was called");
+//                Log.d("Cards: ", cards == null ? "null" : "not null");
+//                if(cards !=null && cards.size() != 0)
+//                {
+//                    Log.d("Cards: ","Karta 1: "+cards.get(0).width+", "+cards.get(0).height);
+//                }
+
+                AnalyseCards(bmp, players.get(0));
+
+                if (bmp != null) {
+                    TextView view = findViewById(R.id.score_view_board);
+                    view.setTextSize(20);
+                    view.setText(players.get(0).AnalysedCards());
                 }
                 break;
             case 2:
+                AnalyseCards(bmp, players.get(1));
+
+                if (bmp != null) {
+                    TextView view = findViewById(R.id.score_view_board);
+                    view.setTextSize(20);
+                    view.setText(players.get(1).AnalysedCards());
+                }
                 break;
             case 3:
+                AnalyseCards(bmp, players.get(2));
+
+                if (bmp != null) {
+                    TextView view = findViewById(R.id.score_view_board);
+                    view.setTextSize(20);
+                    view.setText(players.get(2).AnalysedCards());
+                }
                 break;
         }
         Log.d("Step: ", this.step+"");
         NextStepReady();
         Log.d("Step after: ", this.step+"");
+    }
+
+    public void AnalyseCards(Bitmap bitmap, Player player){
+        CatanCardsDetector cardsDetector = new CatanCardsDetector();
+        ArrayList<BufferBitmap> cards = cardsDetector.getCardsNative(new BufferBitmap(bitmap));
+        if(cards != null && !cards.isEmpty())
+        {
+            for(int i =0; i<cards.size(); i++) {
+                Mat mat = cardsDetector.convertBitmapToMat(cards.get(i).toAndroidBitmap());
+                int cardType = cardsDetector.recognizeCard(mat, true);
+                Log.d("Cards", cardType + "");
+                boolean longestRoad = false;
+                if(cardType == 2)
+                    player.AddScoreFromCards(0, true, false);
+                else
+                    player.AddScoreFromCards(cardType, false, false);
+
+            }
+        }
+        cardsDetector.freeTesseract();
     }
 
     public void DisplayNotification(){

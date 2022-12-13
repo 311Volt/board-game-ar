@@ -22,6 +22,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import pg.eti.arapp.R;
 import pg.eti.arapp.databinding.FragmentBoardGamesBinding;
 import pg.eti.arapp.databinding.FragmentPhotoBinding;
+import pg.eti.arapp.ui.ARActivity;
 
 public class BoardGamesFragment extends Fragment {
 
@@ -29,6 +30,7 @@ public class BoardGamesFragment extends Fragment {
     private FragmentPhotoBinding photoBinding;
 
     private PhotoViewModel photoViewModel;
+    private ModeModel modeModel;
 
     @Override
     public View onCreateView(
@@ -45,6 +47,8 @@ public class BoardGamesFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        modeModel = new ViewModelProvider(requireActivity()).get(ModeModel.class);
+
         binding.buttonMain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -57,6 +61,7 @@ public class BoardGamesFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.putExtra("Experimental", modeModel.isExperimental());
                 startForResultFromGalleryBoard.launch(intent);
             }
         });
@@ -65,6 +70,7 @@ public class BoardGamesFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.putExtra("Experimental", modeModel.isExperimental());
                 startForResultFromGalleryCards.launch(intent);
             }
         });
@@ -72,8 +78,11 @@ public class BoardGamesFragment extends Fragment {
         binding.buttonTakePhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NavHostFragment.findNavController(BoardGamesFragment.this)
-                        .navigate(R.id.action_SecondFragment_to_ARActivity);
+                Intent intent = new Intent(getContext(), ARActivity.class);
+                intent.putExtra("Experimental", modeModel.isExperimental());
+                startActivity(intent);
+//                NavHostFragment.findNavController(BoardGamesFragment.this)
+//                        .navigate(R.id.action_SecondFragment_to_ARActivity);
             }
         });
     }

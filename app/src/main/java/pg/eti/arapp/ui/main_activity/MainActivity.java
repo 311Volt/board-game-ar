@@ -1,5 +1,6 @@
 package pg.eti.arapp.ui.main_activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -14,6 +15,7 @@ import org.opencv.android.OpenCVLoader;
 
 import pg.eti.arapp.R;
 import pg.eti.arapp.databinding.ActivityMainBinding;
+import pg.eti.arapp.ui.ARActivity;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -22,13 +24,18 @@ public class MainActivity extends AppCompatActivity {
 
     private PhotoViewModel photoViewModel;
 
+    private ModeModel modeModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         photoViewModel = new ViewModelProvider(this).get(PhotoViewModel.class);
+        modeModel = new ViewModelProvider(this).get(ModeModel.class);
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+
+
 
         if(OpenCVLoader.initDebug()) {
             Log.d("OPENCV", "OpenCV initialized successfully");

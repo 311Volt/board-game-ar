@@ -41,6 +41,7 @@ public class PhotoFragment extends Fragment {
     private FragmentPhotoBinding binding;
 
     private PhotoViewModel photoViewModel;
+    private ModeModel modeModel;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -54,7 +55,10 @@ public class PhotoFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         Uri selectedImageUri;
+
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
+        modeModel = new ViewModelProvider(requireActivity()).get(ModeModel.class);
+
         selectedImageUri = photoViewModel.getImageUri();
 
         binding.imageView3.setImageURI(selectedImageUri);
@@ -70,13 +74,18 @@ public class PhotoFragment extends Fragment {
         binding.buttonAnalyze.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    if(photoViewModel.isBoard())
-                        AnalyseBoard(selectedImageUri);
-                    else
-                        AnalyseCards(selectedImageUri);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if(!modeModel.isExperimental()) {
+                    try {
+                        if (photoViewModel.isBoard())
+                            AnalyseBoard(selectedImageUri);
+                        else
+                            AnalyseCards(selectedImageUri);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else {
+                    // TODO: part for 3 players
                 }
             }
         });

@@ -20,7 +20,7 @@ public class Player {
     }
 
     public void AddScoreFromCards(int pointsCards, boolean longestRoad, boolean highestKnight){
-        this.pointsCards = pointsCards;
+        this.pointsCards += pointsCards;
         this.highestKnight = highestKnight;
         this.longestRoad = longestRoad;
         this.score += pointsCards;
@@ -50,7 +50,8 @@ public class Player {
     public String AnalysedCards(){
         String knight = highestKnight ? "\nPlayer has Highest Knight card" : "";
         String road = longestRoad ? "\nPlayer has Longest Road card" : "";
-        return String.format("Player has %d point cards", this.pointsCards) + knight + road;
+        String score = "\nPlayer score: "+this.score;
+        return String.format("Player has %d point cards", this.pointsCards) + knight + road + score;
     }
 
     public String AnalysedBoard(){

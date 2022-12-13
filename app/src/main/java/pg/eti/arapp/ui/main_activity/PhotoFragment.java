@@ -1,9 +1,11 @@
 package pg.eti.arapp.ui.main_activity;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,9 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
+
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -106,11 +111,25 @@ public class PhotoFragment extends Fragment {
 
         CatanCardsDetector cardsDetector = new CatanCardsDetector();
         ArrayList<BufferBitmap> cards = cardsDetector.getCardsNative(new BufferBitmap(bitmap));
+        cardsDetector.initTesseract(getContext(), "pol");
         if(cards != null && !cards.isEmpty())
         {
             binding.imageView3.setImageBitmap(cards.get(0).toAndroidBitmap());
+            for(int i =0; i<cards.size(); i++) {
+                Mat mat = cardsDetector.convertBitmapToMat(cards.get(i).toAndroidBitmap());
+                //Mat heading = cardsDetector.cutOutCardBottom(mat, 0.4f);
+                //Bitmap bmpHeading = cardsDetector.convertMatToBitmap(heading);
+                //binding.imageView3.setImageBitmap(bmpHeading);
+                int cardType = cardsDetector.recognizeCard(mat, true);
+                Log.d("Cards", cardType + "");
+                boolean longestRoad = false;
+                if(cardType == 2)
+                    player.AddScoreFromCards(0, true, false);
+                else
+                    player.AddScoreFromCards(cardType, false, false);
+
+            }
         }
-        cardsDetector.initTesseract(getContext(), "pol");
         cardsDetector.freeTesseract();
         //cardsDetector.setupOCR(getContext());
 

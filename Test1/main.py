@@ -7,10 +7,10 @@ import os
 def wczytaj_sciezki_do_plikow(sciezka_glowna, lista_sciezek):
     lista_folderow_i_plikow = os.listdir(sciezka_glowna)
     for element in lista_folderow_i_plikow:
-        if os.path.isfile(sciezka_glowna+'\\'+element):
-            lista_sciezek.append(sciezka_glowna+'\\'+element)
+        if os.path.isfile(sciezka_glowna+'/'+element):
+            lista_sciezek.append(sciezka_glowna+'/'+element)
         else:
-            wczytaj_sciezki_do_plikow(sciezka_glowna+'\\'+element, lista_sciezek)
+            wczytaj_sciezki_do_plikow(sciezka_glowna+'/'+element, lista_sciezek)
 
 
 def wycinanie_obrazka(zamaskowany_obrazek, maska):
@@ -33,16 +33,16 @@ def wykryj_plansze(plansza, sciezka, nazwa):
     return przycieta_plansza
 
 
-sciezka_obrazki_wejsciowe = 'Zasoby\Osadnicy z Catanu\Zdjecia elementow gry\\'
-sciezka_obrazki_wynikowe = 'Wyniki\Wynikowe obrazki\\Plansza'
+sciezka_obrazki_wejsciowe = 'Zasoby/Osadnicy z Catanu/Zdjecia elementow gry/'
+sciezka_obrazki_wynikowe = 'Wyniki/Wynikowe obrazki/Plansza'
 
 # przygotowanie folderu na obrazki wynikowe
 os.makedirs(sciezka_obrazki_wynikowe, exist_ok=True)
 
 # wczytanie sciezek do obrazkow do przetworzenia
 sciezki = []
-#wczytaj_sciezki_do_plikow(sciezka_obrazki_wejsciowe+'\\'+'Elementy\\', sciezki)
-wczytaj_sciezki_do_plikow(sciezka_obrazki_wejsciowe+'\\'+'Plansza\\', sciezki)
+#wczytaj_sciezki_do_plikow(sciezka_obrazki_wejsciowe+'/'+'Elementy/', sciezki)
+wczytaj_sciezki_do_plikow(sciezka_obrazki_wejsciowe+'/'+'Plansza/', sciezki)
 print(*sciezki, sep='\n')
 
 for sciezka in sciezki:
@@ -54,4 +54,4 @@ for sciezka in sciezki:
     # wykrycie i zapisanie wyciętej planszy
     plansza = cv2.imread(sciezka)
     przycieta_plansza = wykryj_plansze(plansza, sciezka_obrazki_wynikowe, nazwa_pliku)
-    cv2.imwrite(sciezka_obrazki_wynikowe + '\\' + nazwa_pliku + '.png', przycieta_plansza)
+    cv2.imwrite(sciezka_obrazki_wynikowe + '/' + nazwa_pliku + '.png', przycieta_plansza)

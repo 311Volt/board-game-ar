@@ -79,6 +79,7 @@ std::vector<cv::Mat> correctCardsPerspective(std::vector<cv::Mat> detectedCards)
 std::vector<cv::Mat> setCardsPositionVertical(std::vector<cv::Mat> cards)
 {
 	std::vector<cv::Mat> verticalCards;
+	int i = 1;
 	for (auto card : cards)
 	{
 		cv::Mat cardVertical;
@@ -87,6 +88,8 @@ std::vector<cv::Mat> setCardsPositionVertical(std::vector<cv::Mat> cards)
 		else
 			card.copyTo(cardVertical);
 		verticalCards.push_back(cardVertical);
+		cv::imwrite("card_corrected_" + std::to_string(i) + ".jpg", card);
+		i++;
 	}
 	return verticalCards;
 }

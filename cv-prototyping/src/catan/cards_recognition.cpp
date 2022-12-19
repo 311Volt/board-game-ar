@@ -5,6 +5,12 @@ cv::Mat cutOutCardBottom(cv::Mat card, float bottomAreaCoeff)
 {
 	cv::Rect bottomBoundingRect = cv::Rect(cv::Point(0, card.size().height * (1.0 - bottomAreaCoeff)), cv::Point(card.size().width - 1, card.size().height - 1));
 	cv::Mat cardBottom = card(bottomBoundingRect);
+
+	cv::Mat cardcopy;
+	card.copyTo(cardcopy);
+	cv::rectangle(cardcopy, bottomBoundingRect,cv::Scalar(0, 255, 0), 3);
+	cv::imwrite("card_drawn_bottom.jpg", cardcopy);
+
 	return cardBottom;
 }
 
@@ -54,10 +60,17 @@ scoringCardType assignCardTypeBasedOnText(char* outText)
 	std::string cardText = outText;
 	cardText = prepareString(cardText);
 
+	std::cout << "OCR output:\n" << std::string(outText) << std::endl;
+	std::cout << std::endl;
+	std::cout << "OCR output cleaned:\n" << prepareString(std::string(outText)) << std::endl;
+
+
+
+
 	std::string costsTableContents[] = { "Koszty budowy", "Rozwój", "pkt"};
 	for (auto templateText : costsTableContents)
 	{
-		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
+		std::cout << "templateText: " << prepareString(templateText) << std::endl;
 
 		if (cardText.find(prepareString(templateText)) != std::string::npos)
 			return scoringCardType::OTHER;
@@ -65,14 +78,14 @@ scoringCardType assignCardTypeBasedOnText(char* outText)
 
 	for (auto templateText : twoPointCardsContents)
 	{
-		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
+		std::cout << "templateText: " << prepareString(templateText) << std::endl;
 		
 		if (cardText.find(prepareString(templateText)) != std::string::npos)
 			return scoringCardType::TWO_POINTS;
 	}
 	for (auto templateText : onePointCardsContents)
 	{
-		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
+		std::cout << "templateText: " << prepareString(templateText) << std::endl;
 		if (cardText.find(prepareString(templateText)) != std::string::npos)
 			return scoringCardType::ONE_POINT;
 	}
@@ -107,11 +120,15 @@ scoringCardType recognizeCard(cv::Mat card, tesseract::TessBaseAPI* api, bool is
 		else
 			cardPart = cutOutCardBottom(cardCopy, 0.4);
 
+		cv::imwrite("card_bottom_example.jpg", cardPart);
+		cv::waitKey();
+
 		outText = recognizeTextOnImage(cardPart, api);
 		cardType = assignCardTypeBasedOnText(outText);
 
-		//std::cout << "OCR output:\n" << prepareString(std::string(outText)) << std::endl;
-		//std::cout << "Recognition:\n" << cardTypeToString(cardType) << std::endl;
+		
+		//std::cout << "OCR output cleaned:\n" << prepareString(std::string(outText)) << std::endl;
+		std::cout << "Recognition:\n" << cardTypeToString(cardType) << std::endl;
 		//cv::imshow("Card part", cardPart);
 		//cv::waitKey();
 
@@ -187,14 +204,16 @@ int* recognizeCardsFromImage(cv::Mat image, bool isPlasticVer)
 
 	std::vector<scoringCardType> cardTypes = recognizeCards(verticalCards, isPlasticVer);
 
-	/*for (int i = 0; i<verticalCards.size(); i++)
+	for (int i = 0; i<verticalCards.size(); i++)
 	{
 		auto card = verticalCards[i];
 		std::string cardTypeString = cardTypeToString(cardTypes[i]);
-		cv::putText(card, cardTypeString, cv::Point(card.size().width/4, card.size().height/4), cv::FONT_HERSHEY_COMPLEX_SMALL, 2.0, cv::Scalar(0, 255, 0));
+		//cv::rectangle(card, cv::Rect(cv::Point(0, 0), cv::Point(card.size().width - 1, card.size().height * 0.1)), cv::Scalar(255, 255, 255), -1);
+		cv::putText(card, cardTypeString, cv::Point(card.size().width / 4, card.size().height / 4), cv::FONT_HERSHEY_COMPLEX_SMALL, 2.5, cv::Scalar(0, 255, 0), 5);
 		cv::imshow("Card recognized " + std::to_string(i+1), card);
+		cv::imwrite("card_recognized_" + std::to_string(i + 1) + ".jpg", card);
 	}
-	cv::waitKey();*/
+	cv::waitKey();
 
 	int* results = new int[cardTypes.size()];
 	for (int i=0; i<cardTypes.size(); i++)

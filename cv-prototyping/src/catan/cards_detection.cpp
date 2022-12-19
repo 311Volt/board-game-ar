@@ -64,7 +64,13 @@ std::vector<std::vector<cv::Point>> filterCardsContours(cv::Mat mask)
 	std::vector<std::vector<cv::Point>> contours;
 	cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 	std::vector<std::vector<cv::Point>> countoursWithoutNoise = removeSmallContours(contours, 5000);
+	cv::Mat test1 = cv::Mat::zeros(mask.size(), CV_8U);
+	cv::drawContours(test1, countoursWithoutNoise, -1, cv::Scalar(255, 255, 255), -1);
+	cv::imwrite("maska_usuniete_szumy.jpg", test1);
 	std::vector<std::vector<cv::Point>> contoursQuadrangles = filterForPolygonsOfNVerticies(countoursWithoutNoise, 4, 0.04);
+	cv::Mat test2 = cv::Mat::zeros(mask.size(), CV_8U);
+	cv::drawContours(test2, contoursQuadrangles, -1, cv::Scalar(255, 255, 255), -1);
+	cv::imwrite("maska_tylko_kwadraty.jpg", test2);
 	return contoursQuadrangles;
 }
 
@@ -90,6 +96,7 @@ cv::Mat cutOutCard(cv::Mat image, cv::Mat mask)
 	cv::findContours(mask, cs, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 	cv::Rect cardBoundaries = cv::boundingRect(cs[0]);
 	card = card(cardBoundaries);
+	cv::rectangle(image, cardBoundaries, cv::Scalar(0, 255, 0), 3);
 	return card;
 }
 
@@ -139,18 +146,25 @@ std::vector<cv::Mat> detectCardsPlasticVer(cv::Mat image)
 	short erosionIterations = 8; //4
 
 	cv::Mat creamyFieldsOfPhoto = detectCreamyFields(image);
+	cv::imwrite("maska_kremowe_pola.jpg", creamyFieldsOfPhoto);
 	cv::Mat maskEroded = getErodedMask(creamyFieldsOfPhoto, erosionKernel, erosionIterations);
+	cv::imwrite("maska_po_erozji.jpg", maskEroded);
 	//cv::imshow("Mask eroded", scaleImage(maskEroded, 0.2));
 	//cv::waitKey();
 	std::vector<std::vector<cv::Point>> filteredContours = filterCardsContours(maskEroded);
 
 	std::vector<cv::Mat> detectedCards;
+	int i = 1;
 	for (auto c : filteredContours)
 	{
 		cv::Mat maskDilatedBack = getDilatedMask(c, image.size(), erosionKernel, erosionIterations);
 		cv::Mat card = cutOutCard(image, maskDilatedBack);
 		detectedCards.push_back(card);
+		cv::imshow("card_detected_" + std::to_string(i) + ".jpg", scaleImage(card, 0.3));
+		cv::imwrite("card_detected_" + std::to_string(i) + ".jpg", card);
+		i++;
 	}
+	cv::imwrite("cards_detections2.jpg", image);
 
 	return detectedCards;
 }

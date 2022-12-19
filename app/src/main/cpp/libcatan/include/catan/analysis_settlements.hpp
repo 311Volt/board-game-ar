@@ -40,5 +40,6 @@ namespace ctn {
 };
 
 cv::Mat CreateStructureMask(const cv::Mat& warped, cv::Vec2f relativeCenter); //TODO DECLARATION FOR DEBUGGING ONLY - REMOVE LATER
+cv::Mat CreateRoadMask(cv::Mat input);
 
 #endif /* INCLUDE_CATAN_ANALYSIS_SETTLEMENTS */

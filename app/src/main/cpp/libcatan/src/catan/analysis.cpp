@@ -28,7 +28,8 @@ void DrawCellTypes(cv::Mat board, const ctn::BoardInfo& boardInfo)
 
 	for(const auto& [coord, type]: boardInfo.cellTypes) {
 		auto pos = mapper(coord) - cv::Point2d{40, 0};
-		auto color = cv::Scalar{0, 255, 0};
+		auto color = cv::Scalar{0, 255, 255};
+		cv::putText(board, type, pos + cv::Point2d{2,2}, cv::FONT_HERSHEY_COMPLEX_SMALL, 0.9, {0,0,0});
 		cv::putText(board, type, pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 0.9, color);
 	}
 }

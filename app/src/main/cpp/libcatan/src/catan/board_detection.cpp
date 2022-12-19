@@ -72,36 +72,6 @@ CatanBoardDetector::CatanBoardDetector(cv::Vec3f seaColor)
 
 }
 
-cv::Vec3f getRoadColor(cv::Mat warped, cv::Mat thresWarped)
-{
-	if(warped.cols != thresWarped.cols || warped.rows != thresWarped.rows) {
-		throw std::runtime_error("non-matching dimensions");
-	}
-	if(warped.depth() != CV_32F) {
-		warped = cvutil::ToFloat(warped);
-	}
-
-	std::vector<float> vb(1), vg(1), vr(1);
-
-	for(int y=0; y<warped.rows; y+=4) {
-		cv::Vec3f* imgRow = warped.ptr<cv::Vec3f>(y);
-		uint8_t* thresRow = thresWarped.ptr<uint8_t>(y);
-		for(int x=0; x<warped.cols; x+=4) {
-			if(thresRow[x] > 200) {
-				vb.push_back(imgRow[x][0]);
-				vg.push_back(imgRow[x][1]);
-				vr.push_back(imgRow[x][2]);
-			}
-		}
-	}
-
-	std::sort(vb.begin(), vb.end());
-	std::sort(vg.begin(), vg.end());
-	std::sort(vr.begin(), vr.end());
-	
-	return {vb[vb.size()/2] * 1.0f, vg[vg.size()/2] * 1.0f, vr[vr.size()/2] * 1.0f};
-}
-
 
 cv::Mat applyColorCorrection(cv::Mat image, cv::Vec3f actualRoadColor, cv::Vec3f wantedRoadColor)
 {
@@ -141,14 +111,50 @@ cv::Mat applyColorCorrection(cv::Mat image, cv::Vec3f actualRoadColor, cv::Vec3f
 	return cvutil::ToByte(squaredWarped);
 }
 
+void beforeafter(cv::Mat warped, cv::Mat warped1)
+{
+	ctn::ScreenCoordMapper mapper({.center = {500, 433}, .size = 150});
+
+	warped = warped.clone();
+	warped1 = warped1.clone();
+
+	for(auto& coord: ctn::GenerateCellCoords(2)) {
+		cv::circle(warped, mapper(coord), 9, {0,0,0}, -1);
+		cv::circle(warped1, mapper(coord), 9, {0,0,0}, -1);
+		cv::circle(warped, mapper(coord), 6, {0,255,0}, -1);
+		cv::circle(warped1, mapper(coord), 6, {0,255,0}, -1);
+	}
+
+	cv::imshow("before fine align", warped);
+	cv::imshow("after fine align", warped1);
+}
+
+void discardOutOfBoundsPixels(cv::Mat& warped)
+{
+	for(int y=0; y<warped.rows; y++) {
+		cv::Vec3b* row = warped.ptr<cv::Vec3b>(y);
+		for(int x=0; x<warped.cols; x++) {
+			double v1 = y - x*1.732 - 433; // y + = sqrt(3)*x - 433
+			double v2 = y + x*1.732 - 433;
+			double v3 = y - (x-1000)*1.732 - 433;
+			double v4 = y + (x-1000)*1.732 - 433;
+			
+			if(v1 > 0 || v2 < 0 || v3 < 0 || v4 > 0) {
+				row[x] = 0;
+			}
+		}
+	}
+}
 
 std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 {
-	auto photoMedian = NEW_MAT(tmp) {cv::medianBlur(photo, tmp, 5);};
+	int medianBlurRadius = 5*(photo.rows / 1200) + 7;
+	medianBlurRadius -= (medianBlurRadius % 2) - 1;
+	auto photoMedian = NEW_MAT(tmp) {cv::medianBlur(photo, tmp, medianBlurRadius);};
 	cv::Mat crcb = cvutil::ConvertToCrCb(photoMedian);
 	cv::Mat sq = squareDist(crcb, seaColor);
 	
-	cv::Mat thres = NEW_MAT(tmp) {cv::threshold(sq, tmp, 20, 255, cv::THRESH_BINARY_INV);};
+	cv::Mat thres = NEW_MAT(tmp) {cv::threshold(sq, tmp, 26, 255, cv::THRESH_BINARY_INV);};
 
 	auto boardVtxs = findBoardVertices(thres);
 	if(!boardVtxs) {
@@ -157,10 +163,17 @@ std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 
 	cv::Mat corr = ctn::GetBoardPerspectiveCorrectionMatrix(boardVtxs.value());
 	cv::Mat warped = NEW_MAT(tmp) {cv::warpPerspective(photo, tmp, corr, {1000, 866});};
+	discardOutOfBoundsPixels(warped);
 	cv::Mat thresWarped = NEW_MAT(tmp) {cv::warpPerspective(thres, tmp, corr, {1000, 866});};
-	
-	auto roadMask = ctn::GenerateIdealEdgeMask({255,255,255}, 15);
-	cv::Vec3f roadColor = getRoadColor(warped, roadMask);
+
+	// auto channels = cvutil::SplitBGR(warped);
+	// for(auto& ch: channels)
+	// 	cv::equalizeHist(ch, ch);
+	// warped = cvutil::MergeBGR(channels);
+
+	//auto roadMask = ctn::GenerateIdealEdgeMask({255,255,255}, 15);
+	//cv::Vec3f roadColor = getRoadColor(warped, roadMask);
+
 #ifndef ANDROID
 #define CATAN_APPLY_FINE_ALIGNMENT
 #endif
@@ -169,8 +182,10 @@ std::optional<cv::Mat> CatanBoardDetector::findBoard(cv::Mat photo)
 	cv::Mat warpMtx = ctn::FindFineAlignment(ctn::CreateDarkEdgeMask(warped), ctn::GenerateIdealEdgeMask({255,255,255}, 4));
 	cv::Mat warped1;
 	cv::warpAffine(warped, warped1, warpMtx, warped.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
+	//beforeafter(warped, warped1);
 	warped = warped1;
 #endif
 
-	return applyColorCorrection(warped, roadColor, {0.439f, 0.603f, 0.627f});
+	return warped;
+	//return applyColorCorrection(warped, roadColor, {0.439f, 0.603f, 0.627f});
 }

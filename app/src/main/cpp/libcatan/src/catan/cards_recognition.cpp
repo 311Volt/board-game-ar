@@ -46,110 +46,110 @@
 	return s;
 }*/
 
-/*scoringCardType assignCardTypeBasedOnText(char* outText)
-{
-	/*std::string cardsCaptions[] = {"Koszty budowy", "Rycerz", "Katedra", "Ratusz", "Biblioteka", "Rynek", "Uniwersytet", "Post�p",
-		"Najwy�sza W�adza Rycerska 2 Punkty Zwyci�stwa", "Najd�u�sza Droga Handlowa 2 Punkty Zwyci�stwa" };*/
-	//std::string twoPointCardsContents[] = { "Najwy�sza",  "W�adza", "Rycerska", "Najd�u�sza", "Droga Handlowa", "trzy karty rycerz", "pi�� po��czonych dr�g", "Punkty Zwyci�stwa" }; // "2 Punkty Zwyci�stwa"
-	//std::string onePointCardsContents[] = { /*"1",*/  "Punkt", "Zwyci�stwa", "Katedra", "Ratusz", "Biblioteka", "Rynek", "Uniwersytet" };
-	/*std::string cardText = outText;
-	cardText = prepareString(cardText);
+// scoringCardType assignCardTypeBasedOnText(char* outText)
+// {
+// 	std::string cardsCaptions[] = {"Koszty budowy", "Rycerz", "Katedra", "Ratusz", "Biblioteka", "Rynek", "Uniwersytet", "Post�p",
+// 		"Najwy�sza W�adza Rycerska 2 Punkty Zwyci�stwa", "Najd�u�sza Droga Handlowa 2 Punkty Zwyci�stwa" };
+// 	//std::string twoPointCardsContents[] = { "Najwy�sza",  "W�adza", "Rycerska", "Najd�u�sza", "Droga Handlowa", "trzy karty rycerz", "pi�� po��czonych dr�g", "Punkty Zwyci�stwa" }; // "2 Punkty Zwyci�stwa"
+// 	//std::string onePointCardsContents[] = { /*"1",*/  "Punkt", "Zwyci�stwa", "Katedra", "Ratusz", "Biblioteka", "Rynek", "Uniwersytet" };
+// 	std::string cardText = outText;
+// 	cardText = prepareString(cardText);
 
-	std::string costsTableContents[] = { "Koszty budowy", "Rozw�j", "pkt"};
-	for (auto templateText : costsTableContents)
-	{
-		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
+// 	std::string costsTableContents[] = { "Koszty budowy", "Rozw�j", "pkt"};
+// 	for (auto templateText : costsTableContents)
+// 	{
+// 		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
 
-		if (cardText.find(prepareString(templateText)) != std::string::npos)
-			return scoringCardType::OTHER;
-	}
+// 		if (cardText.find(prepareString(templateText)) != std::string::npos)
+// 			return scoringCardType::OTHER;
+// 	}
 
-	for (auto templateText : twoPointCardsContents)
-	{
-		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
+// 	for (auto templateText : twoPointCardsContents)
+// 	{
+// 		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
 		
-		if (cardText.find(prepareString(templateText)) != std::string::npos)
-			return scoringCardType::TWO_POINTS;
-	}
-	for (auto templateText : onePointCardsContents)
-	{
-		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
-		if (cardText.find(prepareString(templateText)) != std::string::npos)
-			return scoringCardType::ONE_POINT;
-	}
+// 		if (cardText.find(prepareString(templateText)) != std::string::npos)
+// 			return scoringCardType::TWO_POINTS;
+// 	}
+// 	for (auto templateText : onePointCardsContents)
+// 	{
+// 		//std::cout << "templateText: " << prepareString(templateText) << std::endl;
+// 		if (cardText.find(prepareString(templateText)) != std::string::npos)
+// 			return scoringCardType::ONE_POINT;
+// 	}
 
-	return scoringCardType::OTHER;
-}
+// 	return scoringCardType::OTHER;
+// }
 
-std::string cardTypeToString(scoringCardType cardType)
-{
-	switch (cardType)
-	{
-	case scoringCardType::ONE_POINT:
-		return "ONE POINT CARD";
-	case scoringCardType::TWO_POINTS:
-		return "TWO POINTS CARD";
-	default:
-		return "OTHER/UNDEFINED CARD";
-	}
-}
+// std::string cardTypeToString(scoringCardType cardType)
+// {
+// 	switch (cardType)
+// 	{
+// 	case scoringCardType::ONE_POINT:
+// 		return "ONE POINT CARD";
+// 	case scoringCardType::TWO_POINTS:
+// 		return "TWO POINTS CARD";
+// 	default:
+// 		return "OTHER/UNDEFINED CARD";
+// 	}
+// }
 
-scoringCardType recognizeCard(cv::Mat card, tesseract::TessBaseAPI* api, bool isPlasticVer)
-{
-	cv::Mat cardCopy;
-	card.copyTo(cardCopy);
-	char* outText = NULL;
-	scoringCardType cardType;
-	cv::Mat cardPart;
-	for (int a = 0; a < 2; a++)
-	{
-		if(!isPlasticVer)
-			cardPart = cutOutCardHeading(cardCopy, 0.2);
-		else
-			cardPart = cutOutCardBottom(cardCopy, 0.4);
+// scoringCardType recognizeCard(cv::Mat card, tesseract::TessBaseAPI* api, bool isPlasticVer)
+// {
+// 	cv::Mat cardCopy;
+// 	card.copyTo(cardCopy);
+// 	char* outText = NULL;
+// 	scoringCardType cardType;
+// 	cv::Mat cardPart;
+// 	for (int a = 0; a < 2; a++)
+// 	{
+// 		if(!isPlasticVer)
+// 			cardPart = cutOutCardHeading(cardCopy, 0.2);
+// 		else
+// 			cardPart = cutOutCardBottom(cardCopy, 0.4);
 
-		outText = recognizeTextOnImage(cardPart, api);
-		cardType = assignCardTypeBasedOnText(outText);
+// 		outText = recognizeTextOnImage(cardPart, api);
+// 		cardType = assignCardTypeBasedOnText(outText);
 
-		//std::cout << "OCR output:\n" << prepareString(std::string(outText)) << std::endl;
-		//std::cout << "Recognition:\n" << cardTypeToString(cardType) << std::endl;
-		//cv::imshow("Card part", cardPart);
-		//cv::waitKey();
+// 		//std::cout << "OCR output:\n" << prepareString(std::string(outText)) << std::endl;
+// 		//std::cout << "Recognition:\n" << cardTypeToString(cardType) << std::endl;
+// 		//cv::imshow("Card part", cardPart);
+// 		//cv::waitKey();
 
-		if (cardType != scoringCardType::OTHER)
-			return cardType;
-		cv::rotate(cardCopy, cardCopy, cv::ROTATE_180);
-	}
+// 		if (cardType != scoringCardType::OTHER)
+// 			return cardType;
+// 		cv::rotate(cardCopy, cardCopy, cv::ROTATE_180);
+// 	}
 
-	return cardType;
-}
+// 	return cardType;
+// }
 
 
-std::vector<scoringCardType> recognizeCards(std::vector<cv::Mat> cards, bool isPlasticVer)
-{
-	std::vector<scoringCardType> results;
+// std::vector<scoringCardType> recognizeCards(std::vector<cv::Mat> cards, bool isPlasticVer)
+// {
+// 	std::vector<scoringCardType> results;
 
-	tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
-	if (api->Init(NULL, "pol")) {
-		fprintf(stderr, "Could not initialize tesseract.\n");
-		exit(1);
-	}
+// 	tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
+// 	if (api->Init(NULL, "pol")) {
+// 		fprintf(stderr, "Could not initialize tesseract.\n");
+// 		exit(1);
+// 	}
 
-	for (auto card : cards)
-	{
-		scoringCardType cardType = recognizeCard(card, api, isPlasticVer);
-		results.push_back(cardType);
-	}
-	// Destroy used object and release memory
-	//api->End();
-	//delete api;
-	//delete[] outText;
-	//pixDestroy(&image);
+// 	for (auto card : cards)
+// 	{
+// 		scoringCardType cardType = recognizeCard(card, api, isPlasticVer);
+// 		results.push_back(cardType);
+// 	}
+// 	// Destroy used object and release memory
+// 	//api->End();
+// 	//delete api;
+// 	//delete[] outText;
+// 	//pixDestroy(&image);
 
-	api->End();
+// 	api->End();
 
-	return results;
-}*/
+// 	return results;
+// }
 
 std::vector<cv::Mat> getCardsFromImage(cv::Mat image, bool isPlasticVer)
 {
@@ -165,41 +165,41 @@ std::vector<cv::Mat> getCardsFromImage(cv::Mat image, bool isPlasticVer)
 	return verticalCards;
 }
 
-/*int* recognizeCardsFromImage(cv::Mat image, bool isPlasticVer)
-{
-	std::vector<cv::Mat> croppedOutCards;
-	if (!isPlasticVer)
-		croppedOutCards = detectCards(image);
-	else
-		croppedOutCards = detectCardsPlasticVer(image);
+// int* recognizeCardsFromImage(cv::Mat image, bool isPlasticVer)
+// {
+// 	std::vector<cv::Mat> croppedOutCards;
+// 	if (!isPlasticVer)
+// 		croppedOutCards = detectCards(image);
+// 	else
+// 		croppedOutCards = detectCardsPlasticVer(image);
 
-	auto correctedCards = correctCardsPerspective(croppedOutCards);
-	auto verticalCards = setCardsPositionVertical(correctedCards);
+// 	auto correctedCards = correctCardsPerspective(croppedOutCards);
+// 	auto verticalCards = setCardsPositionVertical(correctedCards);
 
-	//auto verticalCards = getCardsFromImage(image, isPlasticVer);
+// 	//auto verticalCards = getCardsFromImage(image, isPlasticVer);
 
-	/*int j = 1;
-	for (auto card : verticalCards)
-	{
-		cv::imshow("Card warped " + std::to_string(j), card);
-		j++;
-	}
-	cv::waitKey();*/
+// 	/*int j = 1;
+// 	for (auto card : verticalCards)
+// 	{
+// 		cv::imshow("Card warped " + std::to_string(j), card);
+// 		j++;
+// 	}
+// 	cv::waitKey();*/
 
-	//std::vector<scoringCardType> cardTypes = recognizeCards(verticalCards, isPlasticVer);
+// 	//std::vector<scoringCardType> cardTypes = recognizeCards(verticalCards, isPlasticVer);
 
-	/*for (int i = 0; i<verticalCards.size(); i++)
-	{
-		auto card = verticalCards[i];
-		std::string cardTypeString = cardTypeToString(cardTypes[i]);
-		cv::putText(card, cardTypeString, cv::Point(card.size().width/4, card.size().height/4), cv::FONT_HERSHEY_COMPLEX_SMALL, 2.0, cv::Scalar(0, 255, 0));
-		cv::imshow("Card recognized " + std::to_string(i+1), card);
-	}
-	cv::waitKey();*/
+// 	/*for (int i = 0; i<verticalCards.size(); i++)
+// 	{
+// 		auto card = verticalCards[i];
+// 		std::string cardTypeString = cardTypeToString(cardTypes[i]);
+// 		cv::putText(card, cardTypeString, cv::Point(card.size().width/4, card.size().height/4), cv::FONT_HERSHEY_COMPLEX_SMALL, 2.0, cv::Scalar(0, 255, 0));
+// 		cv::imshow("Card recognized " + std::to_string(i+1), card);
+// 	}
+// 	cv::waitKey();*/
 
-	/*int* results = new int[cardTypes.size()];
-	for (int i=0; i<cardTypes.size(); i++)
-		results[i] = (int)cardTypes[i];
+// 	int* results = new int[cardTypes.size()];
+// 	for (int i=0; i<cardTypes.size(); i++)
+// 		results[i] = (int)cardTypes[i];
 
-	return results;
-}*/
+// 	return results;
+// }

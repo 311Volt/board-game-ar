@@ -87,8 +87,8 @@ std::map<ctn::CellCoord, std::string> ctn::DetermineCellTypes(const ctn::BoardIR
 		invLikelihood[0] = 10e40;
 		
 		for(int i=1; i<refCells.size(); i++) {
-			auto ref = cvutil::ToFloat(cvutil::Convert(refCells[i].polarWarped, cv::COLOR_BGR2YUV));
-			auto curr = cvutil::ToFloat(cvutil::Convert(WarpCell(img), cv::COLOR_BGR2YUV));
+			auto ref = cvutil::ToFloat(cvutil::Convert(refCells[i].polarWarped, cv::COLOR_BGR2YCrCb));
+			auto curr = cvutil::ToFloat(cvutil::Convert(WarpCell(img), cv::COLOR_BGR2YCrCb));
 			
 			auto k1 = cvutil::MeanStdDevBGR(ref);
 			auto k2 = cvutil::MeanStdDevBGR(curr);
@@ -116,7 +116,7 @@ std::map<ctn::CellCoord, std::string> ctn::DetermineCellTypes(const ctn::BoardIR
 			cv::Vec3d m2 {k2[0].mean*0.0, k2[1].mean, k2[2].mean};
 			cv::Vec3d d2 {k2[0].stddev*lumStdMul, k2[1].stddev*0.5, k2[2].stddev*crMul};
 
-			double total = cvmath::SquareDist(m1, m2) + cvmath::SquareDist(d1, d2);
+			double total = 4.0 * cvmath::SquareDist(m1, m2) + cvmath::SquareDist(d1, d2);
 
 			invLikelihood[i] = total;
 		}

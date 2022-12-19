@@ -63,7 +63,7 @@ cv::Mat ctn::FindFineAlignment(cv::Mat actualEdges, cv::Mat idealEdges)
 cv::Mat ctn::CreateDarkEdgeMask(cv::Mat input)
 {
 	//step 1: mark pixels that are substantially darker than their neighborhood
-	cv::Mat median = NEW_MAT(tmp) {cv::medianBlur(input, tmp, 5);};
+	cv::Mat median = NEW_MAT(tmp) {cv::medianBlur(input, tmp, 9);};
 	cv::Mat thres = cvmath::TransformBin<cv::Vec3b, uint8_t>(input, median, [](cv::Vec3b pxIn, cv::Vec3b pxMed) {
 		const auto lum = cvutil::SumOfChannels;
 		if(lum(pxIn) < lum(pxMed) - 60) {
@@ -71,6 +71,8 @@ cv::Mat ctn::CreateDarkEdgeMask(cv::Mat input)
 		}
 		return uint8_t(0);
 	});
+
+	//cv::imshow("initial thres", thres.clone());
 
 	//step 2: clean up the image (remove all islands with <20px area)
 	std::vector<std::vector<cv::Point>> contours;
@@ -81,6 +83,8 @@ cv::Mat ctn::CreateDarkEdgeMask(cv::Mat input)
 			cv::drawContours(thres, contours, i, {0,0,0}, -2);
 		}
 	}
+
+	//cv::imshow("processed thres", thres);
 
 	return thres;
 }

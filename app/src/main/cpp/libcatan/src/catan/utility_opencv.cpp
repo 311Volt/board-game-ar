@@ -124,6 +124,32 @@ cv::Rect cvutil::SquaredRect(cv::Rect rect)
 	return {center - dsize/2, center + dsize/2};
 }
 
+cv::Vec3b cvutil::ImageMedian(const cv::Mat &input)
+{
+	if(input.depth() != CV_8U || input.channels() != 3) {
+		throw std::runtime_error("wrong input format (8UC3 expected)");
+	}
+	std::vector<uint8_t> dr, dg, db;
+
+	for(int y=0; y<input.rows; y++) {
+		const cv::Vec3b* inRow = input.ptr<cv::Vec3b>(y);
+		for(int x=0; x<input.cols; x++) {
+			db.push_back(inRow[x][0]);
+			dg.push_back(inRow[x][1]);
+			dr.push_back(inRow[x][2]);
+		}
+	}
+
+	std::sort(dr.begin(), dr.end());
+	std::sort(dg.begin(), dg.end());
+	std::sort(db.begin(), db.end());
+
+	return cv::Vec3b {
+		dr.at(dr.size() / 2),
+		dg.at(dg.size() / 2),
+		db.at(db.size() / 2)
+	};
+}
 
 cv::Mat cvutil::CropRotatedRect(cv::Mat img, cv::RotatedRect roi)
 {

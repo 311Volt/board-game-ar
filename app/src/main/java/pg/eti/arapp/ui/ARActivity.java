@@ -52,6 +52,7 @@ import pg.eti.arapp.R;
 import pg.eti.arapp.catan.BoardInfo;
 import pg.eti.arapp.catan.CatanBoardDetector;
 import pg.eti.arapp.catan.CatanCardsDetector;
+import pg.eti.arapp.catan.PlayerColor;
 import pg.eti.arapp.catan.Settlement;
 import pg.eti.arapp.catan.coord.VertexCoord;
 import pg.eti.arapp.databinding.ActivityAractivityBinding;
@@ -92,8 +93,8 @@ public class ARActivity extends AppCompatActivity {
         createNotificationChannel();
 
 
-        CatanCardsDetector cardsDetector = new CatanCardsDetector();
-        cardsDetector.initTesseract(getApplicationContext(), "pol");
+        //CatanCardsDetector cardsDetector = new CatanCardsDetector();
+        //cardsDetector.initTesseract(getApplicationContext(), "pol");
 
         binding.takePhotoButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -291,7 +292,7 @@ public class ARActivity extends AppCompatActivity {
     private void ProcessStep(CatanBoardDetector boardDetector, Bitmap bmp){
         switch(step){
             case 0:
-                Log.d("Board: ", "We are here");
+                /*Log.d("Board: ", "We are here");
                 players.clear();
                 BoardInfo boardInfo = boardDetector.analyze(new BufferBitmap(bmp));
                 for (HashMap.Entry<VertexCoord, Settlement> settlementEntry: boardInfo.settlements.entrySet()) {
@@ -307,7 +308,13 @@ public class ARActivity extends AppCompatActivity {
                     } else {
                         player.AddSettlement();
                     }
-                }
+                }*/
+                Player player = new Player(PlayerColor.BLUE);
+                players.add(player);
+                player = new Player(PlayerColor.RED);
+                players.add(player);
+                player = new Player(PlayerColor.ORANGE);
+                players.add(player);
                 break;
             case 1:
 //                Log.d("Cards: ", "We are here");
@@ -322,29 +329,29 @@ public class ARActivity extends AppCompatActivity {
 
                 AnalyseCards(bmp, players.get(0));
 
-                if (bmp != null) {
+                /*if (bmp != null) {
                     TextView view = findViewById(R.id.score_view_board);
                     view.setTextSize(20);
                     view.setText(players.get(0).AnalysedCards());
-                }
+                }*/
                 break;
             case 2:
                 AnalyseCards(bmp, players.get(1));
 
-                if (bmp != null) {
+                /*if (bmp != null) {
                     TextView view = findViewById(R.id.score_view_board);
                     view.setTextSize(20);
                     view.setText(players.get(1).AnalysedCards());
-                }
+                }*/
                 break;
             case 3:
                 AnalyseCards(bmp, players.get(2));
 
-                if (bmp != null) {
+                /*if (bmp != null) {
                     TextView view = findViewById(R.id.score_view_board);
                     view.setTextSize(20);
                     view.setText(players.get(2).AnalysedCards());
-                }
+                }*/
                 break;
         }
         Log.d("Step: ", this.step+"");
@@ -354,6 +361,8 @@ public class ARActivity extends AppCompatActivity {
 
     public void AnalyseCards(Bitmap bitmap, Player player){
         CatanCardsDetector cardsDetector = new CatanCardsDetector();
+        cardsDetector.initTesseract(getApplicationContext(), "pol");
+
         ArrayList<BufferBitmap> cards = cardsDetector.getCardsNative(new BufferBitmap(bitmap));
         if(cards != null && !cards.isEmpty())
         {

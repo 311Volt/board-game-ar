@@ -27,9 +27,9 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
 
     <string name="phase_1">Place the camera over the board</string>
-    <string name="phase_2">Place the camera over cards of blue player</string>
-    <string name="phase_3">Place the camera over cards of red player</string>
-    <string name="phase_4">Place the camera over cards of orange player</string>
+    <string name="phase_2">Place the camera over next card of blue player</string>
+    <string name="phase_3">Place the camera over next card of red player</string>
+    <string name="phase_4">Place the camera over next card of orange player</string>
 
     <string name="channel_name">ARGameSupportChannel</string>
     <string name="channel_description">Notfication channel for "AR Game Support" application</string>

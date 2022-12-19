@@ -130,6 +130,27 @@ public class ARActivity extends AppCompatActivity {
             }
         });
 
+        binding.nextCardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CatanBoardDetector detector = new CatanBoardDetector();
+                if (currentImage != null) {
+                    YuvConverter yuvConverter = new YuvConverter(getApplicationContext(), currentImage.getWidth(), currentImage.getHeight());
+                    Bitmap bmp = yuvConverter.toBitmap(currentImage);
+//                    Bitmap bmp = bitmapAR;
+                    currentImage.close();
+                    if (bmp != null) {
+                        if(!getIntent().getBooleanExtra("Experimental", false)) {
+                            ProcessNextCard(bmp);
+                        }
+                        else {
+                            // TODO: part for 3 players
+                        }
+                    }
+                }
+            }
+        });
+
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ar_fragment);
 
         TextView textView = findViewById(R.id.instructions_text);
@@ -251,6 +272,27 @@ public class ARActivity extends AppCompatActivity {
         CatanBoardDetector.initializeDetector(getResources());
     }
 
+//    private void NextCardReady(){
+//        TextView view = findViewById(R.id.instructions_text);
+//        switch(step){
+//            case 1:
+//                //view.setText(players.get(0).CameraText());
+//                //view.setText("Jo, am artificial player 1");
+//
+//                view.setText(players.get(0).CameraText());
+////                players.get(0).AddPoints((short) 10);
+//                //players.get(0).AddScoreFromCards(2, true, true);
+//
+//                break;
+//            case 2:
+//                view.setText(players.get(1).CameraText());
+//                break;
+//            case 3:
+//                view.setText(players.get(2).CameraText());
+//                break;
+//        }
+//    }
+
     private void NextStepReady(){
         DisplayNotification();
         TextView view = findViewById(R.id.instructions_text);
@@ -261,21 +303,24 @@ public class ARActivity extends AppCompatActivity {
 
         switch(step){
             case 0:
+                binding.nextCardButton.setVisibility(View.GONE);
                 view.setText(R.string.phase_1);
                 break;
             case 1:
                 //view.setText(players.get(0).CameraText());
                 //view.setText("Jo, am artificial player 1");
-
+                binding.nextCardButton.setVisibility(View.VISIBLE);
                 view.setText(players.get(0).CameraText());
 //                players.get(0).AddPoints((short) 10);
                 //players.get(0).AddScoreFromCards(2, true, true);
 
                 break;
             case 2:
+                binding.nextCardButton.setVisibility(View.VISIBLE);
                 view.setText(players.get(1).CameraText());
                 break;
             case 3:
+                binding.nextCardButton.setVisibility(View.VISIBLE);
                 view.setText(players.get(2).CameraText());
                 break;
         }
@@ -289,26 +334,23 @@ public class ARActivity extends AppCompatActivity {
         return result;
     }
 
+    private void ProcessNextCard(Bitmap bmp){
+        switch(step){
+            case 1:
+                AnalyseCards(bmp, players.get(0));
+                break;
+            case 2:
+                AnalyseCards(bmp, players.get(1));
+                break;
+            case 3:
+                AnalyseCards(bmp, players.get(2));
+                break;
+        }
+    }
+
     private void ProcessStep(CatanBoardDetector boardDetector, Bitmap bmp){
         switch(step){
             case 0:
-                /*Log.d("Board: ", "We are here");
-                players.clear();
-                BoardInfo boardInfo = boardDetector.analyze(new BufferBitmap(bmp));
-                for (HashMap.Entry<VertexCoord, Settlement> settlementEntry: boardInfo.settlements.entrySet()) {
-                    Optional<Player> optionalPlayer = players.stream().filter(p -> p.getColor() == settlementEntry.getValue().playerColor).findAny();
-                    Player player;
-                    if(!optionalPlayer.isPresent()){
-                        player = new Player(settlementEntry.getValue().playerColor);
-                        players.add(player);
-                    }else
-                        player = optionalPlayer.get();
-                    if (settlementEntry.getValue().isCity) {
-                        player.AddCity();
-                    } else {
-                        player.AddSettlement();
-                    }
-                }*/
                 Player player = new Player(PlayerColor.BLUE);
                 players.add(player);
                 player = new Player(PlayerColor.RED);
@@ -317,41 +359,13 @@ public class ARActivity extends AppCompatActivity {
                 players.add(player);
                 break;
             case 1:
-//                Log.d("Cards: ", "We are here");
-//                CatanCardsDetector cardsDetector = new CatanCardsDetector();
-//                ArrayList<BufferBitmap> cards = cardsDetector.getCardsNative(new BufferBitmap(bmp));
-//                Log.d("Cards: ","Get cards native was called");
-//                Log.d("Cards: ", cards == null ? "null" : "not null");
-//                if(cards !=null && cards.size() != 0)
-//                {
-//                    Log.d("Cards: ","Karta 1: "+cards.get(0).width+", "+cards.get(0).height);
-//                }
-
                 AnalyseCards(bmp, players.get(0));
-
-                /*if (bmp != null) {
-                    TextView view = findViewById(R.id.score_view_board);
-                    view.setTextSize(20);
-                    view.setText(players.get(0).AnalysedCards());
-                }*/
                 break;
             case 2:
                 AnalyseCards(bmp, players.get(1));
-
-                /*if (bmp != null) {
-                    TextView view = findViewById(R.id.score_view_board);
-                    view.setTextSize(20);
-                    view.setText(players.get(1).AnalysedCards());
-                }*/
                 break;
             case 3:
                 AnalyseCards(bmp, players.get(2));
-
-                /*if (bmp != null) {
-                    TextView view = findViewById(R.id.score_view_board);
-                    view.setTextSize(20);
-                    view.setText(players.get(2).AnalysedCards());
-                }*/
                 break;
         }
         Log.d("Step: ", this.step+"");
@@ -374,7 +388,10 @@ public class ARActivity extends AppCompatActivity {
                 if(cardType == 2)
                     player.AddScoreFromCards(0, true, false);
                 else
-                    player.AddScoreFromCards(cardType, false, false);
+                    if(cardType == 0)
+                        Toast.makeText(this, "Card not detected", Toast.LENGTH_SHORT).show();
+                    else
+                        player.AddScoreFromCards(cardType, false, false);
 
             }
         }

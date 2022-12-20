@@ -123,7 +123,7 @@ public class PhotoFragment extends Fragment {
         cardsDetector.initTesseract(getContext(), "pol");
         if(cards != null && !cards.isEmpty())
         {
-            binding.imageView3.setImageBitmap(cards.get(0).toAndroidBitmap());
+            //binding.imageView3.setImageBitmap(cards.get(0).toAndroidBitmap());
             for(int i =0; i<cards.size(); i++) {
                 Mat mat = cardsDetector.convertBitmapToMat(cards.get(i).toAndroidBitmap());
                 //Mat heading = cardsDetector.cutOutCardBottom(mat, 0.4f);

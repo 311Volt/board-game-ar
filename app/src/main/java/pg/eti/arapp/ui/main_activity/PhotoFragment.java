@@ -108,7 +108,11 @@ public class PhotoFragment extends Fragment {
                     players.add(player);
                 } else
                     player = optionalPlayer.get();
-                player.AddPoints((short) (settlementEntry.getValue().isCity ? 2 : 1));
+                if(settlementEntry.getValue().isCity) {
+                    player.AddCity();
+                } else {
+                    player.AddSettlement();
+                }
             }
             view.setText(String.format("%s", ScoreText(players)));
         }

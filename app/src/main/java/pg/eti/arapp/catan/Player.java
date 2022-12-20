@@ -1,5 +1,7 @@
 package pg.eti.arapp.catan;
 
+import android.annotation.SuppressLint;
+
 import pg.eti.arapp.catan.PlayerColor;
 
 public class Player {
@@ -36,9 +38,11 @@ public class Player {
 
     @Override
     public String toString() {
-        return HasWon()
-                ? "!!! " + color + " player:\t" + score + " !!!"
-                : color + " player:\t" + score;
+        String result = String.format("%s player: %d (%d)", color, score, getTotalNumCitiesAndSettlements());
+        if(HasWon()) {
+            result = "!!! " + result + " !!!";
+        }
+        return result;
     }
 
     public String CameraText(){
@@ -56,6 +60,10 @@ public class Player {
 
     public String AnalysedBoard(){
         return String.format("%s player has %d settlements and %d cities", this.color , this.settlements, this.cities);
+    }
+
+    public int getTotalNumCitiesAndSettlements() {
+        return this.cities + this.settlements;
     }
 
     public void AddPoints(short points){

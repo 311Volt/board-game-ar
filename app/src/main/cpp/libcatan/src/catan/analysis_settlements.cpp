@@ -195,16 +195,25 @@ std::vector<cv::Point2d> SmoothContour(const std::vector<cv::Point>& inputContou
 		mat.at<cv::Point2d>(i) = inputContour[i];
 	cv::Mat output;
 	cv::GaussianBlur(mat, output, {1, 21}, 12);
-	cv::GaussianBlur(mat, output, {1, 21}, 12);
 	return output;
 }
 
-float AngleDeltaHarmonicMean(const std::vector<cv::Point2d>& smoothedContour)
+std::vector<double> SmoothDoubleVec(const std::vector<double>& input)
 {
-	int n = 1;
-	double recSum = 10e-9;
-	static constexpr double r2d = 180.0/3.141592;
 
+	cv::Mat mat = cv::Mat::zeros({1, (int)input.size()}, CV_64FC1);
+	for(int i=0; i<mat.rows; i++)
+		mat.at<double>(i) = input[i];
+	cv::Mat output;
+	cv::GaussianBlur(mat, output, {1, 31}, 17);
+	return output;
+}
+
+std::vector<double> GetAngleDeltas(const std::vector<cv::Point2d>& smoothedContour)
+{
+
+	std::vector<double> angleDeltas;
+	static constexpr double r2d = 180.0/3.141592;	
 	for(int i=0; i<smoothedContour.size() - 2; i++) {
 		auto p1 = smoothedContour[i];
 		auto p2 = smoothedContour[i+1];
@@ -221,22 +230,93 @@ float AngleDeltaHarmonicMean(const std::vector<cv::Point2d>& smoothedContour)
 			continue;
 		}
 
-		absAngleDelta = std::min({absAngleDelta, std::abs(180.0f - absAngleDelta), std::abs(180.0f + absAngleDelta)});
-		recSum += 1.0 / std::max<double>(10e-9, absAngleDelta);
-		n++;
+		angleDeltas.push_back(std::min({absAngleDelta, std::abs(180.0f - absAngleDelta), std::abs(180.0f + absAngleDelta)}));
 	}
-
-	return n / recSum;
+	angleDeltas = SmoothDoubleVec(angleDeltas);
+	return angleDeltas;
 }
 
-ctn::SettlementType DetermineSettlementType(cv::Mat corner, cv::Mat mask)
+float AngleDeltaHarmonicMean(const std::vector<cv::Point2d>& smoothedContour)
+{
+	double recSum = 10e-9;
+	auto angleDeltas = GetAngleDeltas(smoothedContour);
+
+
+	for(const auto& absAngleDelta: angleDeltas) {
+		recSum += 1.0 / std::max<double>(10e-9, absAngleDelta - 0.015);
+		//fmt::print("absAngleDelta = {}, rating={}\n", absAngleDelta, rating);
+	}
+
+	//fmt::print("!!!!!FINAL!!!!! {}\n\n\n\n\n\n\n", n/recSum);
+	return angleDeltas.size() / recSum;
+}
+
+float ArcLengthToAreaRatio(const std::vector<cv::Point2d>& smoothedContour)
+{
+	std::vector<cv::Point2f> contour32;
+	for(auto& p: smoothedContour)
+		contour32.push_back(p);
+	float arcLenSq = cv::arcLength(contour32, 1);
+	arcLenSq *= arcLenSq;
+	return arcLenSq / cv::contourArea(contour32);
+}
+
+ctn::SettlementType DetermineSettlementTypeLegacy(cv::Mat corner, cv::Mat mask)
 {
 	mask = cvutil::Convert(mask, cv::COLOR_BGR2GRAY);
 	auto contour = SmoothContour(GetLargestContour(mask));
 
-	auto hm = AngleDeltaHarmonicMean(contour);
+	auto hm = ArcLengthToAreaRatio(contour);
 
-	return hm > 0.9 ? ctn::SettlementType::City : ctn::SettlementType::Settlement;
+	//cv::imshow("HM = " + std::to_string(hm) + ", len=" + std::to_string(cv::arcLength(GetLargestContour(mask), 1)), corner);
+
+	return hm < 13 ? ctn::SettlementType::City : ctn::SettlementType::Settlement;
+}
+
+ctn::SettlementType DetermineSettlementTypeImproved(cv::Mat corner, cv::Mat mask, int color) 
+{
+	auto channels = cvutil::SplitBGR(mask);
+	cv::Mat binaryMask = channels[color];
+	std::vector<cv::Vec3b> spectrumInput;
+
+	cv::erode(binaryMask, binaryMask, cv::getStructuringElement(cv::MORPH_ELLIPSE, {3,3}));
+	cv::erode(binaryMask, binaryMask, cv::getStructuringElement(cv::MORPH_ELLIPSE, {3,3}));
+
+	for(int y=0; y<corner.rows; y++) {
+		uint8_t* maskRow = binaryMask.ptr<uint8_t>(y);
+		cv::Vec3b* cornerRow = corner.ptr<cv::Vec3b>(y);
+		for(int x=0; x<corner.cols; x++) {
+			if(maskRow[x]) {
+				spectrumInput.push_back(cornerRow[x]);
+			}
+		}
+	}
+
+
+	auto spectrum = CreateSpectrum(cv::Mat(spectrumInput), {0,0,0}, 20);
+	cv::Mat cornerCut = corner.clone();
+
+	cvmath::Apply<cv::Vec3b>(cornerCut, [spectrum, color](cv::Vec3b frag) {
+		float minDist = 10e8;
+
+		for(const auto& specFrag: spectrum) {
+			float dist = cvmath::SquareDist(frag, specFrag);
+			minDist = std::min(dist, minDist);
+		}
+
+		return minDist < 600 ? BuildingColors1Hot[color] : cv::Vec3b(0,0,0);
+	});
+
+	cv::medianBlur(cornerCut, cornerCut, 5);
+
+	// cv::imshow("st2 corner", corner);
+	// cv::imshow("st2 bin mask", binaryMask);
+	// cv::imshow("st2 spectrum", cv::Mat(spectrum));
+	// cv::imshow("st2 cornerCut", cornerCut);
+
+	// cv::waitKey();
+
+	return DetermineSettlementTypeLegacy(corner, cornerCut);
 }
 
 void RoadAttenuation(cv::Mat img)
@@ -274,19 +354,14 @@ uint8_t hueDist(uint8_t h1, uint8_t h2)
 
 cv::Vec3b playerColorOf(cv::Vec3b hsvPx)
 {
-	static constexpr uint8_t colorHues[3] = {110, 177, 18};
-
-	uint16_t rb = hueDist(hsvPx[0], colorHues[0]);
-	uint16_t rr = hueDist(hsvPx[0], colorHues[1]);
-	uint16_t ro = hueDist(hsvPx[0], colorHues[2]);
-	
-	ro *= 6;
-
-	if(rb < rr && rb < ro)
-		return BuildingColors1Hot[0];
-	if(rr < rb && rr < ro)
-		return BuildingColors1Hot[1];
-	return BuildingColors1Hot[2];
+	auto hue = hsvPx[0];
+	if(hue > 40 && hue <= 135) {
+		return BuildingColors1Hot[0];  // blue
+	} else if(hue > 140 || hue < 9) {
+		return BuildingColors1Hot[1];  // red
+	} else {
+		return BuildingColors1Hot[2];  // orange
+	}
 }
 
 cv::Mat RetrofitBinaryMask(cv::Mat actualROI, cv::Mat binaryMask)
@@ -326,12 +401,18 @@ void KeepDominantPlayerColor(cv::Mat& input)
 	double chSums[3] = {sum[0], sum[1], sum[2]};
 	cv::Vec3b retFrag {0, 0, 0};
 	int maxIdx = std::max_element(chSums, chSums+3) - chSums;
+	//retFrag[maxIdx] = 1;
 	retFrag[maxIdx] = 255;
 	cvmath::Apply<cv::Vec3b>(input, [retFrag](cv::Vec3b frag){
 		if(frag[0] + frag[1] + frag[2] > 0) {
 			return retFrag;
 		}
 		return cv::Vec3b{0,0,0};
+		// return cv::Vec3b {
+		// 	uint8_t(frag[0] * retFrag[0]),
+		// 	uint8_t(frag[1] * retFrag[1]),
+		// 	uint8_t(frag[2] * retFrag[2])
+		// };
 	});
 }
 
@@ -378,6 +459,7 @@ std::map<ctn::VertexCoord, ctn::Settlement> ctn::FindSettlements(const BoardIR& 
 		auto rating = RateCornerMask(mask);
 		auto maxRatingIter = std::max_element(rating.begin(), rating.end());
 		int maxRatingIdx = maxRatingIter - rating.begin();
+		auto originalMask = mask.clone();
 
 		if(*maxRatingIter > 30) {
 			KeepDominantPlayerColor(mask);
@@ -390,7 +472,7 @@ std::map<ctn::VertexCoord, ctn::Settlement> ctn::FindSettlements(const BoardIR& 
 			PlayerColor colors[3] = {PlayerColor::Blue, PlayerColor::Red, PlayerColor::Orange};
 
 			result[coord] = {
-				.type=DetermineSettlementType(corner, mask), 
+				.type=DetermineSettlementTypeImproved(corner, originalMask, maxRatingIdx), 
 				.color=colors[maxRatingIdx]
 			};
 		}

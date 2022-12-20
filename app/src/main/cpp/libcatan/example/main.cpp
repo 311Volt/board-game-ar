@@ -38,13 +38,13 @@ int main()
 		{"element_blue", cvutil::SafeImread("resources/elements/blue.png")},
 		{"element_orange", cvutil::SafeImread("resources/elements/orange.png")},
 		{"element_red", cvutil::SafeImread("resources/elements/red.png")},
-		{"road_attenuation_mask", cvutil::SafeImread("resources/road_attenuation_mask.png")},
-		{"sea_attenuation_mask", cvutil::SafeImread("resources/sea_attenuation_mask.png")}
+		{"road_attenuation_mask", cvutil::SafeImread("resources/road-attenuation-mask.png")},
+		{"sea_attenuation_mask", cvutil::SafeImread("resources/sea-attenuation-mask.png")}
 	});
 
 
 	msg("init");
-	auto src = cvutil::SafeImread("resources/samples/sampleETI1.jpg");
+	auto src = cvutil::SafeImread("resources/samples/sampleETI2.jpg");
 	CatanBoardDetector detector {SEA_COLOR_YCBCR_6500K};
 
 	msg("detector initialized");

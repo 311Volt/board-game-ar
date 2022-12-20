@@ -98,6 +98,8 @@ public class ARActivity extends AppCompatActivity {
         //CatanCardsDetector cardsDetector = new CatanCardsDetector();
         //cardsDetector.initTesseract(getApplicationContext(), "pol");
 
+        Toast.makeText(this, "Take photo using middle button, then click next", Toast.LENGTH_LONG).show();
+
         binding.takePhotoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -124,6 +126,7 @@ public class ARActivity extends AppCompatActivity {
                         Bitmap bmp = yuvConverter.toBitmap(currentImage);
 //                    Bitmap bmp = bitmapAR;
                         currentImage.close();
+                        currentImage = null;
                         if (bmp != null) {
                             if (!getIntent().getBooleanExtra("Experimental", false)) {
                                 ProcessStep(detector, bmp);
@@ -132,6 +135,8 @@ public class ARActivity extends AppCompatActivity {
                             }
                         }
                     }
+                    else
+                        NextStepReady();
                 }
             }
         });
@@ -146,6 +151,7 @@ public class ARActivity extends AppCompatActivity {
                     Bitmap bmp = yuvConverter.toBitmap(currentImage);
 //                    Bitmap bmp = bitmapAR;
                     currentImage.close();
+                    currentImage = null;
                     if (bmp != null) {
                         if(!getIntent().getBooleanExtra("Experimental", false)) {
                             ProcessNextCard(bmp);
@@ -413,7 +419,7 @@ public class ARActivity extends AppCompatActivity {
                     player.AddScoreFromCards(0, true, false);
                 else
                     if(cardType == 0)
-                        Toast.makeText(this, "Card not detected", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "0 point card or not detected", Toast.LENGTH_SHORT).show();
                     else
                         player.AddScoreFromCards(cardType, false, false);
 
@@ -508,8 +514,10 @@ public class ARActivity extends AppCompatActivity {
 //            }, handler);
 
             String path = getPictureName();
+            Toast.makeText(this, "Photo was taken", Toast.LENGTH_SHORT).show();
         } catch (NotYetAvailableException e) {
             e.printStackTrace();
+            Toast.makeText(this, "Photo taking error ", Toast.LENGTH_SHORT).show();
         }
     }
 

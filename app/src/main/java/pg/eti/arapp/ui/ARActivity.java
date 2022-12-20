@@ -73,6 +73,8 @@ public class ARActivity extends AppCompatActivity {
     private Set<TextView> scoreViews = new ArraySet<>();
     private int notification_id = 0;
 
+    private boolean nextCardWasClicked = false;
+
 
 //    Session session = null;
 //    private SharedCamera sharedCamera;
@@ -112,18 +114,22 @@ public class ARActivity extends AppCompatActivity {
         binding.instructionsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                CatanBoardDetector detector = new CatanBoardDetector();
-                if (currentImage != null) {
-                    YuvConverter yuvConverter = new YuvConverter(getApplicationContext(), currentImage.getWidth(), currentImage.getHeight());
-                    Bitmap bmp = yuvConverter.toBitmap(currentImage);
+                if (nextCardWasClicked) {
+                    NextStepReady();
+                    nextCardWasClicked = false;
+                } else {
+                    CatanBoardDetector detector = new CatanBoardDetector();
+                    if (currentImage != null) {
+                        YuvConverter yuvConverter = new YuvConverter(getApplicationContext(), currentImage.getWidth(), currentImage.getHeight());
+                        Bitmap bmp = yuvConverter.toBitmap(currentImage);
 //                    Bitmap bmp = bitmapAR;
-                    currentImage.close();
-                    if (bmp != null) {
-                        if(!getIntent().getBooleanExtra("Experimental", false)) {
-                            ProcessStep(detector, bmp);
-                        }
-                        else {
-                            // TODO: part for 3 players
+                        currentImage.close();
+                        if (bmp != null) {
+                            if (!getIntent().getBooleanExtra("Experimental", false)) {
+                                ProcessStep(detector, bmp);
+                            } else {
+                                // TODO: part for 3 players
+                            }
                         }
                     }
                 }
@@ -133,6 +139,7 @@ public class ARActivity extends AppCompatActivity {
         binding.nextCardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                nextCardWasClicked = true;
                 CatanBoardDetector detector = new CatanBoardDetector();
                 if (currentImage != null) {
                     YuvConverter yuvConverter = new YuvConverter(getApplicationContext(), currentImage.getWidth(), currentImage.getHeight());
@@ -351,6 +358,23 @@ public class ARActivity extends AppCompatActivity {
     private void ProcessStep(CatanBoardDetector boardDetector, Bitmap bmp){
         switch(step){
             case 0:
+                /*Log.d("Board: ", "We are here");
+                players.clear();
+                BoardInfo boardInfo = boardDetector.analyze(new BufferBitmap(bmp));
+                for (HashMap.Entry<VertexCoord, Settlement> settlementEntry: boardInfo.settlements.entrySet()) {
+                    Optional<Player> optionalPlayer = players.stream().filter(p -> p.getColor() == settlementEntry.getValue().playerColor).findAny();
+                    Player player;
+                    if(!optionalPlayer.isPresent()){
+                        player = new Player(settlementEntry.getValue().playerColor);
+                        players.add(player);
+                    }else
+                        player = optionalPlayer.get();
+                    if (settlementEntry.getValue().isCity) {
+                        player.AddCity();
+                    } else {
+                        player.AddSettlement();
+                    }
+                }*/
                 Player player = new Player(PlayerColor.BLUE);
                 players.add(player);
                 player = new Player(PlayerColor.RED);

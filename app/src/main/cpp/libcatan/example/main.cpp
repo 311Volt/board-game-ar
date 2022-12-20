@@ -38,8 +38,8 @@ int main()
 		{"element_blue", cvutil::SafeImread("resources/elements/blue.png")},
 		{"element_orange", cvutil::SafeImread("resources/elements/orange.png")},
 		{"element_red", cvutil::SafeImread("resources/elements/red.png")},
-		{"road_attenuation_mask", cvutil::SafeImread("resources/road-attenuation-mask.png")},
-		{"sea_attenuation_mask", cvutil::SafeImread("resources/sea-attenuation-mask.png")}
+		{"road_attenuation_mask", cvutil::SafeImread("resources/road_attenuation_mask.png")},
+		{"sea_attenuation_mask", cvutil::SafeImread("resources/sea_attenuation_mask.png")}
 	});
 
 
